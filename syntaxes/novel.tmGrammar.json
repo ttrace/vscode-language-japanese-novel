@@ -1,0 +1,89 @@
+{
+    "scopeName": "source.novel",
+    "patterns": [{ "include": "#expression" }],
+    "repository": {
+      "expression": {
+        "patterns": [
+          { "include": "#ruby"},
+          { "include": "#aozora-motherword"},
+          { "include": "#original-word"},
+          { "include": "#numbers"},
+          { "include": "#units"},
+          { "include": "#dialogue-expression" },
+          { "include": "#aozora-expression" }
+        ]
+      },
+      "ruby": {
+        "match": "《.+?》",
+        "name": "keyword"
+      },
+      "aozora-motherword": {
+        "match": "(.+?)(?=［＃「\\1」)",
+        "name": "keyword"
+      },
+      "original-word": {
+        "match": "〈.+?〉",
+        "name": "entity.name.section"
+      },
+      "dialogue-inline": {
+        "match": "([^」]+(?=〈.+?〉)|(?=《.+?》)|[^」])",
+        "name": "comment.line.unquoted"
+      },
+      "numbers": {
+        "match": "[一二三四五六七八九十〇]+|[0-9]+|[０-９]+",
+        "name": "constant.numeric"
+      },
+      "units": {
+        "match":"(?<=[一二三四五六七八九十〇]+|[0-9]+|[０-９]+)([一-龠]+|[ァ-ー]+)",
+        "name": "variable.parameter"
+      },
+      "inline-dialogue": {
+        "match": "「[^」]*」",
+        "name": "markup.quote"
+      },
+      "dialogue-expression": {
+        "begin": "「",
+        "end": "」",
+        "beginCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "endCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "name": "expression.group",
+        "patterns": [
+          { "include": "#ruby"},
+          { "include": "#original-word"},
+          { "include": "#numbers"},
+          { "include": "#units"},
+          { "include": "#dialogue-inline"},
+          { "include": "#parens"}
+        ]
+      },
+      "aozora-expression":{
+        "begin": "［",
+        "end": "］",
+        "beginCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "endCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "name": "keyword",
+        "patterns": [
+          { "include": "#aozora-parameter" }
+        ]
+      },
+      "aozora-parameter": {
+        "begin": "「",
+        "end": "」",
+        "beginCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "endCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "name": "keyword"
+      }
+    }
+  }

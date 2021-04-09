@@ -1,0 +1,32 @@
+{
+    "name": "novel-writer",
+    "version": "0.0.7",
+    "publisher": "Taiyo",
+    "engines": {
+        "vscode": "^1.54.0"
+    },
+    "main": "./extension.js",
+    "activationEvents": [
+        "*"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "novel",
+                "extensions": [
+                    ".txt"
+                ],
+                "configuration": "./novel.language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "novel",
+                "scopeName": "source.novel",
+                "path": "./syntaxes/novel.tmGrammar.json"
+            }
+        ]
+    },
+    "devDependencies": {
+        }
+}
