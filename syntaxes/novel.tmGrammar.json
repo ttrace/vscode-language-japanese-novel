@@ -4,17 +4,18 @@
     "repository": {
       "expression": {
         "patterns": [
-          { "include": "#ruby"},
+          { "include": "#rubymother"},
           { "include": "#aozora-motherword"},
           { "include": "#original-word"},
           { "include": "#numbers"},
           { "include": "#units"},
           { "include": "#dialogue-expression" },
-          { "include": "#aozora-expression" }
+          { "include": "#aozora-expression" },
+          { "include": "#ruby-expression"}
         ]
       },
-      "ruby": {
-        "match": "《.+?》",
+      "rubymother": {
+        "match": "((｜.+?)|([\u4E00-\u9FFF]+))(?=《.+?》)",
         "name": "keyword"
       },
       "aozora-motherword": {
@@ -77,6 +78,17 @@
       "aozora-parameter": {
         "begin": "「",
         "end": "」",
+        "beginCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "endCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "name": "keyword"
+      },
+      "ruby-expression":{
+        "begin": "《",
+        "end": "》",
         "beginCaptures": {
           "0": { "name": "string.quoted" }
         },
