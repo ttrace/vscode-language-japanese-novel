@@ -9,9 +9,9 @@
           { "include": "#original-word"},
           { "include": "#numbers"},
           { "include": "#units"},
-          { "include": "#dialogue-expression" },
           { "include": "#aozora-expression" },
-          { "include": "#ruby-expression"}
+          { "include": "#ruby-expression"},
+          { "include": "#dialogue-expression" }
         ]
       },
       "rubymother": {
@@ -24,7 +24,7 @@
       },
       "original-word": {
         "match": "〈.+?〉",
-        "name": "entity.name.section"
+        "name": "keyword"
       },
       "dialogue-inline": {
         "match": "([^」]+(?=〈.+?〉)|(?=《.+?》)|[^」])",
@@ -37,29 +37,6 @@
       "units": {
         "match":"(?<=[一二三四五六七八九十〇]+|[0-9]+|[０-９]+)([一-龠]+|[ァ-ー]+)",
         "name": "variable.parameter"
-      },
-      "inline-dialogue": {
-        "match": "「[^」]*」",
-        "name": "markup.quote"
-      },
-      "dialogue-expression": {
-        "begin": "「",
-        "end": "」",
-        "beginCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "endCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "name": "expression.group",
-        "patterns": [
-          { "include": "#ruby"},
-          { "include": "#original-word"},
-          { "include": "#numbers"},
-          { "include": "#units"},
-          { "include": "#dialogue-inline"},
-          { "include": "#parens"}
-        ]
       },
       "aozora-expression":{
         "begin": "［",
@@ -96,6 +73,28 @@
           "0": { "name": "string.quoted" }
         },
         "name": "keyword"
+      },
+      "dialogue-expression": {
+        "begin": "「",
+        "end": "」",
+        "beginCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "endCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "name": "expression.group",
+        "patterns": [
+          { "include": "#aozora-expression" },
+          { "include": "#aozora-parameter" },
+          { "include": "#ruby-expression"},
+          { "include": "#rubymother"},
+          { "include": "#original-word"},
+          { "include": "#numbers"},
+          { "include": "#units"},
+          { "include": "#dialogue-inline"},
+          { "include": "#parens"}
+        ]
       }
     }
   }
