@@ -1,7 +1,7 @@
 {
     "name": "novel-writer",
     "version": "0.0.9",
-    "publisher": "Taiyo",
+    "publisher": "TaiyoFujii",
     "engines": {
         "vscode": "^1.54.0"
     },
