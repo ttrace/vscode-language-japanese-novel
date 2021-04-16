@@ -2,7 +2,7 @@
 
 小説を書く際に用いる言語モードです。会話や青空文庫の注記法で記されたルビなどをカラーリングします。
 
-![カラーリング](./resource/highlight-color.png)
+![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/highlight-color.png)
 
 ## 実装しているハイライト
 - 鉤括弧（「」）で挟まれた会話
