@@ -1,4 +1,5 @@
 const vscode = require('vscode');
+const myeditor = vscode.window.activeTextEditor;
 
 function verticalpreview(){
 //    vscode.window.showInformationMessage('Hello, world!');
@@ -8,6 +9,21 @@ function verticalpreview(){
         vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
         {} // Webview options. More on these later.
     );
+
+
+    vscode.workspace.onDidChangeTextDocument((e) => {
+        var _a;
+        if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
+            panel.webview.html = getWebviewContent();
+        }
+    });
+
+    vscode.window.onDidChangeTextEditorSelection((e) => {
+        if (e.textEditor == vscode.window.activeTextEditor) {
+            panel.webview.html = getWebviewContent();
+        }
+    });
+
 
     // And set its HTML content
     panel.webview.html = getWebviewContent();
@@ -23,7 +39,40 @@ function deactivate() {
 
 module.exports = { activate, deactivate };
 
+function editorText(){
+    let text = myeditor.document.getText();
+    let cursorOffset = myeditor ? myeditor.document.offsetAt(myeditor.selection.anchor) : 0;
+    var myHTML = "";
+
+    // カーソル位置
+    if ( text.slice(cursorOffset, cursorOffset + 1) == '\n'){
+        cursorOffset ++;
+    };
+    let cursorTaggedHtml = text.slice(0, cursorOffset) + '<span id="cursor">' + text.slice(cursorOffset, cursorOffset + 1) + '</span>' + text.slice(cursorOffset + 1);
+
+    let paragraphs = cursorTaggedHtml.split('\n');
+
+    paragraphs.forEach(paragraph => {
+        console.log(paragraph);
+        if (paragraph.match(/^\s*$/) ) {
+            myHTML += '<p class="blank">_' + paragraph + '</p>';
+        } else {
+            myHTML += '<p>' + paragraph + '</p>';
+        }
+    });
+
+    return markUpHtml(myHTML);
+}
+
+function markUpHtml( myhtml ){
+    var taggedHTML = myhtml.replace(/｜([^｜\n]+?)《([^《]+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
+        taggedHTML = taggedHTML.replace(/([一-龠]+?)《(.+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
+        taggedHTML = taggedHTML.replace(/(.+?)［＃「\1」に傍点］/g, '<strong class="dot">$1</strong>');
+    return taggedHTML;
+}
+
 function getWebviewContent() {
+    var mytext = editorText();
     return `<!DOCTYPE html>
   <html lang="en">
   <head>
@@ -36,10 +85,9 @@ function getWebviewContent() {
         
         body {
             writing-mode: vertical-rl;
-            -webkit-writing-mode: vertical-rl;
-            -epub-writing-mode: vertical-rl;
             font-family:"ヒラギノ明朝 ProN W3", "HiraMinProN-W3", serif, sans-serif;
             font-size: 1em;
+            height: 40em;
         }
         
         body.title {
@@ -55,12 +103,18 @@ function getWebviewContent() {
             margin:0 0 0 0;
         }
         
+        #cursor {
+            background-color: rgb(65,65,65,0.5);
+        }
+
         p {
             font-family:"ヒラギノ明朝 ProN W3", "HiraMinProN-W3", serif, sans-serif;
             line-height: 1.75em;
             vertical-align: middle;
-            -webkit-text-orientation: use-glyph-orientation;
-            -epub-text-orientation: use-glyph-orientation;
+        }
+
+        p.blank {
+            color:transparent;
         }
         
         .indent-3 {
@@ -97,8 +151,7 @@ function getWebviewContent() {
       </style>
   </head>
   <body>
-        日本語だよ。
-      <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" />
+  ${mytext}
   </body>
   </html>`;
   }
