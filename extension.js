@@ -1,5 +1,5 @@
 const vscode = require('vscode');
-const myeditor = vscode.window.activeTextEditor;
+var myeditor = vscode.window.activeTextEditor;
 
 function verticalpreview(){
 //    vscode.window.showInformationMessage('Hello, world!');
@@ -11,7 +11,6 @@ function verticalpreview(){
             enableScripts: true
         } // Webview options. More on these later.
     );
-
 
     vscode.workspace.onDidChangeTextDocument((e) => {
         var _a;
@@ -42,6 +41,8 @@ function deactivate() {
 module.exports = { activate, deactivate };
 
 function editorText(){
+        myeditor = vscode.window.activeTextEditor;
+
     let text = myeditor.document.getText();
     let cursorOffset = myeditor ? myeditor.document.offsetAt(myeditor.selection.anchor) : 0;
     var myHTML = "";
