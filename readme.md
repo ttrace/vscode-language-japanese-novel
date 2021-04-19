@@ -1,5 +1,14 @@
 # Visual Studio小説モード
 
+<!-- @import "[TOC]" {cmd="toc" depthFrom=2 depthTo=6 orderedList=false} -->
+
+<!-- code_chunk_output -->
+
+- [実装しているハイライト](#実装しているハイライト)
+- [参考にした文献](#参考にした文献)
+
+<!-- /code_chunk_output -->
+
 小説を書く際に用いる言語モードです。会話や青空文庫の注記法で記されたルビなどをカラーリングします。
 
 ![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/highlight-color.png)
@@ -12,7 +21,6 @@
     - そのほか、［＃……］で記される記法
 - 数字と単位
 
-<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
 
 ## 参考にした文献
 VSCodeで俺々言語モードを作る
