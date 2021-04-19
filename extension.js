@@ -1,5 +1,11 @@
+const vscode = require('vscode');
+
+function verticalpreview(){
+    vscode.window.showInformationMessage('Hello, world!');
+}
+
 function activate(context) {
-    console.log('hello, world');
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
 }
 
 function deactivate() {

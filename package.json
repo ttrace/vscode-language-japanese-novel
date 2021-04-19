@@ -10,6 +10,12 @@
         "*"
     ],
     "contributes": {
+        "commands": [
+            {
+                "command": "Novel.vertical-preview",
+                "title": "Novel:縦書きプレビュー"
+            }
+        ],
         "languages": [
             {
                 "id": "novel",
