@@ -68,7 +68,7 @@ function editorText(){
 function markUpHtml( myhtml ){
     var taggedHTML = myhtml.replace(/｜([^｜\n]+?)《([^《]+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
         taggedHTML = taggedHTML.replace(/([一-龠]+?)《(.+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
-        taggedHTML = taggedHTML.replace(/(.+?)［＃「\1」に傍点］/g, '<strong class="dot">$1</strong>');
+        taggedHTML = taggedHTML.replace(/(.+?)［＃「\1」に傍点］/g, '<em class="side-dot">$1</em>');
     return taggedHTML;
 }
 
@@ -138,7 +138,9 @@ function getWebviewContent() {
         }
         
         em.side-dot {
-            text-emphasis-style: sesame;
+            font-style: normal;
+            text-emphasis: filled sesame rgb(128,128,128);
+            -webkit-text-emphasis: filled sesame rgb(128,128,128);
         }
         
         span.tcy {
