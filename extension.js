@@ -7,7 +7,9 @@ function verticalpreview(){
         'preview', // Identifies the type of the webview. Used internally
         '原稿プレビュー', // Title of the panel displayed to the user
         vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
-        {} // Webview options. More on these later.
+        {
+            enableScripts: true
+        } // Webview options. More on these later.
     );
 
 
@@ -53,7 +55,6 @@ function editorText(){
     let paragraphs = cursorTaggedHtml.split('\n');
 
     paragraphs.forEach(paragraph => {
-        console.log(paragraph);
         if (paragraph.match(/^\s*$/) ) {
             myHTML += '<p class="blank">_' + paragraph + '</p>';
         } else {
@@ -79,6 +80,18 @@ function getWebviewContent() {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Cat Coding</title>
+      <script>
+        window.onload = function(){
+            var width = document.body.clientWidth;
+            var cursor = document.getElementById('cursor');
+            var scrollEnd = cursor.offsetLeft - width + 84;
+            var panelWidth = window.innerWidth;
+            window.scrollTo( scrollEnd , scrollEnd);
+                console.log(cursor, cursor.offsetLeft, scrollEnd);
+
+        }
+
+      </script>
       <style>
         html {
         }
@@ -104,7 +117,10 @@ function getWebviewContent() {
         }
         
         #cursor {
-            background-color: rgb(65,65,65,0.5);
+            background-color: rgb(96,96,96,);
+            animation-duration: 0.5s;
+            animation-name: cursorAnimation;
+            animation-iteration-count: infinite;
         }
 
         p {
@@ -128,27 +144,18 @@ function getWebviewContent() {
         span.tcy {
             text-combine: horizontal;
         }
-        
-        
-        .title {
-            font-size:28pt;
-            text-align:center;
-            font-family:Helvetica;
-        }
-        
-        .author {
-            font-size:26pt;
-            text-align:right;
-        }
-        
-        .chapterTitle {
-            font-size:1.5em;
-        }
-        
-        .chapterText {
-            font-size:12pt;
-        }
+
+        @keyframes cursorAnimation {
+                from {
+                    background-color: rgba(96,96,96,0);
+                }
+            
+                to {
+                    background-color: rgba(125,125,125,0.5);
+                }
+            }
       </style>
+
   </head>
   <body>
   ${mytext}
