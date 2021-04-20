@@ -56,10 +56,10 @@ function editorText(){
     let paragraphs = cursorTaggedHtml.split('\n');
 
     paragraphs.forEach(paragraph => {
-        console.log(paragraph);
+        //console.log(paragraph);
         if (paragraph.match(/^\s*$/)) {
             myHTML += '<p class="blank">_' + paragraph + '</p>';
-        } else if( paragraph.match(/^<span id="cursor">$/) ){
+        } else if( paragraph.match(/^<span id="cursor">$/) || paragraph.match(/^<\/span>$/) ){
             myHTML += '<p class="blank">_</p><span id="cursor">';
         } else {
             myHTML += '<p>' + paragraph + '</p>';
