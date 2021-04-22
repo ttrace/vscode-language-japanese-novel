@@ -1,6 +1,6 @@
 {
     "name": "novel-writer",
-    "version": "0.2.5",
+    "version": "0.2.6",
     "publisher": "TaiyoFujii",
     "engines": {
         "vscode": "^1.54.0"
@@ -44,6 +44,11 @@
                     "type": "string",
                     "default": "40em",
                     "description": "一行の長さを指定してください（emは、基本文字サイズ一文字ぶんの長さです）"
+                },
+                "Novel.preview.userregex":{
+                    "type": "array",
+                    "default": "[]",
+                    "description": "正規表現でHTML出力を調整することができます。複数の処理を行う場合は配列を増やしてください。\n（ex: [\"い\", \"<span class='small'>ゐ</span>]\", [ RegExp , Str ]）"
                 }
             }
         }

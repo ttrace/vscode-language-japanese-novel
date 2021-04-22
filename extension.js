@@ -1,7 +1,6 @@
 const vscode = require('vscode');
 var myeditor = vscode.window.activeTextEditor;
 
-
 function verticalpreview(){
 //    vscode.window.showInformationMessage('Hello, world!');
     const panel = vscode.window.createWebviewPanel(
@@ -9,7 +8,8 @@ function verticalpreview(){
         '原稿プレビュー', // Title of the panel displayed to the user
         vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
         {
-            enableScripts: true
+            enableScripts: true,
+          //  localResourceRoots: [vscode.Uri.file(docrood)]
         } // Webview options. More on these later.
     );
 
@@ -41,7 +41,7 @@ function deactivate() {
 module.exports = { activate, deactivate };
 
 function editorText(){
-        myeditor = vscode.window.activeTextEditor;
+    myeditor = vscode.window.activeTextEditor;
 
     let text = myeditor.document.getText();
     let cursorOffset = myeditor ? myeditor.document.offsetAt(myeditor.selection.anchor) : 0;
@@ -70,19 +70,34 @@ function editorText(){
 }
 
 function markUpHtml( myhtml ){
-    var taggedHTML = myhtml.replace(/｜([^｜\n]+?)《([^《]+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
-        taggedHTML = taggedHTML.replace(/([一-龠]+?)《(.+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
-        taggedHTML = taggedHTML.replace(/(.+?)［＃「\1」に傍点］/g, '<em class="side-dot">$1</em>');
+    var taggedHTML = myhtml;
+    //configuration 読み込み
+    const config = vscode.workspace.getConfiguration('Novel');
+    let userregex = config.get('preview.userregex');
+    userregex.forEach(element => {
+        //if ( thismatch && thisreplace ){
+            var thismatch = new RegExp(element[0], 'gi');
+            var thisreplace = element[1];
+    
+            console.log(thismatch,thisreplace);
+            taggedHTML = taggedHTML.replace(thismatch, thisreplace);
+        //}
+    });
+
+
+    taggedHTML = taggedHTML.replace(/｜([^｜\n]+?)《([^《]+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
+    taggedHTML = taggedHTML.replace(/([一-龠]+?)《(.+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
+    taggedHTML = taggedHTML.replace(/(.+?)［＃「\1」に傍点］/g, '<em class="side-dot">$1</em>');
     return taggedHTML;
 }
 
-function getWebviewContent() {
+function getWebviewContent(userstylesheet) {
 
         //configuration 読み込み
         const config = vscode.workspace.getConfiguration('Novel');
         let fontsize = config.get('preview.fontsize');
         let linelength = config.get('preview.linelength');
-    
+
     var mytext = editorText();
     return `<!DOCTYPE html>
   <html lang="en">
@@ -167,7 +182,7 @@ function getWebviewContent() {
                 }
             }
       </style>
-
+      <link rel="stylesheet" href="">
   </head>
   <body>
   ${mytext}
