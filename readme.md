@@ -16,9 +16,9 @@
 
 ## 縦書きプレビュー
 
-テキストファイルを縦書きでプレビューすることができます。行長と文字サイズはワークスペースごとに設定してお使いください。
+メニューの\[Novel:縦書きプレビュー\]で、現在使っているエディタのテキストを、HTMLの縦書きでプレビューすることができます。
 
-### プレビュー設定
+Extension Settings で、文字サイズと一行の長さを設定してお使いください。正規表現による検索置換も実装しましたので、オリジナルのタグを挿入することも可能です。
 
 ![プレビュー画像](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/preview-settings.png)
 
