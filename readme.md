@@ -4,7 +4,7 @@
 
 小説を書く際に用いる言語モードです。会話や青空文庫の注記法で記されたルビなどをカラーリングします。
 
-[カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/highlight-and-vertical.png)
+![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/highlight-and-vertical.png)
 
 ## 実装しているハイライト
 - 鉤括弧（「」）で挟まれた会話
@@ -20,7 +20,7 @@
 
 ### プレビュー設定
 
-[プレビュー画像](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/preview-settings.png)
+![プレビュー画像](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/preview-settings.png)
 
 
 ## 参考にした文献
