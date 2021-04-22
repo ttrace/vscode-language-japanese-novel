@@ -1,6 +1,7 @@
 const vscode = require('vscode');
 var myeditor = vscode.window.activeTextEditor;
 
+
 function verticalpreview(){
 //    vscode.window.showInformationMessage('Hello, world!');
     const panel = vscode.window.createWebviewPanel(
@@ -24,7 +25,6 @@ function verticalpreview(){
             panel.webview.html = getWebviewContent();
         }
     });
-
 
     // And set its HTML content
     panel.webview.html = getWebviewContent();
@@ -77,6 +77,12 @@ function markUpHtml( myhtml ){
 }
 
 function getWebviewContent() {
+
+        //configuration 読み込み
+        const config = vscode.workspace.getConfiguration('Novel');
+        let fontsize = config.get('preview.fontsize');
+        let linelength = config.get('preview.linelength');
+    
     var mytext = editorText();
     return `<!DOCTYPE html>
   <html lang="en">
@@ -103,8 +109,8 @@ function getWebviewContent() {
         body {
             writing-mode: vertical-rl;
             font-family:"ヒラギノ明朝 ProN W3", "HiraMinProN-W3", serif, sans-serif;
-            font-size: 1em;
-            height: 40em;
+            font-size: ${fontsize};
+            height: ${linelength};
         }
         
         body.title {

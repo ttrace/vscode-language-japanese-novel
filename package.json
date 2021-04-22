@@ -1,6 +1,6 @@
 {
     "name": "novel-writer",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "publisher": "TaiyoFujii",
     "engines": {
         "vscode": "^1.54.0"
@@ -31,7 +31,22 @@
                 "scopeName": "source.novel",
                 "path": "./syntaxes/novel.tmGrammar.json"
             }
-        ]
+        ],
+        "configuration": {
+            "title": "縦書きプレビュー設定",
+            "properties": {
+                "Novel.preview.fontsize": {
+                    "type": "string",
+                    "default": "14pt",
+                    "description": "文字の基本サイズを入力してください"
+                },
+                "Novel.preview.linelength": {
+                    "type": "string",
+                    "default": "40em",
+                    "description": "一行の長さを指定してください（emは、基本文字サイズ一文字ぶんの長さです）"
+                }
+            }
+        }
     },
     "devDependencies": {
         }
