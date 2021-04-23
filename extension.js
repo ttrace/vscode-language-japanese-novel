@@ -109,10 +109,11 @@ function getWebviewContent(userstylesheet) {
         window.onload = function(){
             var width = document.body.clientWidth;
             var cursor = document.getElementById('cursor');
-            var scrollEnd = cursor.offsetLeft - width + 84;
             var panelWidth = window.innerWidth;
+            var scrollEnd = cursor.offsetLeft - width + (panelWidth / 2);
+
             window.scrollTo( scrollEnd , scrollEnd);
-                console.log(cursor, cursor.offsetLeft, scrollEnd);
+               // console.log(cursor, cursor.offsetLeft, scrollEnd);
 
         }
 
@@ -170,6 +171,7 @@ function getWebviewContent(userstylesheet) {
         
         span.tcy {
             text-combine: horizontal;
+            -webkit-text-combine:horizontal;
         }
 
         @keyframes cursorAnimation {
