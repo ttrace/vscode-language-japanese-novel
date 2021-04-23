@@ -78,8 +78,6 @@ function markUpHtml( myhtml ){
         //if ( thismatch && thisreplace ){
             var thismatch = new RegExp(element[0], 'gi');
             var thisreplace = element[1];
-    
-            console.log(thismatch,thisreplace);
             taggedHTML = taggedHTML.replace(thismatch, thisreplace);
         //}
     });
@@ -93,10 +91,20 @@ function markUpHtml( myhtml ){
 
 function getWebviewContent(userstylesheet) {
 
-        //configuration 読み込み
-        const config = vscode.workspace.getConfiguration('Novel');
+    //configuration 読み込み
+    const config = vscode.workspace.getConfiguration('Novel');
+        let lineheightrate = 1.75;
         let fontsize = config.get('preview.fontsize');
+        let numfontsize = /(\d+)(\D+)/.exec(fontsize)[1];
+        let unitoffontsize = /(\d+)(\D+)/.exec(fontsize)[2];
+
         let linelength = config.get('preview.linelength');
+        let linesperpage = config.get('preview.linesperpage');
+
+        let pagewidth = ( linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize;
+        let pageheight = (linelength * numfontsize) + unitoffontsize;
+        let lineheight = ( numfontsize * lineheightrate) + unitoffontsize;
+        //console.log(lineheight);
 
     var mytext = editorText();
     return `<!DOCTYPE html>
@@ -125,21 +133,9 @@ function getWebviewContent(userstylesheet) {
         body {
             writing-mode: vertical-rl;
             font-family:"ヒラギノ明朝 ProN W3", "HiraMinProN-W3", serif, sans-serif;
-            font-size: ${fontsize};
-            height: ${linelength};
-        }
-        
-        body.title {
-            writing-mode: horizontal-tb;
-            -webkit-writing-mode: horizontal-tb;
-            -epub-writing-mode: horizontal-tb;
-            background-image: url('../images/cover.jpg');
-            background-repeat: no-repeat;
-        }
-        
-        p {
-            font-size 1em;;
-            margin:0 0 0 0;
+            height: ${pageheight};
+            overflow-y:hidden;
+            padding:0;
         }
         
         #cursor {
@@ -150,8 +146,11 @@ function getWebviewContent(userstylesheet) {
         }
 
         p {
+            height: ${pageheight};
             font-family:"ヒラギノ明朝 ProN W3", "HiraMinProN-W3", serif, sans-serif;
-            line-height: 1.75em;
+            line-height: ${lineheightrate};
+            font-size: ${fontsize};
+            margin:0 0 0 0;
             vertical-align: middle;
         }
 
@@ -184,6 +183,26 @@ function getWebviewContent(userstylesheet) {
                 }
             }
       </style>
+
+      <style>
+      body{
+        background-image:   linear-gradient(to right, rgba(50, 50, 50, 0.5) 0.5pt, rgba(0, 0, 50, 0.05) 10em);
+        background-size:    ${pagewidth} ${pageheight};
+        background-repeat:  repeat-x;
+        background-position: right 0px;
+    }
+    p{
+        background-image:   linear-gradient( rgba(50, 50, 50, 1) 0.5pt, transparent 1pt),
+                            linear-gradient(to right, rgba(50, 50, 50, 1) 0.5pt, rgba(0, 0, 50, 0.05) 1pt);
+        background-size:    ${lineheight} ${fontsize},
+                            ${lineheight} ${fontsize};
+        background-repeat:  repeat,
+                            repeat;
+        background-position: right 0px,
+                            right 0px;
+    }
+
+        </style>
       <link rel="stylesheet" href="">
   </head>
   <body>

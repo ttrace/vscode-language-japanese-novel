@@ -1,6 +1,6 @@
 {
     "name": "novel-writer",
-    "version": "0.2.8",
+    "version": "0.3.0",
     "publisher": "TaiyoFujii",
     "engines": {
         "vscode": "^1.54.0"
@@ -41,9 +41,14 @@
                     "description": "文字の基本サイズを入力してください"
                 },
                 "Novel.preview.linelength": {
-                    "type": "string",
-                    "default": "40em",
-                    "description": "一行の長さを指定してください（emは、基本文字サイズ一文字ぶんの長さです）"
+                    "type": "number",
+                    "default": "40",
+                    "description": "一行の文字数を指定してください"
+                },
+                "Novel.preview.linesperpage": {
+                    "type": "number",
+                    "default": "10",
+                    "description": "1ページの行数を指定してください"
                 },
                 "Novel.preview.userregex":{
                     "type": "array",
