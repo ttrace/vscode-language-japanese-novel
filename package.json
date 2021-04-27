@@ -2,6 +2,10 @@
     "name": "novel-writer",
     "version": "0.3.0",
     "publisher": "TaiyoFujii",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ttrace/vscode-language-japanese-novel"
+      },
     "engines": {
         "vscode": "^1.54.0"
     },
@@ -14,6 +18,10 @@
             {
                 "command": "Novel.vertical-preview",
                 "title": "Novel:縦書きプレビュー"
+            },
+            {
+                "command": "Novel.export-pdf",
+                "title": "Novel:PDF出力"
             }
         ],
         "languages": [
