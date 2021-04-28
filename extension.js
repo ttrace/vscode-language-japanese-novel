@@ -134,7 +134,7 @@ function markUpHtml( myhtml ){
 
     taggedHTML = taggedHTML.replace(/<!-- (.+?) -->/g, '<span class="comment"><span class="commentbody">$1</span></span>');
     taggedHTML = taggedHTML.replace(/｜([^｜\n]+?)《([^《]+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
-    taggedHTML = taggedHTML.replace(/([一-龠]+?)《(.+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
+    taggedHTML = taggedHTML.replace(/([一-鿏々-〇]+?)《(.+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
     taggedHTML = taggedHTML.replace(/(.+?)［＃「\1」に傍点］/g, '<em class="side-dot">$1</em>');
     return taggedHTML;
 }
@@ -144,6 +144,7 @@ function getWebviewContent(userstylesheet) {
     //configuration 読み込み
     const config = vscode.workspace.getConfiguration('Novel');
         let lineheightrate = 1.75;
+        let fontfamily = config.get('preview.font-family');
         let fontsize = config.get('preview.fontsize');
         let numfontsize = /(\d+)(\D+)/.exec(fontsize)[1];
         let unitoffontsize = /(\d+)(\D+)/.exec(fontsize)[2];
@@ -416,7 +417,8 @@ function getWebviewContent(userstylesheet) {
   @media screen{
       body {
             writing-mode: vertical-rl;
-            font-family:"ヒラギノ明朝 ProN W3", "HiraMinProN-W3", serif, sans-serif;
+            font-family: ${fontfamily};
+            //font-family:"ヒラギノ明朝 ProN W3", "HiraMinProN-W3", serif, sans-serif;
             height: ${pageheight};
             overflow-y:hidden;
             padding:0;
@@ -431,7 +433,8 @@ function getWebviewContent(userstylesheet) {
   
         p {
             height: ${pageheight};
-            font-family:"ヒラギノ明朝 ProN W3", "HiraMinProN-W3", serif, sans-serif;
+            font-family: ${fontfamily};
+            //font-family:"ヒラギノ明朝 ProN W3", "HiraMinProN-W3", serif, sans-serif;
             line-height: ${lineheightrate};
             font-size: ${fontsize};
             margin:0 0 0 0;
