@@ -2,3 +2,7 @@
 *.vsix
 node_modules
 *.pdf
+<<<<<<< HEAD
+=======
+*.css
+>>>>>>> 74a12cd4474549cd7227b968ca643ada7d17ef9d

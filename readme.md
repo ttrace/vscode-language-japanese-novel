@@ -22,6 +22,10 @@ Extension Settings で、文字サイズと一行あたりの文字数、ペー�
 
 ![プレビュー画像](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/preview-settings.png)
 
+## PDF出力
+
+この小説言語モードは、実験的に[Vivliostyle/CLI](https://vivliostyle.org/ja/)を用いて、縦書きのPDFを出力します。
+ワークスペースが必要になるので、フォルダを開いて利用してください。
 
 ## 参考にした文献
 VSCodeで俺々言語モードを作る
