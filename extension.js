@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
 var myeditor = vscode.window.activeTextEditor;
+const output = vscode.window.createOutputChannel("Novel");
 
 function verticalpreview(){
 //    vscode.window.showInformationMessage('Hello, world!');
@@ -37,20 +38,35 @@ function exportpdf(){
     const myhtml = getWebviewContent();
     //console.log(myhtml);
     const folderPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-    mypath = path.join(folderPath, 'publish.html')
-    fs.writeFile(path.join(folderPath, 'publish.html'), myhtml, (err) => {
+    let mypath = path.join(folderPath, 'publish.html');
+    let myworkingdirectory = path.join(folderPath, '');
+    let vivliocommand = 'vivliostyle build ';
+
+    let escapedpath = mypath;
+        escapedpath = escapedpath.replace(/ /g, '\\ ');
+    let escapeddirectory = myworkingdirectory;
+        escapeddirectory = escapeddirectory.replace(/ /g, '\\ ');
+
+//        output.appendLine(`startig to publish: ${escapedpath}`);
+        vivliocommand = vivliocommand + escapedpath + ' -o ' + escapeddirectory;
+
+//        output.appendLine(`startig to publish: ${vivliocommand}`);
+
+    fs.writeFile(mypath, myhtml, (err) => {
         if (err) {console.log(err)};
-            //https://docs.vivliostyle.org/#/ja/vivliostyle-cli
-            cp.exec('vivliostyle build ' + mypath + ' -o ' + folderPath, (err, stdout, stderr) => {
-                    if (err) {
+        //https://docs.vivliostyle.org/#/ja/vivliostyle-cli
+        output.appendLine(`saving pdf to ${vivliocommand}`);
+        cp.exec(vivliocommand, (err, stdout, stderr) => {
+                if (err) {
                     console.log(`stderr: ${stderr}`);
-                        return
-                    }
-                    console.log(`stdout: ${stdout}`);
-                    console.log('PDFの保存が終わりました');
+                    output.appendLine(`stderr: ${stderr}`);
+                    return
                 }
-            )
-        console.log('HTMLの書き込みが完了しました');
+                output.appendLine(`stdout: ${stdout}`);
+                output.appendLine('PDFの保存が終わりました');
+            }
+        )
+        output.appendLine('HTMLの書き込みが完了しました');
       });
 
 }
