@@ -1,2 +1,4 @@
 
 *.vsix
+node_modules
+*.pdf
