@@ -30,9 +30,16 @@ function verticalpreview(){
     panel.webview.html = getWebviewContent();
 }
 
+//縦書きプレビューのコマンド登録
 function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
 }
+
+//PDF出力のコマンド登録
+function activate(context) {
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', verticalpreview));
+}
+
 
 function deactivate() {
     return undefined;
