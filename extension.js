@@ -390,6 +390,9 @@ function getWebviewContent(userstylesheet) {
         display:none;
     }
 
+    p.blank {
+        color:transparent;
+    }
 
   @media screen{
       body {
@@ -416,10 +419,6 @@ function getWebviewContent(userstylesheet) {
             vertical-align: middle;
         }
   
-        p.blank {
-            color:transparent;
-        }
-        
         .indent-3 {
             padding-top: 3em;
         }
