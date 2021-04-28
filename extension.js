@@ -129,7 +129,7 @@ function markUpHtml( myhtml ){
         //}
     });
 
-    taggedHTML = taggedHTML.replace(/<!-- (.+?) -->/g, '<div class="comment"><div class="commentbody">$1</div></div>');
+    taggedHTML = taggedHTML.replace(/<!-- (.+?) -->/g, '<span class="comment"><span class="commentbody">$1</span></span>');
     taggedHTML = taggedHTML.replace(/｜([^｜\n]+?)《([^《]+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
     taggedHTML = taggedHTML.replace(/([一-龠]+?)《(.+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
     taggedHTML = taggedHTML.replace(/(.+?)［＃「\1」に傍点］/g, '<em class="side-dot">$1</em>');
@@ -477,7 +477,7 @@ function getWebviewContent(userstylesheet) {
                                   right 0px;
           }
   
-          div.comment{
+          span.comment{
             display:block;
             border-radius:1em;
             border:1.5pt solid rgba(70,70,00,0.9);
@@ -490,7 +490,7 @@ function getWebviewContent(userstylesheet) {
             max-width: 20em;
           }
 
-          div.comment::before{
+          span.comment::before{
             content: '';
             position: absolute;
             right: 1em;
@@ -503,7 +503,7 @@ function getWebviewContent(userstylesheet) {
             border-left: 15px solid transparent;
           }
 
-          div.commentbody{
+          span.commentbody{
               margin:0.5em 1em;
               writing-mode:lr-tb;
               font-family:sans-serif;
