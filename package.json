@@ -1,11 +1,11 @@
 {
     "name": "novel-writer",
-    "version": "0.4.alpha",
+    "version": "0.4.0",
     "publisher": "TaiyoFujii",
     "repository": {
         "type": "git",
         "url": "https://github.com/ttrace/vscode-language-japanese-novel"
-      },
+    },
     "engines": {
         "vscode": "^1.54.0"
     },
@@ -58,7 +58,7 @@
                     "default": "10",
                     "description": "1ページの行数を指定してください"
                 },
-                "Novel.preview.userregex":{
+                "Novel.preview.userregex": {
                     "type": "array",
                     "default": "[]",
                     "description": "正規表現でHTML出力を調整することができます。複数の処理を行う場合は配列を増やしてください。\n（ex: [\"い\", \"<span class='small'>ゐ</span>]\", [ RegExp , Str ]）"
@@ -67,5 +67,9 @@
         }
     },
     "devDependencies": {
-        }
+        "@vivliostyle/cli": "^3.4.0",
+        "child_process": "^1.0.2",
+        "fs": "^0.0.1-security",
+        "path": "^0.12.7"
+    }
 }
