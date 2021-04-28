@@ -1,144 +1,4 @@
-const vscode = require('vscode');
-const fs = require('fs');
-const path = require('path');
-const cp = require('child_process');
-var myeditor = vscode.window.activeTextEditor;
-
-function verticalpreview(){
-//    vscode.window.showInformationMessage('Hello, world!');
-    const panel = vscode.window.createWebviewPanel(
-        'preview', // Identifies the type of the webview. Used internally
-        '原稿プレビュー', // Title of the panel displayed to the user
-        vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
-        {
-            enableScripts: true,
-          //  localResourceRoots: [vscode.Uri.file(docrood)]
-        } // Webview options. More on these later.
-    );
-
-    vscode.workspace.onDidChangeTextDocument((e) => {
-        var _a;
-        if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
-            panel.webview.html = getWebviewContent();
-        }
-    });
-
-    vscode.window.onDidChangeTextEditorSelection((e) => {
-        if (e.textEditor == vscode.window.activeTextEditor) {
-            panel.webview.html = getWebviewContent();
-        }
-    });
-
-    // And set its HTML content
-    panel.webview.html = getWebviewContent();
-}
-
-function exportpdf(){
-    const myhtml = getWebviewContent();
-    //console.log(myhtml);
-    const folderPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-    mypath = path.join(folderPath, 'publish.html')
-    fs.writeFile(path.join(folderPath, 'publish.html'), myhtml, (err) => {
-        if (err) {console.log(err)};
-            //https://docs.vivliostyle.org/#/ja/vivliostyle-cli
-            cp.exec('vivliostyle build ' + mypath + ' -o ' + folderPath, (err, stdout, stderr) => {
-                    if (err) {
-                    console.log(`stderr: ${stderr}`);
-                        return
-                    }
-                    console.log(`stdout: ${stdout}`);
-                    console.log('PDFの保存が終わりました');
-                }
-            )
-        console.log('HTMLの書き込みが完了しました');
-      });
-
-}
-
-//コマンド登録
-function activate(context) {
-    context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
-    context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
-
-}
-
-
-function deactivate() {
-    return undefined;
-}
-
-module.exports = { activate, deactivate };
-
-function editorText(){
-    myeditor = vscode.window.activeTextEditor;
-
-    let text = myeditor.document.getText();
-    let cursorOffset = myeditor ? myeditor.document.offsetAt(myeditor.selection.anchor) : 0;
-    var myHTML = "";
-
-    let cursorTaggedHtml = "";
-    // カーソル位置
-    if ( text.slice(cursorOffset, cursorOffset + 1) == '\n'){
-        cursorTaggedHtml = text.slice(0, cursorOffset) + '<span id="cursor">　</span>' + text.slice(cursorOffset);
-    } else {
-        cursorTaggedHtml = text.slice(0, cursorOffset) + '<span id="cursor">' + text.slice(cursorOffset, cursorOffset + 1) + '</span>' + text.slice(cursorOffset + 1);
-    }
-
-    let paragraphs = cursorTaggedHtml.split('\n');
-
-    paragraphs.forEach(paragraph => {
-        //console.log(paragraph);
-        if (paragraph.match(/^\s*$/)) {
-            myHTML += '<p class="blank">_' + paragraph + '</p>';
-        } else if( paragraph.match(/^<span id="cursor">$/) || paragraph.match(/^<\/span>$/) ){
-            myHTML += '<p class="blank">_</p><span id="cursor">';
-        } else {
-            myHTML += '<p>' + paragraph + '</p>';
-        }
-    });
-
-    return markUpHtml(myHTML);
-}
-
-function markUpHtml( myhtml ){
-    var taggedHTML = myhtml;
-    //configuration 読み込み
-    const config = vscode.workspace.getConfiguration('Novel');
-    let userregex = config.get('preview.userregex');
-    userregex.forEach(element => {
-        //if ( thismatch && thisreplace ){
-            var thismatch = new RegExp(element[0], 'gi');
-            var thisreplace = element[1];
-            taggedHTML = taggedHTML.replace(thismatch, thisreplace);
-        //}
-    });
-
-    taggedHTML = taggedHTML.replace(/<!-- (.+?) -->/g, '<div class="comment"><div class="commentbody">$1</div></div>');
-    taggedHTML = taggedHTML.replace(/｜([^｜\n]+?)《([^《]+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
-    taggedHTML = taggedHTML.replace(/([一-龠]+?)《(.+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
-    taggedHTML = taggedHTML.replace(/(.+?)［＃「\1」に傍点］/g, '<em class="side-dot">$1</em>');
-    return taggedHTML;
-}
-
-function getWebviewContent(userstylesheet) {
-
-    //configuration 読み込み
-    const config = vscode.workspace.getConfiguration('Novel');
-        let lineheightrate = 1.75;
-        let fontsize = config.get('preview.fontsize');
-        let numfontsize = /(\d+)(\D+)/.exec(fontsize)[1];
-        let unitoffontsize = /(\d+)(\D+)/.exec(fontsize)[2];
-
-        let linelength = config.get('preview.linelength');
-        let linesperpage = config.get('preview.linesperpage');
-
-        let pagewidth = ( linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize;
-        let pageheight = (linelength * numfontsize) + unitoffontsize;
-        let lineheight = ( numfontsize * lineheightrate) + unitoffontsize;
-        //console.log(lineheight);
-
-    var mytext = editorText();
-    return `<!DOCTYPE html>
+<!DOCTYPE html>
   <html lang="en">
   <head>
       <meta charset="UTF-8">
@@ -395,7 +255,7 @@ function getWebviewContent(userstylesheet) {
       body {
             writing-mode: vertical-rl;
             font-family:"ヒラギノ明朝 ProN W3", "HiraMinProN-W3", serif, sans-serif;
-            height: ${pageheight};
+            height: 192pt;
             overflow-y:hidden;
             padding:0;
         }
@@ -408,10 +268,10 @@ function getWebviewContent(userstylesheet) {
         }
   
         p {
-            height: ${pageheight};
+            height: 192pt;
             font-family:"ヒラギノ明朝 ProN W3", "HiraMinProN-W3", serif, sans-serif;
-            line-height: ${lineheightrate};
-            font-size: ${fontsize};
+            line-height: 1.75;
+            font-size: 12pt;
             margin:0 0 0 0;
             vertical-align: middle;
         }
@@ -447,15 +307,15 @@ function getWebviewContent(userstylesheet) {
   
           body{
               background-image:   linear-gradient(to right, rgba(50, 50, 50, 0.5) 0.5pt, rgba(0, 0, 50, 0.05) 10em);
-              background-size:    ${pagewidth} ${pageheight};
+              background-size:    210.62999999999997pt 192pt;
               background-repeat:  repeat-x;
               background-position: right 0px;
           }
           p{
               background-image:   linear-gradient( rgba(50, 50, 50, 1) 0.5pt, transparent 1pt),
                                   linear-gradient(to right, rgba(50, 50, 50, 1) 0.5pt, rgba(0, 0, 50, 0.05) 1pt);
-              background-size:    ${lineheight} ${fontsize},
-                                  ${lineheight} ${fontsize};
+              background-size:    21pt 12pt,
+                                  21pt 12pt;
               background-repeat:  repeat,
                                   repeat;
               background-position: right 0px,
@@ -470,7 +330,7 @@ function getWebviewContent(userstylesheet) {
             position:absolute;
             margin-right: -3em;
             margin-top: 0.5em;
-            top: ${pageheight};
+            top: 192pt;
             background-color:rgba(50,50,00,0.5);
             max-width: 20em;
           }
@@ -501,7 +361,6 @@ function getWebviewContent(userstylesheet) {
       <link rel="stylesheet" href="">
   </head>
   <body>
-  ${mytext}
+  <p>　座席の下には光が届いていないのだ。でも、自分が見つめる先にザックがあるのはわかる。マガジンがもう一本顔を覗かせていて、その奥に、銃弾の収められた段ボールの小さな箱があるのもわかる。</p><p>「ちょっと<em class="side-dot">待って</em>いろ（<span style="font-size:0.85em;"><span class="small">小さな文字</span></span>）」<div class="comment"><div class="commentbody">傍点のサンプル</div></div></p><p>　喉をひゅうと鳴らして深呼吸したイグナシオは、レイチェルたちＯＲＧＡＮ兵たちの顔を見渡して、もう一度激しく咳き込んだ。</p><p>　カメラに写っていたレイチェルの顔が微かに歪んだ。</p><p>　副官らしい大柄な兵士がイグナシオに近づいたが、膝に手を置いて激しく咳き込み続けるイグナシオは「ほっとけ」と言って手を振った。</p><p>　それからもう一度深呼吸をして、ジョーンズの前に回り込んで、地面に膝をついた。迫田は二人の真横に〈メガネウラ〉を動かした。</p><p>　両腕を挙げたまま、ジョーンズが口を開いた。</p><p>「〈グッド<span id="cursor">フ</span>ェローズ〉第一分隊長のジャスパー・ジョーンズ、大尉です」</p><p>　イグナシオはジョーンズに顔を近づけて口を動かした。</p><p>　あっけにとられたようなジョーンズの前でイグナシオは立ち上がって、レイチェルを指さしながら副官に言った。</p><p>「こいつだけ残せ」</p><p>「いいんですか？」<div class="comment"><div class="commentbody">副官が戸惑いの表情を浮かべるが、イグナシオは「やれ」と命じた。</div></div></p><p>　顎を振った副官に応じるように、控えていた兵士たちが銃を構えた。</p><p>「撃て」</p><p>　ジャングルに<ruby>百式<rt>バイシ</rt></ruby>のフルオート音が響く。</p><p>　迫田は思わず立ち上がっていた。</p><p>　捕虜の虐殺だ。</p><p>　三十五発の弾倉は迫田が一歩目を出す前に空になっていた。</p><p>　ひぃ、という小さな声が耳に入った。その声はすぐに金切り声に変わった。</p><p>　レイチェルだった。立ち上がり、イグナシオに向かって駆け出していく。それを軽くいなして副官に投げるように渡したイグナシオは、迫田に身体を向けて叫んだ。</p><p>「ジャーナリスト！」</p><p>　吸い寄せられるようにして歩み寄った迫田の肩をイグナシオは抱いた。</p><p>「挨拶は後だ。さあ、今の事件を報道しろ」</p><p>　迫田はイグナシオの顔を覗き込んだ。</p><p>「本気ですか？」</p><p>「もちろん」</p><p>　イグナシオは迫田に顔を近づけた。強い葉巻の匂いが漂った。</p><p>　迫田は、血の海に倒れ伏す六名を見渡してから口を開いた。</p><p>「……記事。速報。チェリー・イグナシオが捕虜を虐殺した。陸戦協定違反」</p><p>　すぐに記事が胸元に立ち上がる。</p><p class="blank">_</p><p>［＃ここから３文字下げ］</p><p>速報！</p><p>アマゾン時間の六時五十一分。テラ・アマソネス防衛隊を指揮する著名な公正戦コンサルタント、チェリー・イグナシオ氏は、投降した〈グッドフェローズ〉の兵士七名のうち、六名を殺害しました。この行為でイグナシオ氏はハーグ陸戦条約違反に問われる可能性があります。</p><p>［＃ここで字下げ終わり］</p><p class="blank">_</p><p>〈グッドフェローズ〉の広報が記事を承認する。反射的に配信ボタンを押した迫田は目を見開いた。事実確認をする〈ＣＯＶＦＥ〉のスタンプは見たことのない赤い色をしていたのだ。</p><p>「配信拒否？」</p><p>　事実確認スコアは「〇・一四五」だった。噓、ということだ。</p><p>　横たわる六つの肉塊を見つめていた迫田の耳に、レイチェルの悲鳴が遠ざかっていくのが聞こえた。</p>
   </body>
-  </html>`;
-  }
+  </html>
