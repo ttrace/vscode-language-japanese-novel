@@ -43,6 +43,11 @@
         "configuration": {
             "title": "縦書きプレビュー設定",
             "properties": {
+                "Novel.preview.font-family":{
+                    "type": "string",
+                    "default": "\"MS Gothic\"",
+                    "description":"プレビュー用のフォント名を入力してください。 \ne.g. \"UD Digi Kyokasho NK-R\",\"ヒラギノ明朝 ProN W3\", \"HiraMinProN-W3\", serif, sans-serif;"
+                },
                 "Novel.preview.fontsize": {
                     "type": "string",
                     "default": "14pt",

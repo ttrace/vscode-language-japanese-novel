@@ -15,7 +15,7 @@
         ]
       },
       "rubymother": {
-        "match": "((｜.+?)|([\u4E00-\u9FFF]+))(?=《.+?》)",
+        "match": "((｜.+?)|([\u4E00-\u9FFF\u3005-\u3007]+))(?=《.+?》)",
         "name": "keyword"
       },
       "aozora-motherword": {
