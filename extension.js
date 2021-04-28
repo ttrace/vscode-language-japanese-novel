@@ -121,13 +121,16 @@ function markUpHtml( myhtml ){
     //configuration 読み込み
     const config = vscode.workspace.getConfiguration('Novel');
     let userregex = config.get('preview.userregex');
-    userregex.forEach(element => {
-        //if ( thismatch && thisreplace ){
-            var thismatch = new RegExp(element[0], 'gi');
-            var thisreplace = element[1];
-            taggedHTML = taggedHTML.replace(thismatch, thisreplace);
-        //}
-    });
+    console.log(userregex);
+    if (userregex.rength === 0){
+        userregex.forEach(element => {
+            //if ( thismatch && thisreplace ){
+                var thismatch = new RegExp(element[0], 'gi');
+                var thisreplace = element[1];
+                taggedHTML = taggedHTML.replace(thismatch, thisreplace);
+            //}
+        });
+    }
 
     taggedHTML = taggedHTML.replace(/<!-- (.+?) -->/g, '<span class="comment"><span class="commentbody">$1</span></span>');
     taggedHTML = taggedHTML.replace(/｜([^｜\n]+?)《([^《]+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
