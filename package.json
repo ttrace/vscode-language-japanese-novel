@@ -1,6 +1,6 @@
 {
     "name": "novel-writer",
-    "version": "0.4.9",
+    "version": "0.5.0",
     "publisher": "TaiyoFujii",
     "repository": {
         "type": "git",
@@ -43,10 +43,10 @@
         "configuration": {
             "title": "縦書きプレビュー設定",
             "properties": {
-                "Novel.preview.font-family":{
+                "Novel.preview.font-family": {
                     "type": "string",
                     "default": "\"serif\"",
-                    "description":"プレビュー用のフォント名を入力してください。 \ne.g. \"UD Digi Kyokasho NK-R\",\"ヒラギノ明朝 ProN W3\", \"HiraMinProN-W3\", serif, sans-serif;"
+                    "description": "プレビュー用のフォント名を入力してください。 \ne.g. \"UD Digi Kyokasho NK-R\",\"ヒラギノ明朝 ProN W3\", \"HiraMinProN-W3\", serif, sans-serif;"
                 },
                 "Novel.preview.fontsize": {
                     "type": "string",
