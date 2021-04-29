@@ -22,6 +22,15 @@ Extension Settings で、文字サイズと一行あたりの文字数、ペー�
 
 ![プレビュー画像](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/preview-settings.png)
 
+### プレビューフォントの設定
+プレビューフォントの設定が可能です。
+
+contributed by [yasudaz](https://github.com/yasudaz)
+
+### 版面指定
+
+文字サイズ、文字数、1ページあたりの行数を指定できます。
+
 ## PDF出力
 
 この小説言語モードは、実験的に[Vivliostyle/CLI](https://vivliostyle.org/ja/)を用いて、縦書きのPDFを出力します。
@@ -33,3 +42,4 @@ https://qiita.com/takl/items/ba2f63db515f66585d1f
 
 Language Grammars
 https://macromates.com/manual/en/language_grammars
+
