@@ -11,6 +11,10 @@
           { "include": "#units"},
           { "include": "#aozora-expression" },
           { "include": "#ruby-expression"},
+          { "include": "#parenthesis-expression"},
+          { "include": "#cornerfilledparenthesis-expression"},
+          { "include": "#cornerparenthesis-expression"},
+          { "include": "#japanesequote-expression"},
           { "include": "#dialogue-expression" }
         ]
       },
@@ -55,6 +59,50 @@
       "aozora-parameter": {
         "begin": "「",
         "end": "」",
+        "beginCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "endCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "name": "keyword"
+      },
+      "parenthesis-expression":{
+        "begin": "（",
+        "end": "）",
+        "beginCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "endCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "name": "keyword"
+      },
+      "cornerfilledparenthesis-expression":{
+        "begin": "【",
+        "end": "】",
+        "beginCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "endCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "name": "keyword"
+      },
+      "cornerparenthesis-expression":{
+        "begin": "［",
+        "end": "］",
+        "beginCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "endCaptures": {
+          "0": { "name": "string.quoted" }
+        },
+        "name": "keyword"
+      },
+      "japanesequote-expression":{
+        "begin": "〝",
+        "end": "〟",
         "beginCaptures": {
           "0": { "name": "string.quoted" }
         },
