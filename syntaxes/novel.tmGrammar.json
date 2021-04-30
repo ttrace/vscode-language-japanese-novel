@@ -133,6 +133,10 @@
         },
         "name": "expression.group",
         "patterns": [
+          { "include": "#parenthesis-expression"},
+          { "include": "#cornerfilledparenthesis-expression"},
+          { "include": "#cornerparenthesis-expression"},
+          { "include": "#japanesequote-expression"},
           { "include": "#aozora-expression" },
           { "include": "#aozora-parameter" },
           { "include": "#ruby-expression"},
