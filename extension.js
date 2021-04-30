@@ -418,14 +418,13 @@ function getWebviewContent(userstylesheet) {
       body {
             writing-mode: vertical-rl;
             font-family: ${fontfamily};
-            //font-family:"ヒラギノ明朝 ProN W3", "HiraMinProN-W3", serif, sans-serif;
             height: ${pageheight};
             overflow-y:hidden;
             padding:0;
         }
         
         #cursor {
-            background-color: rgb(96,96,96,);
+            background-color: rgb(125,125,125,);
             animation-duration: 0.5s;
             animation-name: cursorAnimation;
             animation-iteration-count: infinite;
@@ -434,7 +433,6 @@ function getWebviewContent(userstylesheet) {
         p {
             height: ${pageheight};
             font-family: ${fontfamily};
-            //font-family:"ヒラギノ明朝 ProN W3", "HiraMinProN-W3", serif, sans-serif;
             line-height: ${lineheightrate};
             font-size: ${fontsize};
             margin:0 0 0 0;
@@ -458,11 +456,11 @@ function getWebviewContent(userstylesheet) {
 
         @keyframes cursorAnimation {
                 from {
-                    background-color: rgba(96,96,96,0);
+                    background-color: rgba(66,66,66,0);
                 }
             
                 to {
-                    background-color: rgba(125,125,125,0.5);
+                    background-color: rgba(125,125,125,0.7);
                 }
             }
   
