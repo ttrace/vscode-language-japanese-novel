@@ -43,3 +43,9 @@ https://qiita.com/takl/items/ba2f63db515f66585d1f
 Language Grammars
 https://macromates.com/manual/en/language_grammars
 
+## copyright
+MIT
+
+なお縦書き表示を行う方法については、MITライセンスで公開されているn-fukiju/縦書きプレビューのコードを大いに参考にさせていただきました。
+幾らかはそのまま利用させていただいています。
+[n-fukuju/vertical-writing-vsce](https://github.com/n-fukuju/vertical-writing-vsce)

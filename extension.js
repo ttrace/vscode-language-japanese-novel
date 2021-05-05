@@ -121,12 +121,15 @@ function markUpHtml( myhtml ){
     //configuration 読み込み
     const config = vscode.workspace.getConfiguration('Novel');
     let userregex = config.get('preview.userregex');
-    console.log(userregex);
-    if (userregex.rength === 0){
-        userregex.forEach(element => {
+    
+    if (userregex.length > 0){
+        
+        userregex.forEach( function(element, index){
+                   
             //if ( thismatch && thisreplace ){
                 var thismatch = new RegExp(element[0], 'gi');
                 var thisreplace = element[1];
+                console.log(element[0], thismatch, thisreplace);
                 taggedHTML = taggedHTML.replace(thismatch, thisreplace);
             //}
         });
