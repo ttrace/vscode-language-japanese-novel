@@ -1,6 +1,6 @@
 {
     "name": "novel-writer",
-    "version": "0.6.2",
+    "version": "0.6.4",
     "publisher": "TaiyoFujii",
     "repository": {
         "type": "git",
@@ -13,7 +13,7 @@
     "activationEvents": [
         "*"
     ],
-    "copyright":"MIT",
+    "copyright": "MIT",
     "contributes": {
         "commands": [
             {
@@ -67,7 +67,7 @@
                 "Novel.preview.userregex": {
                     "type": "array",
                     "default": "[]",
-                "description": "正規表現でHTML出力を調整することができます。複数の処理を行う場合は配列を増やしてください。\n（例） [\"い\", \"<span class='small'>ゐ</span>]\",[\"<p>[^「](.+?)</p>\",\"<p>　$1</p>\"], [ RegExp , Str ]）"
+                    "description": "正規表現でHTML出力を調整することができます。複数の処理を行う場合は配列を増やしてください。\n（例） [\"い\", \"<span class='small'>ゐ</span>]\",[\"<p>[^「](.+?)</p>\",\"<p>　$1</p>\"], [ RegExp , Str ]）"
                 }
             }
         }

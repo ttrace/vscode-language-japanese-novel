@@ -135,6 +135,10 @@ function markUpHtml( myhtml ){
         });
     }
 
+    taggedHTML = taggedHTML.replace(/<p>［＃ここから[１1一]文字下げ］<\/p>/g, '<div class="indent-1">');
+    taggedHTML = taggedHTML.replace(/<p>［＃ここから[２2二]文字下げ］<\/p>/g, '<div class="indent-2">');
+    taggedHTML = taggedHTML.replace(/<p>［＃ここから[３3三]文字下げ］<\/p>/g, '<div class="indent-3">');
+    taggedHTML = taggedHTML.replace(/<p>［＃ここで字下げ終わり］<\/p>/g, '</div>');
     taggedHTML = taggedHTML.replace(/<!-- (.+?) -->/g, '<span class="comment"><span class="commentbody">$1</span></span>');
     taggedHTML = taggedHTML.replace(/｜([^｜\n]+?)《([^《]+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
     taggedHTML = taggedHTML.replace(/([一-鿏々-〇]+?)《(.+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
@@ -237,13 +241,9 @@ function getWebviewContent(userstylesheet) {
       }
   
       html {
-      /* フォント */
       font-family: "游明朝", "YuMincho", serif;
       font-weight: Medium;
-      /* 行末揃え */
       text-align: justify;
-      font-size: 11q;
-      line-height: 21q;
       }
   
       body{
@@ -303,39 +303,54 @@ function getWebviewContent(userstylesheet) {
       line-break:strict;
       page-break-inside: auto;
       }
+ 
+      div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
+        padding-block-start: calc( ${fontsize} * ${lineheightrate});
+        }
+
+        div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
+        padding-block-end: calc( ${fontsize} * ${lineheightrate});
+        }
+
+    
+    div.indent-1 p{
+    height: calc( ${pageheight} - (${fontsize}));
+    padding-top: ${fontsize};
+    }
+
+    div.indent-2 p{
+    height: calc( ${pageheight} - (${fontsize} * 2));
+    padding-top: calc(${fontsize} * 2);
+    }
+
+    div.indent-3 p{
+    height: calc( ${pageheight} - (${fontsize} * 3));
+    padding-top: calc(${fontsize} * 3);
+    }
+
+        p.goth {
+        margin-top: 3em;
+        font-family: "游ゴシック", "YuGothic", san-serif;
+        margin-block-start: 1em;
+        margin-block-end: 1em;
+        }
   
-      div.indent{
-      margin-block-start: 1em;
-      margin-block-end: 1em;
-      }
-  
-      div.indent p{
-      margin-top: 3em;
-      }
-  
-      p.goth {
-      margin-top: 3em;
-      font-family: "游ゴシック", "YuGothic", san-serif;
-      margin-block-start: 1em;
-      margin-block-end: 1em;
-      }
-  
-      p.align-rb {
-      text-align: right;
-      }
-  
-      p.goth + p.goth {
-      margin-block-start: -1em;
-      }
-  
-      div.codes {
-      display: inline-block;
-      margin: 3em 1em;
-      writing-mode: horizontal-tb;
-      padding: 1em;
-      font-family: "Courier", monospace;
-      font-size: 0.8em;
-      }
+        p.align-rb {
+        text-align: right;
+        }
+
+        p.goth + p.goth {
+        margin-block-start: -1em;
+        }
+
+        div.codes {
+        display: inline-block;
+        margin: 3em 1em;
+        writing-mode: horizontal-tb;
+        padding: 1em;
+        font-family: "Courier", monospace;
+        font-size: 0.8em;
+        }
   
       div.codes p {
       text-orientation: sideways;
@@ -409,7 +424,7 @@ function getWebviewContent(userstylesheet) {
           font-size:6.5pt
       }
   
-      div.comment {
+    div.comment {
         display:none;
     }
 
@@ -436,16 +451,11 @@ function getWebviewContent(userstylesheet) {
         p {
             height: ${pageheight};
             font-family: ${fontfamily};
-            line-height: ${lineheightrate};
             font-size: ${fontsize};
             margin:0 0 0 0;
             vertical-align: middle;
         }
-  
-        .indent-3 {
-            padding-top: 3em;
-        }
-        
+          
         em.side-dot {
             font-style: normal;
             text-emphasis: filled sesame rgb(128,128,128);
