@@ -36,6 +36,10 @@ contributed by [yasudaz](https://github.com/yasudaz)
 この小説言語モードは、実験的に[Vivliostyle/CLI](https://vivliostyle.org/ja/)を用いて、縦書きのPDFを出力します。
 ワークスペースが必要になるので、フォルダを開いて利用してください。
 
+```
+npm install @vivliostyle/cli -g
+```
+
 ## 参考にした文献
 VSCodeで俺々言語モードを作る
 https://qiita.com/takl/items/ba2f63db515f66585d1f
