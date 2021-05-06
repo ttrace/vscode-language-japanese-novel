@@ -47,10 +47,10 @@ function exportpdf(){
     let escapeddirectory = myworkingdirectory;
         escapeddirectory = escapeddirectory.replace(/ /g, '\\ ');
 
-//        output.appendLine(`startig to publish: ${escapedpath}`);
+        output.appendLine(`startig to publish: ${escapedpath}`);
         vivliocommand = vivliocommand + escapedpath + ' -o ' + escapeddirectory;
 
-//        output.appendLine(`startig to publish: ${vivliocommand}`);
+        output.appendLine(`startig to publish: ${vivliocommand}`);
 
     fs.writeFile(mypath, myhtml, (err) => {
         if (err) {console.log(err)};
