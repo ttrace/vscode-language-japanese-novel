@@ -48,7 +48,7 @@ function exportpdf(){
         escapeddirectory = escapeddirectory.replace(/ /g, '\\ ');
 
         output.appendLine(`startig to publish: ${escapedpath}`);
-        vivliocommand = vivliocommand + escapedpath + ' -o ' + escapeddirectory;
+        vivliocommand = vivliocommand + escapedpath + ' -o ' + escapeddirectory + "/output.pdf";
 
         output.appendLine(`startig to publish: ${vivliocommand}`);
 

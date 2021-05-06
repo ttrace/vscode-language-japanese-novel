@@ -1,6 +1,6 @@
 {
     "name": "novel-writer",
-    "version": "0.6.5",
+    "version": "0.6.6",
     "publisher": "TaiyoFujii",
     "repository": {
         "type": "git",
@@ -11,10 +11,6 @@
     },
     "main": "./extension.js",
     "dependencies": {
-        "@vivliostyle/cli": "^3.5.0",
-        "child_process": "^1.0.2",
-        "fs": "^0.0.1-security",
-        "path": "^0.12.7"
     },
     "scripts": {
         "postinstall": "node ./node_modules/vscode/bin/install"
