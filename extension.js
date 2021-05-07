@@ -13,7 +13,6 @@ function verticalpreview(){
         vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
         {
             enableScripts: true,
-          //  localResourceRoots: [vscode.Uri.file(docrood)]
         } // Webview options. More on these later.
     );
 
@@ -101,7 +100,7 @@ function editorText(){
     }
 
     let paragraphs = cursorTaggedHtml.split('\n');
-    console.log(paragraphs);
+    //console.log(paragraphs);
     paragraphs.forEach(paragraph => {
         //console.log(paragraph);
         if (paragraph.match(/^\s*$/)) {
@@ -130,7 +129,7 @@ function markUpHtml( myhtml ){
             //if ( thismatch && thisreplace ){
                 var thismatch = new RegExp(element[0], 'gi');
                 var thisreplace = element[1];
-                console.log(element[0], thismatch, thisreplace);
+            //    console.log(element[0], thismatch, thisreplace);
                 taggedHTML = taggedHTML.replace(thismatch, thisreplace);
             //}
         });
@@ -172,19 +171,7 @@ function getWebviewContent(userstylesheet) {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Cat Coding</title>
-      <script>
-        window.onload = function(){
-            var width = document.body.clientWidth;
-            var cursor = document.getElementById('cursor');
-            var panelWidth = window.innerWidth;
-            var scrollEnd = cursor.offsetLeft - width + (panelWidth / 2);
 
-            window.scrollTo( scrollEnd , scrollEnd);
-               // console.log(cursor, cursor.offsetLeft, scrollEnd);
-
-        }
-
-      </script>
       <style>
       @charset "UTF-8";
       html {
@@ -553,6 +540,19 @@ function getWebviewContent(userstylesheet) {
   </head>
   <body>
   ${mytext}
+  
+  <script>
+  
+  setTimeout( (function(){
+      var width = document.body.clientWidth;
+      var cursor = document.getElementById('cursor');
+      var panelWidth = window.innerWidth;
+      var scrollEnd = cursor.offsetLeft - width + (panelWidth / 2);
+      window.scrollTo( scrollEnd , scrollEnd);
+      console.log(width, cursor, panelWidth, scrollEnd);
+  }), 1);
+
+</script>
   </body>
   </html>`;
   }
