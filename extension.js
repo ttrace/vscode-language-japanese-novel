@@ -101,7 +101,7 @@ function editorText(){
     }
 
     let paragraphs = cursorTaggedHtml.split('\n');
-
+    console.log(paragraphs);
     paragraphs.forEach(paragraph => {
         //console.log(paragraph);
         if (paragraph.match(/^\s*$/)) {
@@ -120,8 +120,9 @@ function markUpHtml( myhtml ){
     var taggedHTML = myhtml;
     //configuration 読み込み
     const config = vscode.workspace.getConfiguration('Novel');
-    let userregex = config.get('preview.userregex');
-    
+    let userregex = new Array(0);
+        userregex = config.get('preview.userregex');
+//    console.log(userregex, userregex.length);
     if (userregex.length > 0){
         
         userregex.forEach( function(element, index){
@@ -203,7 +204,7 @@ function getWebviewContent(userstylesheet) {
   
       @page {
       size: 105mm 148mm;
-      width: calc(21q * 16 + 4q);
+      width: 88mm;
       /*  width: calc(84mm - 1q); */
       height: 110mm;
       margin-top: 20mm;
@@ -298,11 +299,13 @@ function getWebviewContent(userstylesheet) {
       }
   
       p {
-      text-indent: 0em;
-      hanging-punctuation: force-end;
-      line-break:strict;
-      page-break-inside: auto;
-      }
+        font-size: calc(110mm / ${linelength});
+        line height: 1.65;
+        text-indent: 0em;
+        hanging-punctuation: force-end;
+        line-break:strict;
+        page-break-inside: auto;
+    }
  
       div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
         padding-block-start: calc( ${fontsize} * ${lineheightrate});
@@ -314,17 +317,17 @@ function getWebviewContent(userstylesheet) {
 
     
     div.indent-1 p{
-    height: calc( ${pageheight} - (${fontsize}));
+    height: calc( 110mm - (${fontsize}));
     padding-top: ${fontsize};
     }
 
     div.indent-2 p{
-    height: calc( ${pageheight} - (${fontsize} * 2));
+    height: calc( 110mm - (${fontsize} * 2));
     padding-top: calc(${fontsize} * 2);
     }
 
     div.indent-3 p{
-    height: calc( ${pageheight} - (${fontsize} * 3));
+    height: calc( 110mm - (${fontsize} * 3));
     padding-top: calc(${fontsize} * 3);
     }
 
@@ -493,7 +496,23 @@ function getWebviewContent(userstylesheet) {
               background-position: right 0px,
                                   right 0px;
           }
-  
+
+          div.indent-1 p{
+            height: calc( ${pageheight} - (${fontsize}));
+            padding-top: ${fontsize};
+            }
+        
+            div.indent-2 p{
+            height: calc( ${pageheight} - (${fontsize} * 2));
+            padding-top: calc(${fontsize} * 2);
+            }
+        
+            div.indent-3 p{
+            height: calc( ${pageheight} - (${fontsize} * 3));
+            padding-top: calc(${fontsize} * 3);
+            }
+
+        
           span.comment{
             display:block;
             border-radius:1em;

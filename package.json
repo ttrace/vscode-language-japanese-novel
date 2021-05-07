@@ -1,6 +1,6 @@
 {
     "name": "novel-writer",
-    "version": "0.6.6",
+    "version": "0.6.8",
     "publisher": "TaiyoFujii",
     "repository": {
         "type": "git",
@@ -10,8 +10,6 @@
         "vscode": "^1.54.0"
     },
     "main": "./extension.js",
-    "dependencies": {
-    },
     "scripts": {
         "postinstall": "node ./node_modules/vscode/bin/install"
     },
@@ -71,7 +69,7 @@
                 },
                 "Novel.preview.userregex": {
                     "type": "array",
-                    "default": "[]",
+                    "default": [],
                     "description": "正規表現でHTML出力を調整することができます。複数の処理を行う場合は配列を増やしてください。\n（例） [\"い\", \"<span class='small'>ゐ</span>]\",[\"<p>[^「](.+?)</p>\",\"<p>　$1</p>\"], [ RegExp , Str ]）"
                 }
             }
