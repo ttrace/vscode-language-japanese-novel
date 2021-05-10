@@ -62,7 +62,30 @@ s.on("connection", ws => {
     });
 });
 
+
 //const previewsettings = previewvariables();
+
+
+vscode.workspace.onDidChangeTextDocument((e) => {
+    var _a;
+    if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
+        s.clients.forEach(client => {
+            client.send(taggedHTML);
+        });        
+    }
+});
+
+vscode.window.onDidChangeTextEditorSelection((e) => {
+    if (e.textEditor == vscode.window.activeTextEditor) {
+        s.clients.forEach(client => {
+            client.send(editorText());
+        }); 
+    }
+});
+
+s.clients.forEach(client => {
+    client.send(editorText());
+}); 
 
 
 function verticalpreview(){
@@ -204,32 +227,14 @@ function markUpHtml( myhtml ){
     taggedHTML = taggedHTML.replace(/([一-鿏々-〇]+?)《(.+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
     taggedHTML = taggedHTML.replace(/(.+?)［＃「\1」に傍点］/g, '<em class="side-dot">$1</em>');
 
-    s.clients.forEach(client => {
+/*     s.clients.forEach(client => {
         //client.send(previewvariables());
         client.send(taggedHTML);
     });
-
+ */
     return taggedHTML;
 }
 
-function previewvariables(){
-    const config = vscode.workspace.getConfiguration('Novel');
-
-    const previewsettings = {
-        lineheightrate: 1.75,
-        fontfamily : config.get('preview.font-family'),
-        fontsize :   config.get('preview.fontsize'),
-        numfontsize : /(\d+)(\D+)/.exec(fontsize)[1],
-        unitoffontsize : /(\d+)(\D+)/.exec(fontsize)[2],
-        linelength : config.get('preview.linelength'),
-        linesperpage : config.get('preview.linesperpage'),
-        pagewidth :  ( linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize,
-        pageheight: (linelength * numfontsize) + unitoffontsize,
-        lineheight : ( numfontsize * lineheightrate) + unitoffontsize,
-    }
-
-    return previewsettings;
-}
 
 function getWebviewContent(userstylesheet) {
 
