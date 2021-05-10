@@ -118,7 +118,7 @@
         }
     
         p {
-          line-height: 1.65;
+          /* line-height: 1.65; */
           text-indent: 0em;
           hanging-punctuation: force-end;
           line-break:strict;
@@ -295,15 +295,12 @@
     
             body{
                 background-image:   linear-gradient(to right, rgba(50, 50, 50, 0.5) 0.5pt, rgba(0, 0, 50, 0.05) 10em);
-                background-size:    ${pagewidth} ${pageheight};
                 background-repeat:  repeat-x;
                 background-position: right 0px;
             }
             p{
                 background-image:   linear-gradient( rgba(50, 50, 50, 1) 0.5pt, transparent 1pt),
                                     linear-gradient(to right, rgba(50, 50, 50, 1) 0.5pt, rgba(0, 0, 50, 0.05) 1pt);
-                background-size:    ${lineheight} ${fontsize},
-                                    ${lineheight} ${fontsize};
                 background-repeat:  repeat,
                                     repeat;
                 background-position: right 0px,
@@ -415,8 +412,17 @@
                     //CSS settings      
                         console.log(previewsettings);
                         // styleSheet.insertRule( "p{font-size: calc(110mm / " + previewsettings.linelength + ") ; }" ) ;
-                        styleSheet.insertRule( "@media screen{body{font-family:"+ previewsettings.fontfamily + ";height:"+ previewsettings.pageheight +"}}");
-                        styleSheet.insertRule( "@media screen{p{height:"+ previewsettings.pageheight +"; font-family:"+ previewsettings.fontfamily+"; font-size:"+ previewsettings.fontsize +"}}");
+                        styleSheet.insertRule( `@media screen{
+                            body{   font-family:   ${previewsettings.fontfamily};
+                                    height:        ${previewsettings.pageheight};
+                                    background-size:    ${previewsettings.pagewidth} ${previewsettings.pageheight};}}`);
+                        styleSheet.insertRule( `@media screen{
+                            p{  height:         ${previewsettings.pageheight};
+                                font-family:    ${previewsettings.fontfamily};
+                                font-size:      ${previewsettings.fontsize};
+                                line-height:    ${previewsettings.lineheightrate};
+                                background-size:    ${previewsettings.lineheight} ${previewsettings.fontsize},
+                                                    ${previewsettings.lineheight} ${previewsettings.fontsize}}}`);
                 }
             });
 

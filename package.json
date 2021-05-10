@@ -1,6 +1,6 @@
 {
     "name": "novel-writer",
-    "version": "0.6.9",
+    "version": "0.7.0",
     "publisher": "TaiyoFujii",
     "repository": {
         "type": "git",
@@ -10,6 +10,11 @@
         "vscode": "^1.54.0"
     },
     "main": "./extension.js",
+    "dependencies": {
+        "http": "^0.0.1-security",
+        "http-server": "^0.12.3",
+        "ws": "^7.4.5"
+    },
     "scripts": {
         "postinstall": "node ./node_modules/vscode/bin/install"
     },

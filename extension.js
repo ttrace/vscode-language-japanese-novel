@@ -63,6 +63,7 @@ s.on("connection", ws => {
 
 //const previewsettings = previewvariables();
 
+
 function verticalpreview(){
 //    vscode.window.showInformationMessage('Hello, world!');
     const panel = vscode.window.createWebviewPanel(
