@@ -5,6 +5,64 @@ const cp = require('child_process');
 var myeditor = vscode.window.activeTextEditor;
 const output = vscode.window.createOutputChannel("Novel");
 
+const config = vscode.workspace.getConfiguration('Novel');
+
+const lineheightrate = 1.75;
+const fontfamily        = config.get('preview.font-family');
+const fontsize          = config.get('preview.fontsize');
+const numfontsize       = /(\d+)(\D+)/.exec(fontsize)[1];
+const unitoffontsize    = /(\d+)(\D+)/.exec(fontsize)[2];
+const linelength        = config.get('preview.linelength');
+const linesperpage      = config.get('preview.linesperpage');
+const pagewidth         = (linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize;
+const pageheight        = (linelength * numfontsize) + unitoffontsize;
+const lineheight        = (numfontsize * lineheightrate) + unitoffontsize;
+
+const previewsettings = {
+    lineheightrate,
+    fontfamily   , 
+    fontsize      ,
+    numfontsize   ,
+    unitoffontsize,
+    linelength    ,
+    linesperpage  ,
+    pagewidth     ,
+    pageheight    ,
+    lineheight    ,
+}
+
+// Node http serverを起動する
+const http = require('http');
+const folderPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+const html = fs.readFileSync(path.join(folderPath, 'htdocs/index.html'));
+
+var viwerserver = http.createServer(function(request, response) {
+    response.writeHead(200, {'Content-Type': 'text/html'});
+    response.end(html);
+
+})
+
+viwerserver.listen(8080);
+
+// Node Websockets Serverを起動する
+const wsserver = require("ws").Server;
+const s = new wsserver({ port: 5001 });
+
+s.on("connection", ws => {
+    //console.log(previewvariables());
+    ws.on("message", message => {
+
+        console.log("Received: " + message);
+        console.log(previewsettings);
+
+        if (message === "hello") {
+            ws.send( JSON.stringify(previewsettings));
+        }
+    });
+});
+
+//const previewsettings = previewvariables();
+
 function verticalpreview(){
 //    vscode.window.showInformationMessage('Hello, world!');
     const panel = vscode.window.createWebviewPanel(
@@ -143,7 +201,32 @@ function markUpHtml( myhtml ){
     taggedHTML = taggedHTML.replace(/｜([^｜\n]+?)《([^《]+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
     taggedHTML = taggedHTML.replace(/([一-鿏々-〇]+?)《(.+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
     taggedHTML = taggedHTML.replace(/(.+?)［＃「\1」に傍点］/g, '<em class="side-dot">$1</em>');
+
+    s.clients.forEach(client => {
+        //client.send(previewvariables());
+        client.send(taggedHTML);
+    });
+
     return taggedHTML;
+}
+
+function previewvariables(){
+    const config = vscode.workspace.getConfiguration('Novel');
+
+    const previewsettings = {
+        lineheightrate: 1.75,
+        fontfamily : config.get('preview.font-family'),
+        fontsize :   config.get('preview.fontsize'),
+        numfontsize : /(\d+)(\D+)/.exec(fontsize)[1],
+        unitoffontsize : /(\d+)(\D+)/.exec(fontsize)[2],
+        linelength : config.get('preview.linelength'),
+        linesperpage : config.get('preview.linesperpage'),
+        pagewidth :  ( linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize,
+        pageheight: (linelength * numfontsize) + unitoffontsize,
+        lineheight : ( numfontsize * lineheightrate) + unitoffontsize,
+    }
+
+    return previewsettings;
 }
 
 function getWebviewContent(userstylesheet) {
@@ -166,7 +249,7 @@ function getWebviewContent(userstylesheet) {
 
     var mytext = editorText();
     return `<!DOCTYPE html>
-  <html lang="en">
+  <html lang="ja">
   <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
