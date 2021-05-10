@@ -79,7 +79,9 @@
         "@vivliostyle/cli": "^3.5.0",
         "child_process": "^1.0.2",
         "fs": "^0.0.1-security",
+        "http-server": "^0.12.3",
         "path": "^0.12.7",
-        "vscode": "^1.1.37"
+        "vscode": "^1.1.37",
+        "ws": "^7.4.5"
     }
 }
