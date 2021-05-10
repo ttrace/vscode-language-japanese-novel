@@ -37,9 +37,10 @@ const folderPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
 const html = fs.readFileSync(path.join(folderPath, 'htdocs/index.html'));
 
 var viwerserver = http.createServer(function(request, response) {
-    response.writeHead(200, {'Content-Type': 'text/html'});
+    response.writeHead(200, {'Content-Type': 'text/html',
+    'Cache-Control': 'private, max-age=0'
+});
     response.end(html);
-
 })
 
 viwerserver.listen(8080);
