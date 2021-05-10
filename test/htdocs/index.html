@@ -374,7 +374,7 @@
 
     // オブザーバーの作成
     const observer = new MutationObserver(records => {
-        var width = document.body.clientWidth;
+        var width = $('#draft')[0].clientWidth;
         var cursor = document.getElementById('cursor');
         var panelWidth = window.innerWidth;
         var scrollEnd = cursor.offsetLeft - width + (panelWidth / 2);
