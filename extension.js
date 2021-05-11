@@ -117,16 +117,17 @@ function verticalpreview(){
     //panel.webview.html = getWebviewContent();
     panel.webview.html = `
     <html>
-    <head>
-    <style>
-    body{
-        width:100vw;height:100vh;
-    }
-    </style>
-    </head>
-    <body>
-    <iframe src="http://localhost:8080" frameBorder="2" style="background-color:red;min-width: 100%; min-height: 100%" />
-    </body>
+        <head>
+            <style>
+            body{
+                width:100vw;
+                height:100vh;
+            }
+            </style>
+        </head>
+        <body>
+            <iframe src="http://localhost:8080" frameBorder="0" style="min-width: 100%; min-height: 100%" />
+        </body>
     </html>`;
 }
 
