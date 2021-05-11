@@ -11,7 +11,6 @@
         -epub-writing-mode: vertical-rl;
         -ms-writing-mode: tb-rl;
         writing-mode: vertical-rl;
-    
         orphans: 1;
         widows: 1;
         }
@@ -125,13 +124,6 @@
           page-break-inside: auto;
       }
    
-        div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
-          padding-block-start: calc( ${fontsize} * ${lineheightrate});
-          }
-  
-          div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
-          padding-block-end: calc( ${fontsize} * ${lineheightrate});
-          }
   
       
       div.indent-1 p{
@@ -258,8 +250,8 @@
               writing-mode: vertical-rl;
               overflow-y:hidden;
               padding:0;
-              background-color: rgb(10,10,10);
-              color:white;
+              background-color:rgb(10,10,10);
+        color:white;
           }
           
           #cursor {
@@ -310,18 +302,7 @@
             }
   
             div.indent-1 p{
-              height: calc( ${pageheight} - (${fontsize}));
-              padding-top: ${fontsize};
-              }
-          
-              div.indent-2 p{
-              height: calc( ${pageheight} - (${fontsize} * 2));
-              padding-top: calc(${fontsize} * 2);
-              }
-          
-              div.indent-3 p{
-              height: calc( ${pageheight} - (${fontsize} * 3));
-              padding-top: calc(${fontsize} * 3);
+
               }
   
           
@@ -333,7 +314,6 @@
               position:absolute;
               margin-right: -3em;
               margin-top: 0.5em;
-              top: ${pageheight};
               background-color:rgba(50,50,00,0.5);
               max-width: 20em;
             }
@@ -425,6 +405,34 @@
                                 line-height:    ${previewsettings.lineheightrate};
                                 background-size:    ${previewsettings.lineheight} ${previewsettings.fontsize},
                                                     ${previewsettings.lineheight} ${previewsettings.fontsize}}}`);
+                        styleSheet.insertRule( `@media screen{
+                            span.comment{
+                                top: ${previewsettings.pageheight};
+                            }
+                        }`);
+                        styleSheet.insertRule( `media screen{
+                            height: calc( ${previewsettings.pageheight} - (${previewsettings.fontsize}));
+                            padding-top: ${previewsettings.fontsize};
+                            }
+                        
+                            div.indent-2 p{
+                            height: calc( ${previewsettings.pageheight} - (${previewsettings.fontsize} * 2));
+                            padding-top: calc(${previewsettings.fontsize} * 2);
+                            }
+                        
+                            div.indent-3 p{
+                            height: calc( ${previewsettings.pageheight} - (${previewsettings.fontsize} * 3));
+                            padding-top: calc(${previewsettings.fontsize} * 3);
+                        }`);
+                        styleSheet.insertRule( `
+                        div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
+                            padding-block-start: calc( ${previewsettings.fontsize} * ${previewsettings.lineheightrate});
+                        }
+  
+                        div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
+                            padding-block-end: calc( ${previewsettings.fontsize} * ${previewsettings.lineheightrate});
+                        }`);
+
                 }
             });
 
