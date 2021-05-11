@@ -2,9 +2,20 @@ const vscode = require('vscode');
 const fs = require('fs');
 const path = require('path');
 const cp = require('child_process');
+
 var myeditor = vscode.window.activeTextEditor;
 const output = vscode.window.createOutputChannel("Novel");
 
+let html = "";
+
+//コマンド登録
+function activate(context) {
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
+
+    html = fs.readFileSync(path.join(context.extensionPath, 'htdocs', 'index.html'));
+}
 
 
 function launchserver(){
@@ -41,8 +52,10 @@ function launchserver(){
     // Node http serverを起動する
     const http = require('http');
     const folderPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-    const html = fs.readFileSync(path.join(folderPath, 'htdocs/index.html'));
+//    const html = fs.readFileSync(path.join(folderPath, 'htdocs/index.html'));
     
+
+
     var viwerserver = http.createServer(function(request, response) {
         response.writeHead(200, {
             'Content-Type': 'text/html',
@@ -88,7 +101,7 @@ function launchserver(){
         }
     });
     
-    publishwebsockets(s);
+    publishwebsocketsdelay.presskey(s, 100);
 }
 
 function publishwebsockets(socketserver){
@@ -200,12 +213,6 @@ function exportpdf(){
 
 }
 
-//コマンド登録
-function activate(context) {
-    context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
-    context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
-    context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
-}
 
 
 function deactivate() {
