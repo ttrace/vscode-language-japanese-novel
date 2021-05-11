@@ -18,7 +18,7 @@ function activate(context) {
 }
 
 
-function launchserver(){
+function launchserver(origineditor){
     //もしサーバーが動いていたら止めて再起動する……のを、実装しなきゃなあ。
     //https://sasaplus1.hatenadiary.com/entry/20121129/1354198092 が良さそう。
 
@@ -79,7 +79,10 @@ function launchserver(){
     
             if (message === "hello") {
                 ws.send( JSON.stringify(previewsettings));
-                ws.send( editorText());
+                //ws.send( editorText());
+            } else if (message === "givemedata"){
+                console.log("sending body");
+                ws.send( editorText(origineditor));
             }
         });
     });
@@ -87,43 +90,47 @@ function launchserver(){
     vscode.workspace.onDidChangeTextDocument((e) => {
         var _a;
         if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
-            
-            var duration = Math.ceil(_a.document.getText().length / 10);
-            publishwebsocketsdelay.presskey(s, duration);
+            publishwebsocketsdelay.presskey(s);
         }
     });
     
     vscode.window.onDidChangeTextEditorSelection((e) => {
         if (e.textEditor == vscode.window.activeTextEditor) {
-
-            var duration = Math.ceil(vscode.window.activeTextEditor.document.getText().length / 10);
-            publishwebsocketsdelay.presskey(s, duration);
+            publishwebsocketsdelay.presskey(s);
         }
     });
     
-    publishwebsocketsdelay.presskey(s, 100);
+    publishwebsocketsdelay.presskey(s);
+
+    return s;
 }
 
 function publishwebsockets(socketserver){
     socketserver.clients.forEach(client => {
-        client.send(editorText());
+        client.send(editorText("active"));
     }); 
 }
 
+var keypressflag = false;
+
 var publishwebsocketsdelay = {
     publish: function(socketserver) {
-        publishwebsockets(socketserver)
+        publishwebsockets(socketserver);
+        keypressflag = false;
         delete this.timeoutID;
     },
-    presskey: function(s, timer) {
-      this.cancel();
-
-      var self = this;
-      var socketserver = s;
-      var timer = timer;
-      this.timeoutID = setTimeout(function(socketserver) {
-          self.publish(socketserver);
-        }, timer, socketserver);
+    presskey: function(s) {
+      //this.cancel();
+      if (!keypressflag){
+            var updatecounter = Math.ceil(vscode.window.activeTextEditor.document.getText().length / 10);
+            var self = this;
+            var socketserver = s;
+            var timer = timer;
+            this.timeoutID = setTimeout(function(socketserver) {
+                self.publish(socketserver);
+                }, updatecounter, socketserver);
+                keypressflag = true;
+        }
     },
     cancel: function() {
       if(typeof this.timeoutID == "number") {
@@ -134,6 +141,9 @@ var publishwebsocketsdelay = {
   };
 
 function verticalpreview(){
+    var origineditor = vscode.window.activeTextEditor;
+    var s = launchserver(origineditor);
+
 //    vscode.window.showInformationMessage('Hello, world!');
     const panel = vscode.window.createWebviewPanel(
         'preview', // Identifies the type of the webview. Used internally
@@ -221,8 +231,12 @@ function deactivate() {
 
 module.exports = { activate, deactivate };
 
-function editorText(){
-    myeditor = vscode.window.activeTextEditor;
+function editorText(origineditor){
+    if(origineditor === "active"){
+        myeditor = vscode.window.activeTextEditor;
+    } else {
+        myeditor = origineditor;
+    }
 
     let text = myeditor.document.getText();
     let cursorOffset = myeditor ? myeditor.document.offsetAt(myeditor.selection.anchor) : 0;
@@ -308,7 +322,7 @@ function getWebviewContent() {
         let lineheight = ( numfontsize * lineheightrate) + unitoffontsize;
         //console.log(lineheight);
 
-    var mytext = editorText();
+    var mytext = editorText("active");
     return `<!DOCTYPE html>
   <html lang="ja">
   <head>

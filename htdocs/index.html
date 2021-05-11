@@ -357,7 +357,7 @@
 
             sock.addEventListener("message", e => {
                 console.log("サーバーからメッセージを受信したときに呼び出されるイベント");
-    
+                console.log(e.data);
                 if (e.data[0] === '<'){
                 draftwrapper.textContent = '';
                 draftwrapper.insertAdjacentHTML('afterbegin', e.data)
@@ -414,7 +414,8 @@
                                 padding-block-end: calc( ${previewsettings.fontsize} * ${previewsettings.lineheightrate});
                             }
                         }`);
-
+                        console.log('sent giveme');
+                        sock.send('givemedata');
                 }
             });
 
