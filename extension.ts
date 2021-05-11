@@ -17,7 +17,7 @@ function launchserver(){
     const lineheightrate = 1.75;
     const fontfamily        = config.get('preview.font-family');
     const fontsize          = config.get('preview.fontsize');
-    const numfontsize       = /(\d+)(\D+)/.exec(fontsize)[1];
+    const numfontsize       = parseInt(/(\d+)(\D+)/.exec(fontsize)[1]);
     const unitoffontsize    = /(\d+)(\D+)/.exec(fontsize)[2];
     const linelength        = config.get('preview.linelength');
     const linesperpage      = config.get('preview.linesperpage');
@@ -75,7 +75,7 @@ function launchserver(){
         var _a;
         if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
             
-            var duration = parseInt(_a.document.getText().length / 10);
+            var duration = Math.ceil(_a.document.getText().length / 10);
             publishwebsocketsdelay.presskey(s, duration);
         }
     });
@@ -83,7 +83,7 @@ function launchserver(){
     vscode.window.onDidChangeTextEditorSelection((e) => {
         if (e.textEditor == vscode.window.activeTextEditor) {
 
-            var duration = parseInt(_a.document.getText().length / 10);
+            var duration = Math.ceil(vscode.window.activeTextEditor.document.getText().length / 10);
             publishwebsocketsdelay.presskey(s, duration);
         }
     });
@@ -283,14 +283,14 @@ function markUpHtml( myhtml ){
 }
 
 
-function getWebviewContent(userstylesheet) {
+function getWebviewContent() {
 
     //configuration 読み込み
     const config = vscode.workspace.getConfiguration('Novel');
         let lineheightrate = 1.75;
         let fontfamily = config.get('preview.font-family');
         let fontsize = config.get('preview.fontsize');
-        let numfontsize = /(\d+)(\D+)/.exec(fontsize)[1];
+        let numfontsize = parseInt(/(\d+)(\D+)/.exec(fontsize)[1]);
         let unitoffontsize = /(\d+)(\D+)/.exec(fontsize)[2];
 
         let linelength = config.get('preview.linelength');
