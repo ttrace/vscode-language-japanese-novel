@@ -1,6 +1,6 @@
 {
     "name": "novel-writer",
-    "version": "0.6.9",
+    "version": "0.7.0",
     "publisher": "TaiyoFujii",
     "repository": {
         "type": "git",
@@ -10,6 +10,11 @@
         "vscode": "^1.54.0"
     },
     "main": "./extension.js",
+    "dependencies": {
+        "http": "^0.0.1-security",
+        "http-server": "^0.12.3",
+        "ws": "^7.4.5"
+    },
     "scripts": {
         "postinstall": "node ./node_modules/vscode/bin/install"
     },
@@ -22,6 +27,10 @@
             {
                 "command": "Novel.vertical-preview",
                 "title": "Novel:縦書きプレビュー"
+            },
+            {
+                "command": "Novel.launch-preview-server",
+                "title": "Novel:プレビューサーバー起動"
             },
             {
                 "command": "Novel.export-pdf",
@@ -79,7 +88,10 @@
         "@vivliostyle/cli": "^3.5.0",
         "child_process": "^1.0.2",
         "fs": "^0.0.1-security",
+        "http": "^0.0.1-security",
+        "http-server": "^0.12.3",
         "path": "^0.12.7",
-        "vscode": "^1.1.37"
+        "vscode": "^1.1.37",
+        "ws": "^7.4.5"
     }
 }

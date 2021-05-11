@@ -5,6 +5,121 @@ const cp = require('child_process');
 var myeditor = vscode.window.activeTextEditor;
 const output = vscode.window.createOutputChannel("Novel");
 
+
+
+function launchserver(){
+    //もしサーバーが動いていたら止めて再起動する……のを、実装しなきゃなあ。
+    //https://sasaplus1.hatenadiary.com/entry/20121129/1354198092 が良さそう。
+
+
+    const config = vscode.workspace.getConfiguration('Novel');
+
+    const lineheightrate = 1.75;
+    const fontfamily        = config.get('preview.font-family');
+    const fontsize          = config.get('preview.fontsize');
+    const numfontsize       = /(\d+)(\D+)/.exec(fontsize)[1];
+    const unitoffontsize    = /(\d+)(\D+)/.exec(fontsize)[2];
+    const linelength        = config.get('preview.linelength');
+    const linesperpage      = config.get('preview.linesperpage');
+    const pagewidth         = (linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize;
+    const pageheight        = (linelength * numfontsize) + unitoffontsize;
+    const lineheight        = (numfontsize * lineheightrate) + unitoffontsize;
+    
+    const previewsettings = {
+        lineheightrate,
+        fontfamily   , 
+        fontsize      ,
+        numfontsize   ,
+        unitoffontsize,
+        linelength    ,
+        linesperpage  ,
+        pagewidth     ,
+        pageheight    ,
+        lineheight    ,
+    }
+    
+    // Node http serverを起動する
+    const http = require('http');
+    const folderPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    const html = fs.readFileSync(path.join(folderPath, 'htdocs/index.html'));
+    
+    var viwerserver = http.createServer(function(request, response) {
+        response.writeHead(200, {
+            'Content-Type': 'text/html',
+            'Cache-Control': 'private, max-age=0'
+        });
+        response.end(html);
+    })
+    
+    viwerserver.listen(8080);
+    
+    // Node Websockets Serverを起動する
+    const wsserver = require("ws").Server;
+    const s = new wsserver({ port: 5001 });
+    
+    s.on("connection", ws => {
+        //console.log(previewvariables());
+        ws.on("message", message => {
+    
+            console.log("Received: " + message);
+            console.log(previewsettings);
+    
+            if (message === "hello") {
+                ws.send( JSON.stringify(previewsettings));
+                ws.send( editorText());
+            }
+        });
+    });
+    
+    vscode.workspace.onDidChangeTextDocument((e) => {
+        var _a;
+        if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
+            
+            var duration = parseInt(_a.document.getText().length / 10);
+            publishwebsocketsdelay.presskey(s, duration);
+        }
+    });
+    
+    vscode.window.onDidChangeTextEditorSelection((e) => {
+        if (e.textEditor == vscode.window.activeTextEditor) {
+
+            var duration = parseInt(_a.document.getText().length / 10);
+            publishwebsocketsdelay.presskey(s, duration);
+        }
+    });
+    
+    publishwebsockets(s);
+}
+
+function publishwebsockets(socketserver){
+    socketserver.clients.forEach(client => {
+        client.send(editorText());
+    }); 
+}
+
+var publishwebsocketsdelay = {
+    publish: function(socketserver) {
+        publishwebsockets(socketserver)
+        delete this.timeoutID;
+    },
+    presskey: function(s, timer) {
+      this.cancel();
+
+      var self = this;
+      var socketserver = s;
+      var timer = timer;
+      this.timeoutID = setTimeout(function(socketserver) {
+          self.publish(socketserver);
+        }, timer, socketserver);
+    },
+    cancel: function() {
+      if(typeof this.timeoutID == "number") {
+        window.clearTimeout(this.timeoutID);
+        delete this.timeoutID;
+      }
+    }
+  };
+
 function verticalpreview(){
 //    vscode.window.showInformationMessage('Hello, world!');
     const panel = vscode.window.createWebviewPanel(
@@ -16,7 +131,7 @@ function verticalpreview(){
         } // Webview options. More on these later.
     );
 
-    vscode.workspace.onDidChangeTextDocument((e) => {
+/*     vscode.workspace.onDidChangeTextDocument((e) => {
         var _a;
         if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
             panel.webview.html = getWebviewContent();
@@ -28,9 +143,24 @@ function verticalpreview(){
             panel.webview.html = getWebviewContent();
         }
     });
-
+ */
     // And set its HTML content
-    panel.webview.html = getWebviewContent();
+    //panel.webview.html = getWebviewContent();
+    panel.webview.html = `
+    <html>
+        <head>
+            <style>
+            body{
+                width:100vw;
+                height:100vh;
+                overflor:hidden;
+            }
+            </style>
+        </head>
+        <body>
+            <iframe src="http://localhost:8080" frameBorder="0" style="min-width: 100%; min-height: 100%" />
+        </body>
+    </html>`;
 }
 
 function exportpdf(){
@@ -74,7 +204,7 @@ function exportpdf(){
 function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
-
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
 }
 
 
@@ -143,8 +273,15 @@ function markUpHtml( myhtml ){
     taggedHTML = taggedHTML.replace(/｜([^｜\n]+?)《([^《]+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
     taggedHTML = taggedHTML.replace(/([一-鿏々-〇]+?)《(.+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
     taggedHTML = taggedHTML.replace(/(.+?)［＃「\1」に傍点］/g, '<em class="side-dot">$1</em>');
+
+/*     s.clients.forEach(client => {
+        //client.send(previewvariables());
+        client.send(taggedHTML);
+    });
+ */
     return taggedHTML;
 }
+
 
 function getWebviewContent(userstylesheet) {
 
@@ -166,7 +303,7 @@ function getWebviewContent(userstylesheet) {
 
     var mytext = editorText();
     return `<!DOCTYPE html>
-  <html lang="en">
+  <html lang="ja">
   <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
