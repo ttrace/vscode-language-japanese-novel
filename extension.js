@@ -8,6 +8,10 @@ const output = vscode.window.createOutputChannel("Novel");
 
 
 function launchserver(){
+    //もしサーバーが動いていたら止めて再起動する……のを、実装しなきゃなあ。
+    //https://sasaplus1.hatenadiary.com/entry/20121129/1354198092 が良さそう。
+
+
     const config = vscode.workspace.getConfiguration('Novel');
 
     const lineheightrate = 1.75;
@@ -40,9 +44,10 @@ function launchserver(){
     const html = fs.readFileSync(path.join(folderPath, 'htdocs/index.html'));
     
     var viwerserver = http.createServer(function(request, response) {
-        response.writeHead(200, {'Content-Type': 'text/html',
-        'Cache-Control': 'private, max-age=0'
-    });
+        response.writeHead(200, {
+            'Content-Type': 'text/html',
+            'Cache-Control': 'private, max-age=0'
+        });
         response.end(html);
     })
     
@@ -61,6 +66,7 @@ function launchserver(){
     
             if (message === "hello") {
                 ws.send( JSON.stringify(previewsettings));
+                ws.send( editorText());
             }
         });
     });
@@ -69,7 +75,7 @@ function launchserver(){
         var _a;
         if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
             s.clients.forEach(client => {
-                client.send(taggedHTML);
+                client.send(editorText());
             });        
         }
     });
@@ -122,6 +128,7 @@ function verticalpreview(){
             body{
                 width:100vw;
                 height:100vh;
+                overflor:hidden;
             }
             </style>
         </head>
