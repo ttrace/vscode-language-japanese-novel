@@ -74,26 +74,51 @@ function launchserver(){
     vscode.workspace.onDidChangeTextDocument((e) => {
         var _a;
         if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
-            s.clients.forEach(client => {
-                client.send(editorText());
-            });        
+            
+            var duration = parseInt(_a.document.getText().length / 10);
+            publishwebsocketsdelay.presskey(s, duration);
         }
     });
     
     vscode.window.onDidChangeTextEditorSelection((e) => {
         if (e.textEditor == vscode.window.activeTextEditor) {
-            s.clients.forEach(client => {
-                client.send(editorText());
-            }); 
+
+            var duration = parseInt(_a.document.getText().length / 10);
+            publishwebsocketsdelay.presskey(s, duration);
         }
     });
     
-    s.clients.forEach(client => {
+    publishwebsockets(s);
+}
+
+function publishwebsockets(socketserver){
+    socketserver.clients.forEach(client => {
         client.send(editorText());
     }); 
-    
-    
 }
+
+var publishwebsocketsdelay = {
+    publish: function(socketserver) {
+        publishwebsockets(socketserver)
+        delete this.timeoutID;
+    },
+    presskey: function(s, timer) {
+      this.cancel();
+
+      var self = this;
+      var socketserver = s;
+      var timer = timer;
+      this.timeoutID = setTimeout(function(socketserver) {
+          self.publish(socketserver);
+        }, timer, socketserver);
+    },
+    cancel: function() {
+      if(typeof this.timeoutID == "number") {
+        window.clearTimeout(this.timeoutID);
+        delete this.timeoutID;
+      }
+    }
+  };
 
 function verticalpreview(){
 //    vscode.window.showInformationMessage('Hello, world!');
