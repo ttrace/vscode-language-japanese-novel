@@ -5,88 +5,89 @@ const cp = require('child_process');
 var myeditor = vscode.window.activeTextEditor;
 const output = vscode.window.createOutputChannel("Novel");
 
-const config = vscode.workspace.getConfiguration('Novel');
 
-const lineheightrate = 1.75;
-const fontfamily        = config.get('preview.font-family');
-const fontsize          = config.get('preview.fontsize');
-const numfontsize       = /(\d+)(\D+)/.exec(fontsize)[1];
-const unitoffontsize    = /(\d+)(\D+)/.exec(fontsize)[2];
-const linelength        = config.get('preview.linelength');
-const linesperpage      = config.get('preview.linesperpage');
-const pagewidth         = (linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize;
-const pageheight        = (linelength * numfontsize) + unitoffontsize;
-const lineheight        = (numfontsize * lineheightrate) + unitoffontsize;
 
-const previewsettings = {
-    lineheightrate,
-    fontfamily   , 
-    fontsize      ,
-    numfontsize   ,
-    unitoffontsize,
-    linelength    ,
-    linesperpage  ,
-    pagewidth     ,
-    pageheight    ,
-    lineheight    ,
-}
+function launchserver(){
+    const config = vscode.workspace.getConfiguration('Novel');
 
-// Node http serverを起動する
-const http = require('http');
-const folderPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-const html = fs.readFileSync(path.join(folderPath, 'htdocs/index.html'));
-
-var viwerserver = http.createServer(function(request, response) {
-    response.writeHead(200, {'Content-Type': 'text/html',
-    'Cache-Control': 'private, max-age=0'
-});
-    response.end(html);
-})
-
-viwerserver.listen(8080);
-
-// Node Websockets Serverを起動する
-const wsserver = require("ws").Server;
-const s = new wsserver({ port: 5001 });
-
-s.on("connection", ws => {
-    //console.log(previewvariables());
-    ws.on("message", message => {
-
-        console.log("Received: " + message);
-        console.log(previewsettings);
-
-        if (message === "hello") {
-            ws.send( JSON.stringify(previewsettings));
+    const lineheightrate = 1.75;
+    const fontfamily        = config.get('preview.font-family');
+    const fontsize          = config.get('preview.fontsize');
+    const numfontsize       = /(\d+)(\D+)/.exec(fontsize)[1];
+    const unitoffontsize    = /(\d+)(\D+)/.exec(fontsize)[2];
+    const linelength        = config.get('preview.linelength');
+    const linesperpage      = config.get('preview.linesperpage');
+    const pagewidth         = (linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize;
+    const pageheight        = (linelength * numfontsize) + unitoffontsize;
+    const lineheight        = (numfontsize * lineheightrate) + unitoffontsize;
+    
+    const previewsettings = {
+        lineheightrate,
+        fontfamily   , 
+        fontsize      ,
+        numfontsize   ,
+        unitoffontsize,
+        linelength    ,
+        linesperpage  ,
+        pagewidth     ,
+        pageheight    ,
+        lineheight    ,
+    }
+    
+    // Node http serverを起動する
+    const http = require('http');
+    const folderPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    const html = fs.readFileSync(path.join(folderPath, 'htdocs/index.html'));
+    
+    var viwerserver = http.createServer(function(request, response) {
+        response.writeHead(200, {'Content-Type': 'text/html',
+        'Cache-Control': 'private, max-age=0'
+    });
+        response.end(html);
+    })
+    
+    viwerserver.listen(8080);
+    
+    // Node Websockets Serverを起動する
+    const wsserver = require("ws").Server;
+    const s = new wsserver({ port: 5001 });
+    
+    s.on("connection", ws => {
+        //console.log(previewvariables());
+        ws.on("message", message => {
+    
+            console.log("Received: " + message);
+            console.log(previewsettings);
+    
+            if (message === "hello") {
+                ws.send( JSON.stringify(previewsettings));
+            }
+        });
+    });
+    
+    vscode.workspace.onDidChangeTextDocument((e) => {
+        var _a;
+        if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
+            s.clients.forEach(client => {
+                client.send(taggedHTML);
+            });        
         }
     });
-});
-
-
-//const previewsettings = previewvariables();
-
-
-vscode.workspace.onDidChangeTextDocument((e) => {
-    var _a;
-    if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
-        s.clients.forEach(client => {
-            client.send(taggedHTML);
-        });        
-    }
-});
-
-vscode.window.onDidChangeTextEditorSelection((e) => {
-    if (e.textEditor == vscode.window.activeTextEditor) {
-        s.clients.forEach(client => {
-            client.send(editorText());
-        }); 
-    }
-});
-
-s.clients.forEach(client => {
-    client.send(editorText());
-}); 
-
+    
+    vscode.window.onDidChangeTextEditorSelection((e) => {
+        if (e.textEditor == vscode.window.activeTextEditor) {
+            s.clients.forEach(client => {
+                client.send(editorText());
+            }); 
+        }
+    });
+    
+    s.clients.forEach(client => {
+        client.send(editorText());
+    }); 
+    
+    
+}
 
 function verticalpreview(){
 //    vscode.window.showInformationMessage('Hello, world!');
@@ -99,7 +100,7 @@ function verticalpreview(){
         } // Webview options. More on these later.
     );
 
-    vscode.workspace.onDidChangeTextDocument((e) => {
+/*     vscode.workspace.onDidChangeTextDocument((e) => {
         var _a;
         if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
             panel.webview.html = getWebviewContent();
@@ -111,9 +112,22 @@ function verticalpreview(){
             panel.webview.html = getWebviewContent();
         }
     });
-
+ */
     // And set its HTML content
-    panel.webview.html = getWebviewContent();
+    //panel.webview.html = getWebviewContent();
+    panel.webview.html = `
+    <html>
+    <head>
+    <style>
+    body{
+        width:100vw;height:100vh;
+    }
+    </style>
+    </head>
+    <body>
+    <iframe src="http://localhost:8080" frameBorder="2" style="background-color:red;min-width: 100%; min-height: 100%" />
+    </body>
+    </html>`;
 }
 
 function exportpdf(){
@@ -157,7 +171,7 @@ function exportpdf(){
 function activate(context) {
     context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
-
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
 }
 
 

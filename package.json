@@ -29,6 +29,10 @@
                 "title": "Novel:縦書きプレビュー"
             },
             {
+                "command": "Novel.launch-preview-server",
+                "title": "Novel:プレビューサーバー起動"
+            },
+            {
                 "command": "Novel.export-pdf",
                 "title": "Novel:PDF出力"
             }
