@@ -9,7 +9,7 @@
     "engines": {
         "vscode": "^1.54.0"
     },
-    "main": "./extension.js",
+    "main": "./extension.ts",
     "dependencies": {
         "http": "^0.0.1-security",
         "http-server": "^0.12.3",
@@ -91,6 +91,7 @@
         "http": "^0.0.1-security",
         "http-server": "^0.12.3",
         "path": "^0.12.7",
+        "typescript": "^4.2.4",
         "vscode": "^1.1.37",
         "ws": "^7.4.5"
     }
