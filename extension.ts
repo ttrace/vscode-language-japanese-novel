@@ -23,31 +23,6 @@ function launchserver(origineditor){
     //https://sasaplus1.hatenadiary.com/entry/20121129/1354198092 が良さそう。
 
 
-    const config = vscode.workspace.getConfiguration('Novel');
-
-    const lineheightrate = 1.75;
-    const fontfamily        = config.get('preview.font-family');
-    const fontsize          = config.get('preview.fontsize');
-    const numfontsize       = parseInt(/(\d+)(\D+)/.exec(fontsize)[1]);
-    const unitoffontsize    = /(\d+)(\D+)/.exec(fontsize)[2];
-    const linelength        = config.get('preview.linelength');
-    const linesperpage      = config.get('preview.linesperpage');
-    const pagewidth         = (linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize;
-    const pageheight        = (linelength * numfontsize) + unitoffontsize;
-    const lineheight        = (numfontsize * lineheightrate) + unitoffontsize;
-    
-    const previewsettings = {
-        lineheightrate,
-        fontfamily   , 
-        fontsize      ,
-        numfontsize   ,
-        unitoffontsize,
-        linelength    ,
-        linesperpage  ,
-        pagewidth     ,
-        pageheight    ,
-        lineheight    ,
-    }
     
     // Node http serverを起動する
     const http = require('http');
@@ -75,10 +50,10 @@ function launchserver(origineditor){
         ws.on("message", message => {
     
             console.log("Received: " + message);
-            console.log(previewsettings);
+            console.log(getConfig());
     
             if (message === "hello") {
-                ws.send( JSON.stringify(previewsettings));
+                ws.send( JSON.stringify(getConfig()));
                 //ws.send( editorText());
             } else if (message === "givemedata"){
                 console.log("sending body");
@@ -99,7 +74,14 @@ function launchserver(origineditor){
             publishwebsocketsdelay.presskey(s);
         }
     });
-    
+
+    vscode.workspace.onDidChangeConfiguration((e) => {
+            //設定変更
+            console.log('setting changed');
+            sendsettingwebsockets(s);
+    });
+
+
     publishwebsocketsdelay.presskey(s);
 
     return s;
@@ -109,6 +91,41 @@ function publishwebsockets(socketserver){
     socketserver.clients.forEach(client => {
         client.send(editorText("active"));
     }); 
+}
+
+function sendsettingwebsockets(socketserver){
+    socketserver.clients.forEach(client => {
+        client.send(( JSON.stringify(getConfig())));
+    }); 
+}
+
+function getConfig(){
+    const config = vscode.workspace.getConfiguration('Novel');
+
+    const lineheightrate = 1.75;
+    const fontfamily        = config.get('preview.font-family');
+    const fontsize          = config.get('preview.fontsize');
+    const numfontsize       = parseInt(/(\d+)(\D+)/.exec(fontsize)[1]);
+    const unitoffontsize    = /(\d+)(\D+)/.exec(fontsize)[2];
+    const linelength        = config.get('preview.linelength');
+    const linesperpage      = config.get('preview.linesperpage');
+    const pagewidth         = (linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize;
+    const pageheight        = (linelength * numfontsize) + unitoffontsize;
+    const lineheight        = (numfontsize * lineheightrate) + unitoffontsize;
+    
+    const previewsettings = {
+        lineheightrate,
+        fontfamily   , 
+        fontsize      ,
+        numfontsize   ,
+        unitoffontsize,
+        linelength    ,
+        linesperpage  ,
+        pagewidth     ,
+        pageheight    ,
+        lineheight    ,
+    }
+    return previewsettings;
 }
 
 var keypressflag = false;
