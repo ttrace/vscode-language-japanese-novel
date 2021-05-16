@@ -16,7 +16,8 @@
         "ws": "^7.4.5"
     },
     "scripts": {
-        "postinstall": "node ./node_modules/vscode/bin/install"
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "lint": "eslint . --ext ts"
     },
     "activationEvents": [
         "*"
