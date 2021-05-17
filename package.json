@@ -1,104 +1,113 @@
 {
-    "name": "novel-writer",
-    "version": "0.7.2",
-    "publisher": "TaiyoFujii",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/ttrace/vscode-language-japanese-novel"
-    },
-    "engines": {
-        "vscode": "^1.54.0"
-    },
-    "main": "./extension.ts",
-    "dependencies": {
-        "http": "^0.0.1-security",
-        "http-server": "^0.12.3",
-        "ws": "^7.4.5"
-    },
-    "scripts": {
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "lint": "eslint . --ext ts"
-    },
-    "activationEvents": [
-        "*"
+  "name": "novel-writer",
+  "version": "0.7.4",
+  "publisher": "TaiyoFujii",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ttrace/vscode-language-japanese-novel.git"
+  },
+  "engines": {
+    "vscode": "^1.54.0"
+  },
+  "main": "out/extension.js",
+  "dependencies": {
+    "http": "^0.0.1-security",
+    "http-server": "^0.12.3",
+    "ws": "^7.4.5"
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "lint": "eslint . --ext ts",
+    "compile": "tsc -p ./"
+  },
+  "activationEvents": [
+    "*"
+  ],
+  "copyright": "MIT",
+  "contributes": {
+    "commands": [
+      {
+        "command": "Novel.vertical-preview",
+        "title": "Novel:縦書きプレビュー"
+      },
+      {
+        "command": "Novel.launch-preview-server",
+        "title": "Novel:プレビューサーバー起動"
+      },
+      {
+        "command": "Novel.export-pdf",
+        "title": "Novel:PDF出力"
+      }
     ],
-    "copyright": "MIT",
-    "contributes": {
-        "commands": [
-            {
-                "command": "Novel.vertical-preview",
-                "title": "Novel:縦書きプレビュー"
-            },
-            {
-                "command": "Novel.launch-preview-server",
-                "title": "Novel:プレビューサーバー起動"
-            },
-            {
-                "command": "Novel.export-pdf",
-                "title": "Novel:PDF出力"
-            }
+    "languages": [
+      {
+        "id": "novel",
+        "extensions": [
+          ".txt"
         ],
-        "languages": [
-            {
-                "id": "novel",
-                "extensions": [
-                    ".txt"
-                ],
-                "configuration": "./novel.language-configuration.json"
-            }
-        ],
-        "grammars": [
-            {
-                "language": "novel",
-                "scopeName": "source.novel",
-                "path": "./syntaxes/novel.tmGrammar.json"
-            }
-        ],
-        "configuration": {
-            "title": "縦書きプレビュー設定",
-            "properties": {
-                "Novel.preview.font-family": {
-                    "type": "string",
-                    "default": "\"serif\"",
-                    "description": "プレビュー用のフォント名を入力してください。 \ne.g. \"UD Digi Kyokasho NK-R\",\"ヒラギノ明朝 ProN W3\", \"HiraMinProN-W3\", serif, sans-serif;"
-                },
-                "Novel.preview.fontsize": {
-                    "type": "string",
-                    "default": "14pt",
-                    "description": "文字の基本サイズを入力してください"
-                },
-                "Novel.preview.linelength": {
-                    "type": "number",
-                    "default": "40",
-                    "description": "一行の文字数を指定してください"
-                },
-                "Novel.preview.linesperpage": {
-                    "type": "number",
-                    "default": "10",
-                    "description": "1ページの行数を指定してください"
-                },
-                "Novel.preview.userregex": {
-                    "type": "array",
-                    "default": [],
-                    "description": "正規表現でHTML出力を調整することができます。複数の処理を行う場合は配列を増やしてください。\n（例） [\"い\", \"<span class='small'>ゐ</span>]\",[\"<p>[^「](.+?)</p>\",\"<p>　$1</p>\"], [ RegExp , Str ]）"
-                }
-            }
+        "configuration": "./novel.language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "novel",
+        "scopeName": "source.novel",
+        "path": "./syntaxes/novel.tmGrammar.json"
+      }
+    ],
+    "configuration": {
+      "title": "縦書きプレビュー設定",
+      "properties": {
+        "Novel.preview.font-family": {
+          "type": "string",
+          "default": "\"serif\"",
+          "description": "プレビュー用のフォント名を入力してください。 \ne.g. \"UD Digi Kyokasho NK-R\",\"ヒラギノ明朝 ProN W3\", \"HiraMinProN-W3\", serif, sans-serif;"
+        },
+        "Novel.preview.fontsize": {
+          "type": "string",
+          "default": "14pt",
+          "description": "文字の基本サイズを入力してください"
+        },
+        "Novel.preview.linelength": {
+          "type": "number",
+          "default": "40",
+          "description": "一行の文字数を指定してください"
+        },
+        "Novel.preview.linesperpage": {
+          "type": "number",
+          "default": "10",
+          "description": "1ページの行数を指定してください"
+        },
+        "Novel.preview.userregex": {
+          "type": "array",
+          "default": [],
+          "description": "正規表現でHTML出力を調整することができます。複数の処理を行う場合は配列を増やしてください。\n（例） [\"い\", \"<span class='small'>ゐ</span>]\",[\"<p>[^「](.+?)</p>\",\"<p>　$1</p>\"], [ RegExp , Str ]）"
         }
-    },
-    "devDependencies": {
-        "@types/ws": "^7.4.4",
-        "@typescript-eslint/eslint-plugin": "^4.23.0",
-        "@typescript-eslint/parser": "^4.23.0",
-        "@vivliostyle/cli": "^3.5.0",
-        "child_process": "^1.0.2",
-        "eslint": "^7.26.0",
-        "fs": "^0.0.1-security",
-        "http": "^0.0.1-security",
-        "http-server": "^0.12.3",
-        "path": "^0.12.7",
-        "typescript": "^4.2.4",
-        "utf-8-validate": "^5.0.5",
-        "vscode": "^1.1.37",
-        "ws": "^7.4.5"
+      }
     }
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.32.0",
+    "@types/ws": "^7.4.4",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
+    "child_process": "^1.0.2",
+    "eslint": "^7.26.0",
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
+    "http-server": "^0.12.3",
+    "path": "^0.12.7",
+    "typescript": "^4.2.4",
+    "utf-8-validate": "^5.0.5"
+  },
+  "description": "<!-- @import \"[TOC]\" {cmd=\"toc\" depthFrom=2 depthTo=6 orderedList=false} -->",
+  "bugs": {
+    "url": "https://github.com/ttrace/vscode-language-japanese-novel/issues"
+  },
+  "homepage": "https://github.com/ttrace/vscode-language-japanese-novel#readme",
+  "directories": {
+    "test": "test"
+  },
+  "author": "",
+  "license": "ISC"
 }
