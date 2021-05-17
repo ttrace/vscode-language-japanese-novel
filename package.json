@@ -23,7 +23,6 @@
   "activationEvents": [
     "*"
   ],
-  "copyright": "MIT",
   "contributes": {
     "commands": [
       {
@@ -109,5 +108,5 @@
     "test": "test"
   },
   "author": "",
-  "license": "ISC"
+  "license": "MIT"
 }
