@@ -16,7 +16,8 @@
         "ws": "^7.4.5"
     },
     "scripts": {
-        "postinstall": "node ./node_modules/vscode/bin/install"
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "lint": "eslint . --ext ts"
     },
     "activationEvents": [
         "*"
@@ -85,8 +86,11 @@
         }
     },
     "devDependencies": {
+        "@typescript-eslint/eslint-plugin": "^4.23.0",
+        "@typescript-eslint/parser": "^4.23.0",
         "@vivliostyle/cli": "^3.5.0",
         "child_process": "^1.0.2",
+        "eslint": "^7.26.0",
         "fs": "^0.0.1-security",
         "http": "^0.0.1-security",
         "http-server": "^0.12.3",
