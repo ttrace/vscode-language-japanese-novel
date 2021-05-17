@@ -86,6 +86,7 @@
         }
     },
     "devDependencies": {
+        "@types/ws": "^7.4.4",
         "@typescript-eslint/eslint-plugin": "^4.23.0",
         "@typescript-eslint/parser": "^4.23.0",
         "@vivliostyle/cli": "^3.5.0",
