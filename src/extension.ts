@@ -102,19 +102,40 @@ function sendsettingwebsockets(socketserver: any){
     }); 
 }
 
+type UnitOfFontSize = 'pt' | 'mm' | 'em' | 'rem' | 'px';
+type FontSize = `${number}${UnitOfFontSize}`;
+
+function parseFontSizeNum(fontSize: FontSize, defaultValue: number) : number {
+    const result = /(\d+)(\D+)/.exec(fontSize);
+    if (result && result[0]) {
+        return parseInt(result[0]);
+    } else {
+        return defaultValue;
+    }
+}
+
+function parseUnitOfFontSize(fontSize: FontSize, defaultValue: UnitOfFontSize) : UnitOfFontSize {
+    const result = /(\d+)(pt|mm|em|rem|px)/.exec(fontSize);
+    if (result && result[1]) {
+        return result[1] as UnitOfFontSize;
+    } else {
+        return defaultValue;
+    }
+}
+
 function getConfig(){
     const config = vscode.workspace.getConfiguration('Novel');
 
     const lineheightrate = 1.75;
-    const fontfamily        = config.get('preview.font-family');
-    const fontsize: string  = config.get('preview.fontsize')!;
-    const numfontsize       = parseInt(/(\d+)(\D+)/.exec(fontsize)![1]);
-    const unitoffontsize    = /(\d+)(\D+)/.exec(fontsize)![2];
-    const linelength:number = config.get('preview.linelength')!;
-    const linesperpage: number = config.get('preview.linesperpage')!;
-    const pagewidth         = (linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize;
-    const pageheight        = (linelength * numfontsize) + unitoffontsize;
-    const lineheight        = (numfontsize * lineheightrate) + unitoffontsize;
+    const fontfamily        = config.get<string>('preview.font-family', 'serif');
+    const fontsize = config.get<FontSize>('preview.fontsize', '14pt' as FontSize);
+    const numfontsize       = parseFontSizeNum(fontsize, 14);
+    const unitoffontsize    = parseUnitOfFontSize(fontsize, 'pt');
+    const linelength = config.get<number>('preview.linelength', 40);
+    const linesperpage = config.get<number>('preview.linesperpage', 10);
+    const pagewidth         = `${linesperpage * numfontsize * lineheightrate * 1.003}${unitoffontsize}`;
+    const pageheight        = `${linelength * numfontsize}${unitoffontsize}`;
+    const lineheight        = `${numfontsize * lineheightrate}${unitoffontsize}`;
     
     const previewsettings = {
         lineheightrate,
