@@ -115,7 +115,7 @@ function parseFontSizeNum(fontSize: FontSize, defaultValue: number) : number {
 }
 
 function parseUnitOfFontSize(fontSize: FontSize, defaultValue: UnitOfFontSize) : UnitOfFontSize {
-    const result = /(\d+)(pt|mm|em|rem|px)/.exec(fontSize);
+    const result = /(\d+)(pt|mm|em|rem|px|vh|vw|q)/.exec(fontSize);
     if (result && result[1]) {
         return result[1] as UnitOfFontSize;
     } else {
