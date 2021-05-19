@@ -195,24 +195,10 @@ function verticalpreview(){
         } // Webview options. More on these later.
     );
 
-/*     vscode.workspace.onDidChangeTextDocument((e) => {
-        var _a;
-        if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
-            panel.webview.html = getWebviewContent();
-        }
-    });
-
-    vscode.window.onDidChangeTextEditorSelection((e) => {
-        if (e.textEditor == vscode.window.activeTextEditor) {
-            panel.webview.html = getWebviewContent();
-        }
-    });
- */
-    // And set its HTML content
-    //panel.webview.html = getWebviewContent();
-    panel.webview.html = `
+    panel.webview.html = `<!DOCTYPE html>
     <html>
         <head>
+            <meta http-equiv="Content-Security-Policy" content="default-src 'none';">
             <style>
             body{
                 width:100vw;

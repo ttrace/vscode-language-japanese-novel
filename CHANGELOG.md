@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.4
+
+[Masayoshi Takahashi](https://github.com/takahashim)さんの貢献によって、eslintを導入し、スクリプトの型安全性を見直しています。また、[Masayoshi Takahashi]さんには、 MITライセンスの記載方法も修正していただきました。
+
+- [Define FontSize type as Template Literal Types](https://github.com/ttrace/vscode-language-japanese-novel/pull/4)
+- [add eslint](https://github.com/ttrace/vscode-language-japanese-novel/pull/6)
+
+プレビューのレスポンスを若干早めています。
+
 ## 0.7.2
 
 単独で開いたファイルも縦書きできるようになりました。
