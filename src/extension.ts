@@ -552,7 +552,7 @@ function getWebviewContent() {
       }
   
       /* 圏点（<span class="smaller">ゴマ</span>） */
-      em.sesame_dot {
+      em.side-dot, em.sesame_dot {
       font-style: normal;
       -webkit-text-emphasis-style: sesame;
       text-emphasis-style: sesame;
