@@ -102,20 +102,51 @@ function sendsettingwebsockets(socketserver: any){
     }); 
 }
 
+type UnitOfFontSize = 'pt' | 'mm' | 'em' | 'rem' | 'px' | 'vh' | 'vw' | 'q';
+type FontSize = `${number}${UnitOfFontSize}`;
+
+function parseFontSizeNum(fontSize: FontSize, defaultValue: number) : number {
+    const result = /(\d+)(\D+)/.exec(fontSize);
+    console.log(result, result[0]);
+    if (result && result[1]) {
+        return parseInt(result[1]);
+    } else {
+        return defaultValue;
+    }
+}
+
+function parseUnitOfFontSize(fontSize: FontSize, defaultValue: UnitOfFontSize) : UnitOfFontSize {
+    const result = /(\d+)(pt|mm|em|rem|px|vh|vw|q)/.exec(fontSize);
+    console.log(result);
+    if (result && result[2]) {
+        return result[2] as UnitOfFontSize;
+    } else {
+        return defaultValue;
+    }
+}
+
 function getConfig(){
     const config = vscode.workspace.getConfiguration('Novel');
 
     const lineheightrate = 1.75;
-    const fontfamily        = config.get('preview.font-family');
-    const fontsize: string  = config.get('preview.fontsize')!;
-    const numfontsize       = parseInt(/(\d+)(\D+)/.exec(fontsize)![1]);
-    const unitoffontsize    = /(\d+)(\D+)/.exec(fontsize)![2];
-    const linelength:number = config.get('preview.linelength')!;
-    const linesperpage: number = config.get('preview.linesperpage')!;
-    const pagewidth         = (linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize;
-    const pageheight        = (linelength * numfontsize) + unitoffontsize;
-    const lineheight        = (numfontsize * lineheightrate) + unitoffontsize;
+    const fontfamily        = config.get<string>('preview.font-family', 'serif');
+    const fontsize = config.get<FontSize>('preview.fontsize', '14pt' as FontSize);
+    const numfontsize       = parseFontSizeNum(fontsize, 14);
+    const unitoffontsize    = parseUnitOfFontSize(fontsize, 'pt');
+    //const unitoffontsize    = /(\d+)(\D+)/.exec(fontsize)![2];
+    const linelength = config.get<number>('preview.linelength', 40);
+    const linesperpage = config.get<number>('preview.linesperpage', 10);
+    const pagewidth         = `${linesperpage * numfontsize * lineheightrate * 1.003}${unitoffontsize}`;
+    const pageheight        = `${linelength * numfontsize}${unitoffontsize}`;
+    const lineheight        = `${numfontsize * lineheightrate}${unitoffontsize}`;
     
+
+/*
+    const fontsize = config.get<FontSize>('preview.fontsize', '14pt' as FontSize);
+    const numfontsize       = parseFontSizeNum(fontsize, 14);
+    const unitoffontsize    = parseUnitOfFontSize(fontsize, 'pt');
+     */
+
     const previewsettings = {
         lineheightrate,
         fontfamily   , 
@@ -174,22 +205,7 @@ function verticalpreview(){
         } // Webview options. More on these later.
     );
 
-/*     vscode.workspace.onDidChangeTextDocument((e) => {
-        var _a;
-        if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
-            panel.webview.html = getWebviewContent();
-        }
-    });
-
-    vscode.window.onDidChangeTextEditorSelection((e) => {
-        if (e.textEditor == vscode.window.activeTextEditor) {
-            panel.webview.html = getWebviewContent();
-        }
-    });
- */
-    // And set its HTML content
-    //panel.webview.html = getWebviewContent();
-    panel.webview.html = `
+    panel.webview.html = `<!DOCTYPE html>
     <html>
         <head>
             <style>
@@ -290,9 +306,7 @@ function markUpHtml( myhtml: string ){
     let taggedHTML = myhtml;
     //configuration 読み込み
     const config = vscode.workspace.getConfiguration('Novel');
-    let userregex = new Array(0);
-        userregex = config.get('preview.userregex')!;
-//    console.log(userregex, userregex.length);
+    const userregex = config.get<Array<[string, string]>>('preview.userregex', []);
     if (userregex.length > 0){
         
         userregex.forEach( function(element){
@@ -545,7 +559,7 @@ function getWebviewContent() {
       }
   
       /* 圏点（<span class="smaller">ゴマ</span>） */
-      em.sesame_dot {
+      em.side-dot, em.sesame_dot {
       font-style: normal;
       -webkit-text-emphasis-style: sesame;
       text-emphasis-style: sesame;
