@@ -297,9 +297,7 @@ function markUpHtml( myhtml: string ){
     let taggedHTML = myhtml;
     //configuration 読み込み
     const config = vscode.workspace.getConfiguration('Novel');
-    let userregex = new Array(0);
-        userregex = config.get('preview.userregex')!;
-//    console.log(userregex, userregex.length);
+    const userregex = config.get<Array<[string, string]>>('preview.userregex', []);
     if (userregex.length > 0){
         
         userregex.forEach( function(element){
