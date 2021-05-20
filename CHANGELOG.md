@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.7.4
+## 0.7.6
 
 [Masayoshi Takahashi](https://github.com/takahashim)さんの貢献によって、eslintを導入し、スクリプトの型安全性を見直しています。また、[Masayoshi Takahashi]さんには、 MITライセンスの記載方法も修正していただきました。
 
@@ -8,6 +8,10 @@
 - [add eslint](https://github.com/ttrace/vscode-language-japanese-novel/pull/6)
 
 プレビューのレスポンスを若干早めています。
+
+## 0.7.5
+
+0.7.4 で動作しなくなっていた縦書きのプレビューのバグを修正しました。
 
 ## 0.7.2
 
