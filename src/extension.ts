@@ -128,25 +128,17 @@ function parseUnitOfFontSize(fontSize: FontSize, defaultValue: UnitOfFontSize) :
 function getConfig(){
     const config = vscode.workspace.getConfiguration('Novel');
 
-    const lineheightrate = 1.75;
+    const lineheightrate    = 1.75;
     const fontfamily        = config.get<string>('preview.font-family', 'serif');
-    const fontsize = config.get<FontSize>('preview.fontsize', '14pt' as FontSize);
+    const fontsize          = config.get<FontSize>('preview.fontsize', '14pt' as FontSize);
     const numfontsize       = parseFontSizeNum(fontsize, 14);
     const unitoffontsize    = parseUnitOfFontSize(fontsize, 'pt');
-    //const unitoffontsize    = /(\d+)(\D+)/.exec(fontsize)![2];
-    const linelength = config.get<number>('preview.linelength', 40);
-    const linesperpage = config.get<number>('preview.linesperpage', 10);
+    const linelength        = config.get<number>('preview.linelength', 40);
+    const linesperpage      = config.get<number>('preview.linesperpage', 10);
     const pagewidth         = `${linesperpage * numfontsize * lineheightrate * 1.003}${unitoffontsize}`;
     const pageheight        = `${linelength * numfontsize}${unitoffontsize}`;
     const lineheight        = `${numfontsize * lineheightrate}${unitoffontsize}`;
     
-
-/*
-    const fontsize = config.get<FontSize>('preview.fontsize', '14pt' as FontSize);
-    const numfontsize       = parseFontSizeNum(fontsize, 14);
-    const unitoffontsize    = parseUnitOfFontSize(fontsize, 'pt');
-     */
-
     const previewsettings = {
         lineheightrate,
         fontfamily   , 
