@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -99,7 +99,7 @@
     "typescript": "^4.2.4",
     "utf-8-validate": "^5.0.5"
   },
-  "description": "<!-- @import \"[TOC]\" {cmd=\"toc\" depthFrom=2 depthTo=6 orderedList=false} -->",
+  "description": "VS Codeの小説執筆を支援する機能拡張です",
   "bugs": {
     "url": "https://github.com/ttrace/vscode-language-japanese-novel/issues"
   },
