@@ -5,7 +5,7 @@ import * as cp from 'child_process';
 import * as http from 'http';
 import * as websockets from 'ws';
 
-let myeditor = vscode.window.activeTextEditor;
+let myEditor = vscode.window.activeTextEditor;
 const output = vscode.window.createOutputChannel("Novel");
 
 //リソースとなるhtmlファイル
@@ -21,7 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 
-function launchserver(origineditor: any){
+function launchserver(originEditor: any){
     //もしサーバーが動いていたら止めて再起動する……のを、実装しなきゃなあ。
     //https://sasaplus1.hatenadiary.com/entry/20121129/1354198092 が良さそう。
 
@@ -34,7 +34,7 @@ function launchserver(origineditor: any){
     
 
 
-    const viwerserver = http.createServer(function(request, response) {
+    const viewerServer = http.createServer(function(request, response) {
         response.writeHead(200, {
             'Content-Type': 'text/html',
             'Cache-Control': 'private, max-age=0'
@@ -42,11 +42,11 @@ function launchserver(origineditor: any){
         response.end(html);
     })
     
-    viwerserver.listen(8080);
+    viewerServer.listen(8080);
     
     // Node Websockets Serverを起動する
-    const wsserver = websockets.Server;
-    const s = new wsserver({ port: 5001 });
+    const wsServer = websockets.Server;
+    const s = new wsServer({ port: 5001 });
     
     s.on("connection", ws => {
         //console.log(previewvariables());
@@ -60,7 +60,7 @@ function launchserver(origineditor: any){
                 //ws.send( editorText());
             } else if (message === "givemedata"){
                 console.log("sending body");
-                ws.send( editorText(origineditor));
+                ws.send( editorText(originEditor));
             }
         });
     });
@@ -68,13 +68,13 @@ function launchserver(origineditor: any){
     vscode.workspace.onDidChangeTextDocument((e) => {
         let _a;
         if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
-            publishwebsocketsdelay.presskey(s);
+            publishWebsocketsDelay.presskey(s);
         }
     });
     
     vscode.window.onDidChangeTextEditorSelection((e) => {
         if (e.textEditor == vscode.window.activeTextEditor) {
-            publishwebsocketsdelay.presskey(s);
+            publishWebsocketsDelay.presskey(s);
         }
     });
 
@@ -85,19 +85,19 @@ function launchserver(origineditor: any){
     });
 
 
-    publishwebsocketsdelay.presskey(s);
+    publishWebsocketsDelay.presskey(s);
 
     return s;
 }
 
-function publishwebsockets(socketserver: any){
-    socketserver.clients.forEach((client: any) => {
+function publishwebsockets(socketServer: any){
+    socketServer.clients.forEach((client: any) => {
         client.send(editorText("active"));
     }); 
 }
 
-function sendsettingwebsockets(socketserver: any){
-    socketserver.clients.forEach((client: any) => {
+function sendsettingwebsockets(socketServer: any){
+    socketServer.clients.forEach((client: any) => {
         client.send(( JSON.stringify(getConfig())));
     }); 
 }
@@ -126,51 +126,51 @@ function parseUnitOfFontSize(fontSize: FontSize, defaultValue: UnitOfFontSize) :
 function getConfig(){
     const config = vscode.workspace.getConfiguration('Novel');
 
-    const lineheightrate    = 1.75;
-    const fontfamily        = config.get<string>('preview.font-family', 'serif');
-    const fontsize          = config.get<FontSize>('preview.fontsize', '14pt' as FontSize);
-    const numfontsize       = parseFontSizeNum(fontsize, 14);
-    const unitoffontsize    = parseUnitOfFontSize(fontsize, 'pt');
-    const linelength        = config.get<number>('preview.linelength', 40);
-    const linesperpage      = config.get<number>('preview.linesperpage', 10);
-    const pagewidth         = `${linesperpage * numfontsize * lineheightrate * 1.003}${unitoffontsize}`;
-    const pageheight        = `${linelength * numfontsize}${unitoffontsize}`;
-    const lineheight        = `${numfontsize * lineheightrate}${unitoffontsize}`;
+    const lineHeightRate    = 1.75;
+    const fontFamily        = config.get<string>('preview.font-family', 'serif');
+    const fontSize          = config.get<FontSize>('preview.fontsize', '14pt' as FontSize);
+    const numFontSize       = parseFontSizeNum(fontSize, 14);
+    const unitOfFontSize    = parseUnitOfFontSize(fontSize, 'pt');
+    const lineLength        = config.get<number>('preview.linelength', 40);
+    const linesPerPage      = config.get<number>('preview.linesperpage', 10);
+    const pageWidth         = `${linesPerPage * numFontSize * lineHeightRate * 1.003}${unitOfFontSize}`;
+    const pageHeight        = `${lineLength * numFontSize}${unitOfFontSize}`;
+    const lineHeight        = `${numFontSize * lineHeightRate}${unitOfFontSize}`;
     
-    const previewsettings = {
-        lineheightrate,
-        fontfamily   , 
-        fontsize      ,
-        numfontsize   ,
-        unitoffontsize,
-        linelength    ,
-        linesperpage  ,
-        pagewidth     ,
-        pageheight    ,
-        lineheight    ,
+    const previewSettings = {
+        lineHeightRate,
+        fontFamily    ,
+        fontSize      ,
+        numFontSize   ,
+        unitOfFontSize,
+        lineLength    ,
+        linesPerPage  ,
+        pageWidth     ,
+        pageHeight    ,
+        lineHeight    ,
     }
-    return previewsettings;
+    return previewSettings;
 }
 
-let keypressflag = false;
+let keyPressFlag = false;
 
-const publishwebsocketsdelay: any = {
-    publish: function(socketserver: any) {
-        publishwebsockets(socketserver);
-        keypressflag = false;
+const publishWebsocketsDelay: any = {
+    publish: function(socketServer: any) {
+        publishwebsockets(socketServer);
+        keyPressFlag = false;
         delete this.timeoutID;
     },
     presskey: function(s: any) {
       //this.cancel();
-      if (!keypressflag){
-            const updatecounter = Math.ceil(vscode.window.activeTextEditor!.document.getText().length / 50);
+      if (!keyPressFlag){
+            const updateCounter = Math.ceil(vscode.window.activeTextEditor!.document.getText().length / 50);
             //const self = this;
-            const socketserver = s;
+            const socketServer = s;
             //const timer = timer;
-            this.timeoutID = setTimeout(socketserver => {
-                this.publish(socketserver);
-                }, updatecounter, socketserver);
-                keypressflag = true;
+            this.timeoutID = setTimeout(socketServer => {
+                this.publish(socketServer);
+                }, updateCounter, socketServer);
+                keyPressFlag = true;
         }
     },
     cancel: function() {
@@ -182,8 +182,8 @@ const publishwebsocketsdelay: any = {
   };
 
 function verticalpreview(){
-    const origineditor = vscode.window.activeTextEditor;
-    launchserver(origineditor);
+    const originEditor = vscode.window.activeTextEditor;
+    launchserver(originEditor);
 
 //    vscode.window.showInformationMessage('Hello, world!');
     const panel = vscode.window.createWebviewPanel(
@@ -213,28 +213,28 @@ function verticalpreview(){
 }
 
 function exportpdf(){
-    const myhtml = getWebviewContent();
+    const myHtml = getWebviewContent();
     //console.log(myhtml);
     const folderPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
-    const mypath = path.join(folderPath, 'publish.html');
-    const myworkingdirectory = path.join(folderPath, '');
-    let vivliocommand = 'vivliostyle build ';
+    const myPath = path.join(folderPath, 'publish.html');
+    const myWorkingDirectory = path.join(folderPath, '');
+    let vivlioCommand = 'vivliostyle build ';
 
-    let escapedpath = mypath;
-        escapedpath = escapedpath.replace(/ /g, '\\ ');
-    let escapeddirectory = myworkingdirectory;
-        escapeddirectory = escapeddirectory.replace(/ /g, '\\ ');
+    let escapedPath = myPath;
+        escapedPath = escapedPath.replace(/ /g, '\\ ');
+    let escapedDirectory = myWorkingDirectory;
+        escapedDirectory = escapedDirectory.replace(/ /g, '\\ ');
 
-        output.appendLine(`startig to publish: ${escapedpath}`);
-        vivliocommand = vivliocommand + escapedpath + ' -o ' + escapeddirectory + "/output.pdf";
+        output.appendLine(`startig to publish: ${escapedPath}`);
+        vivlioCommand = vivlioCommand + escapedPath + ' -o ' + escapedDirectory + "/output.pdf";
 
-        output.appendLine(`startig to publish: ${vivliocommand}`);
+        output.appendLine(`startig to publish: ${vivlioCommand}`);
 
-    fs.writeFile(mypath, myhtml, (err) => {
+    fs.writeFile(myPath, myHtml, (err) => {
         if (err) {console.log(err)}
         //https://docs.vivliostyle.org/#/ja/vivliostyle-cli
-        output.appendLine(`saving pdf to ${vivliocommand}`);
-        cp.exec(vivliocommand, (err, stdout, stderr) => {
+        output.appendLine(`saving pdf to ${vivlioCommand}`);
+        cp.exec(vivlioCommand, (err, stdout, stderr) => {
                 if (err) {
                     console.log(`stderr: ${stderr}`);
                     output.appendLine(`stderr: ${stderr}`);
@@ -257,15 +257,15 @@ function deactivate() {
 
 module.exports = { activate, deactivate };
 
-function editorText(origineditor: any){
-    if(origineditor === "active"){
-        myeditor = vscode.window.activeTextEditor;
+function editorText(originEditor: any){
+    if(originEditor === "active"){
+        myEditor = vscode.window.activeTextEditor;
     } else {
-        myeditor = origineditor;
+        myEditor = originEditor;
     }
 
-    const text = myeditor!.document.getText();
-    const cursorOffset = myeditor ? myeditor.document.offsetAt(myeditor.selection.anchor) : 0;
+    const text = myEditor!.document.getText();
+    const cursorOffset = myEditor ? myEditor.document.offsetAt(myEditor.selection.anchor) : 0;
     let myHTML = "";
 
     let cursorTaggedHtml = "";
@@ -292,17 +292,17 @@ function editorText(origineditor: any){
     return markUpHtml(myHTML);
 }
 
-function markUpHtml( myhtml: string ){
-    let taggedHTML = myhtml;
+function markUpHtml( myHtml: string ){
+    let taggedHTML = myHtml;
     //configuration 読み込み
     const config = vscode.workspace.getConfiguration('Novel');
-    const userregex = config.get<Array<[string, string]>>('preview.userregex', []);
-    if (userregex.length > 0){
+    const userRegex = config.get<Array<[string, string]>>('preview.userregex', []);
+    if (userRegex.length > 0){
         
-        userregex.forEach( function(element){
-                const thismatch = new RegExp(element[0], 'gi');
-                const thisreplace = element[1];
-                taggedHTML = taggedHTML.replace(thismatch, thisreplace);
+        userRegex.forEach( function(element){
+                const thisMatch = new RegExp(element[0], 'gi');
+                const thisReplace = element[1];
+                taggedHTML = taggedHTML.replace(thisMatch, thisReplace);
             //}
         });
     }
@@ -328,7 +328,7 @@ function markUpHtml( myhtml: string ){
 function getWebviewContent() {
 
     //configuration 読み込み
-    const previewsettings = getConfig();
+    const previewSettings = getConfig();
 /*     const config = vscode.workspace.getConfiguration('Novel');
         let lineheightrate = 1.75;
         let fontfamily = config.get('preview.font-family');
@@ -344,7 +344,7 @@ function getWebviewContent() {
         let lineheight = ( numfontsize * lineheightrate) + unitoffontsize;
   */       //console.log(lineheight);
 
-    const mytext = editorText("active");
+    const myText = editorText("active");
     return `<!DOCTYPE html>
   <html lang="ja">
   <head>
@@ -466,7 +466,7 @@ function getWebviewContent() {
       }
   
       p {
-        font-size: calc(110mm / ${previewsettings.linelength});
+        font-size: calc(110mm / ${previewSettings.lineLength});
         line height: 1.65;
         text-indent: 0em;
         hanging-punctuation: force-end;
@@ -475,27 +475,27 @@ function getWebviewContent() {
     }
  
       div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
-        padding-block-start: calc( ${previewsettings.fontsize} * ${previewsettings.lineheightrate});
+        padding-block-start: calc( ${previewSettings.fontSize} * ${previewSettings.lineHeightRate});
         }
 
         div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
-        padding-block-end: calc( ${previewsettings.fontsize} * ${previewsettings.lineheightrate});
+        padding-block-end: calc( ${previewSettings.fontSize} * ${previewSettings.lineHeightRate});
         }
 
     
     div.indent-1 p{
-    height: calc( 110mm - (${previewsettings.fontsize}));
-    padding-top: ${previewsettings.fontsize};
+    height: calc( 110mm - (${previewSettings.fontSize}));
+    padding-top: ${previewSettings.fontSize};
     }
 
     div.indent-2 p{
-    height: calc( 110mm - (${previewsettings.fontsize} * 2));
-    padding-top: calc(${previewsettings.fontsize} * 2);
+    height: calc( 110mm - (${previewSettings.fontSize} * 2));
+    padding-top: calc(${previewSettings.fontSize} * 2);
     }
 
     div.indent-3 p{
-    height: calc( 110mm - (${previewsettings.fontsize} * 3));
-    padding-top: calc(${previewsettings.fontsize} * 3);
+    height: calc( 110mm - (${previewSettings.fontSize} * 3));
+    padding-top: calc(${previewSettings.fontSize} * 3);
     }
 
         p.goth {
@@ -605,8 +605,8 @@ function getWebviewContent() {
   @media screen{
       body {
             writing-mode: vertical-rl;
-            font-family: ${previewsettings.fontfamily};
-            height: ${previewsettings.pageheight};
+            font-family: ${previewSettings.fontFamily};
+            height: ${previewSettings.pageHeight};
             overflow-y:hidden;
             padding:0;
         }
@@ -619,9 +619,9 @@ function getWebviewContent() {
         }
   
         p {
-            height: ${previewsettings.pageheight};
-            font-family: ${previewsettings.fontfamily};
-            font-size: ${previewsettings.fontsize};
+            height: ${previewSettings.pageHeight};
+            font-family: ${previewSettings.fontFamily};
+            font-size: ${previewSettings.fontSize};
             margin:0 0 0 0;
             vertical-align: middle;
         }
@@ -649,15 +649,15 @@ function getWebviewContent() {
   
           body{
               background-image:   linear-gradient(to right, rgba(50, 50, 50, 0.5) 0.5pt, rgba(0, 0, 50, 0.05) 10em);
-              background-size:    ${previewsettings.pagewidth} ${previewsettings.pageheight};
+              background-size:    ${previewSettings.pageWidth} ${previewSettings.pageHeight};
               background-repeat:  repeat-x;
               background-position: right 0px;
           }
           p{
               background-image:   linear-gradient( rgba(50, 50, 50, 1) 0.5pt, transparent 1pt),
                                   linear-gradient(to right, rgba(50, 50, 50, 1) 0.5pt, rgba(0, 0, 50, 0.05) 1pt);
-              background-size:    ${previewsettings.lineheight} ${previewsettings.fontsize},
-                                  ${previewsettings.lineheight} ${previewsettings.fontsize};
+              background-size:    ${previewSettings.lineHeight} ${previewSettings.fontSize},
+                                  ${previewSettings.lineHeight} ${previewSettings.fontSize};
               background-repeat:  repeat,
                                   repeat;
               background-position: right 0px,
@@ -665,18 +665,18 @@ function getWebviewContent() {
           }
 
           div.indent-1 p{
-            height: calc( ${previewsettings.pageheight} - (${previewsettings.fontsize}));
-            padding-top: ${previewsettings.fontsize};
+            height: calc( ${previewSettings.pageHeight} - (${previewSettings.fontSize}));
+            padding-top: ${previewSettings.fontSize};
             }
         
             div.indent-2 p{
-            height: calc( ${previewsettings.pageheight} - (${previewsettings.fontsize} * 2));
-            padding-top: calc(${previewsettings.fontsize} * 2);
+            height: calc( ${previewSettings.pageHeight} - (${previewSettings.fontSize} * 2));
+            padding-top: calc(${previewSettings.fontSize} * 2);
             }
         
             div.indent-3 p{
-            height: calc( ${previewsettings.pageheight} - (${previewsettings.fontsize} * 3));
-            padding-top: calc(${previewsettings.fontsize} * 3);
+            height: calc( ${previewSettings.pageHeight} - (${previewSettings.fontSize} * 3));
+            padding-top: calc(${previewSettings.fontSize} * 3);
             }
 
         
@@ -688,7 +688,7 @@ function getWebviewContent() {
             position:absolute;
             margin-right: -3em;
             margin-top: 0.5em;
-            top: ${previewsettings.pageheight};
+            top: ${previewSettings.pageHeight};
             background-color:rgba(50,50,00,0.5);
             max-width: 20em;
           }
@@ -719,7 +719,7 @@ function getWebviewContent() {
       <link rel="stylesheet" href="">
   </head>
   <body>
-  ${mytext}
+  ${myText}
   
   <script>
   
