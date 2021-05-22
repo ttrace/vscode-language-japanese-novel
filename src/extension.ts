@@ -161,16 +161,19 @@ const publishWebsocketsDelay: any = {
         delete this.timeoutID;
     },
     presskey: function(s: any) {
-      //this.cancel();
-      if (!keyPressFlag){
-            const updateCounter = Math.ceil(vscode.window.activeTextEditor!.document.getText().length / 50);
-            //const self = this;
-            const socketServer = s;
-            //const timer = timer;
-            this.timeoutID = setTimeout(socketServer => {
-                this.publish(socketServer);
+        //this.cancel();
+        if (!keyPressFlag){
+            const currentEditor = vscode.window.activeTextEditor;
+            if (currentEditor) {
+                const updateCounter = Math.ceil(currentEditor.document.getText().length / 50);
+                //const self = this;
+                const socketServer = s;
+                //const timer = timer;
+                this.timeoutID = setTimeout(socketServer => {
+                    this.publish(socketServer);
                 }, updateCounter, socketServer);
                 keyPressFlag = true;
+            }
         }
     },
     cancel: function() {
