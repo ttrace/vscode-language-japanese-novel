@@ -370,48 +370,48 @@
 
                     //CSS settings      
                         console.log(previewsettings);
-                        // styleSheet.insertRule( "p{font-size: calc(110mm / " + previewsettings.linelength + ") ; }" ) ;
+                        // styleSheet.insertRule( "p{font-size: calc(110mm / " + previewsettings.lineLength + ") ; }" ) ;
                         styleSheet.insertRule( `@media screen{
-                            body{   font-family:   ${previewsettings.fontfamily};
-                                    height:        ${previewsettings.pageheight};
-                                    background-size:    ${previewsettings.pagewidth} ${previewsettings.pageheight};}}`);
+                            body{   font-family:   ${previewsettings.fontFamily};
+                                    height:        ${previewsettings.pageHeight};
+                                    background-size:    ${previewsettings.pageWidth} ${previewsettings.pageHeight};}}`);
                         styleSheet.insertRule( `@media screen{
-                            p{  height:         ${previewsettings.pageheight};
-                                font-family:    ${previewsettings.fontfamily};
-                                font-size:      ${previewsettings.fontsize};
-                                line-height:    ${previewsettings.lineheightrate};
-                                background-size:    ${previewsettings.lineheight} ${previewsettings.fontsize},
-                                                    ${previewsettings.lineheight} ${previewsettings.fontsize}}}`);
+                            p{  height:         ${previewsettings.pageHeight};
+                                font-family:    ${previewsettings.fontFamily};
+                                font-size:      ${previewsettings.fontSize};
+                                line-height:    ${previewsettings.lineHeightRate};
+                                background-size:    ${previewsettings.lineHeight} ${previewsettings.fontSize},
+                                                    ${previewsettings.lineHeight} ${previewsettings.fontSize}}}`);
                         styleSheet.insertRule( `@media screen{
                             span.comment{
-                                top: ${previewsettings.pageheight};
+                                top: ${previewsettings.pageHeight};
                             }
                         }`);
 
                         styleSheet.insertRule( `@media screen{
                             div.indent-1 p{
-                            height: calc( ${previewsettings.pageheight} - ${previewsettings.fontsize});
-                            padding-top: ${previewsettings.fontsize};
+                            height: calc( ${previewsettings.pageHeight} - ${previewsettings.fontSize});
+                            padding-top: ${previewsettings.fontSize};
                             }
                         
                             div.indent-2 p{
-                            height: calc( ${previewsettings.pageheight} - (${previewsettings.fontsize} * 2));
-                            padding-top:calc(${previewsettings.fontsize} * 2);
+                            height: calc( ${previewsettings.pageHeight} - (${previewsettings.fontSize} * 2));
+                            padding-top:calc(${previewsettings.fontSize} * 2);
                             }
                         
                             div.indent-3 p{
-                            height: calc( ${previewsettings.pageheight} - (${previewsettings.fontsize} * 3));
-                            padding-top: calc(${previewsettings.fontsize} * 3);
+                            height: calc( ${previewsettings.pageHeight} - (${previewsettings.fontSize} * 3));
+                            padding-top: calc(${previewsettings.fontSize} * 3);
                             }
                         }`);
 
                         styleSheet.insertRule( `@media screen{
                             div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
-                                padding-block-start: calc( ${previewsettings.fontsize} * ${previewsettings.lineheightrate});
+                                padding-block-start: calc( ${previewsettings.fontSize} * ${previewsettings.lineHeightRate});
                             }
   
                             div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
-                                padding-block-end: calc( ${previewsettings.fontsize} * ${previewsettings.lineheightrate});
+                                padding-block-end: calc( ${previewsettings.fontSize} * ${previewsettings.lineHeightRate});
                             }
                         }`);
                         console.log('sent giveme');
