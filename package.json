@@ -62,7 +62,7 @@
       "properties": {
         "Novel.preview.font-family": {
           "type": "string",
-          "default": "\"serif\"",
+          "default": "serif",
           "description": "プレビュー用のフォント名を入力してください。 \ne.g. \"UD Digi Kyokasho NK-R\",\"ヒラギノ明朝 ProN W3\", \"HiraMinProN-W3\", serif, sans-serif;"
         },
         "Novel.preview.fontsize": {

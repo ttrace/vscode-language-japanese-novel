@@ -53,8 +53,9 @@ function launchserver(originEditor: any){
         //console.log(previewvariables());
         ws.on("message", message => {
     
-            console.log("Received: " + message);
-            console.log(getConfig());
+            console.log("Received 1: " + message);
+            console.log('1',getConfig());
+            console.log('2',JSON.stringify(getConfig()));
     
             if (message === "hello") {
                 ws.send( JSON.stringify(getConfig()));
