@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -20,6 +20,7 @@
     "lint": "eslint . --ext ts",
     "compile": "tsc -p ./",
     "pretest": "npm run compile",
+    "vscode:pretest": "npm run compile",
     "watch": "tsc -watch -p ./",
     "test": "node ./out/test/runTest.js"
   },
@@ -68,7 +69,7 @@
         "Novel.preview.fontsize": {
           "type": "string",
           "default": "14pt",
-          "description": "文字の基本サイズを入力してください"
+          "description": "文字の基本サイズを入力してください。利用できる単位は、pt、mm、em、rem、px、vh、vw、qの8種類です"
         },
         "Novel.preview.linelength": {
           "type": "number",
