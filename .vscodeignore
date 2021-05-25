@@ -1,3 +1,4 @@
 **/*.ts
 **/tsconfig.json
 !file.ts
+.vscode-test/
