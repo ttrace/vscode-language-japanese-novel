@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -20,6 +20,7 @@
     "lint": "eslint . --ext ts",
     "compile": "tsc -p ./",
     "pretest": "npm run compile",
+    "vscode:pretest": "npm run compile",
     "watch": "tsc -watch -p ./",
     "test": "node ./out/test/runTest.js"
   },
@@ -62,13 +63,13 @@
       "properties": {
         "Novel.preview.font-family": {
           "type": "string",
-          "default": "\"serif\"",
+          "default": "serif",
           "description": "プレビュー用のフォント名を入力してください。 \ne.g. \"UD Digi Kyokasho NK-R\",\"ヒラギノ明朝 ProN W3\", \"HiraMinProN-W3\", serif, sans-serif;"
         },
         "Novel.preview.fontsize": {
           "type": "string",
           "default": "14pt",
-          "description": "文字の基本サイズを入力してください"
+          "description": "文字の基本サイズを入力してください。利用できる単位は、pt、mm、em、rem、px、vh、vw、qの8種類です"
         },
         "Novel.preview.linelength": {
           "type": "number",

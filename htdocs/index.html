@@ -357,7 +357,7 @@
 
             sock.addEventListener("message", e => {
                 console.log("サーバーからメッセージを受信したときに呼び出されるイベント");
-                console.log(e.data);
+                //console.log(e.data);
                 if (e.data[0] === '<'){
                 draftwrapper.textContent = '';
                 draftwrapper.insertAdjacentHTML('afterbegin', e.data)
@@ -365,7 +365,6 @@
                     const styleSheetList = document.styleSheets ;
                     let styleSheet = styleSheetList[0] ;
 
-                    //console.log(e.data);
                         previewsettings = JSON.parse( e.data );
 
                     //CSS settings      
