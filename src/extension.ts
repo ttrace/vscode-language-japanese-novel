@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as cp from 'child_process';
 import * as http from 'http';
 import * as websockets from 'ws';
+import { getConfig } from './config'
 
 let myEditor = vscode.window.activeTextEditor;
 const output = vscode.window.createOutputChannel("Novel");
@@ -100,56 +101,6 @@ function sendsettingwebsockets(socketServer: any){
     socketServer.clients.forEach((client: any) => {
         client.send(( JSON.stringify(getConfig())));
     }); 
-}
-
-type UnitOfFontSize = 'pt' | 'mm' | 'em' | 'rem' | 'px' | 'vh' | 'vw' | 'q';
-type FontSize = `${number}${UnitOfFontSize}`;
-
-function parseFontSizeNum(fontSize: FontSize, defaultValue: number) : number {
-    const result = /(\d+)(\D+)/.exec(fontSize);
-    if (result && result[1]) {
-        return parseInt(result[1]);
-    } else {
-        return defaultValue;
-    }
-}
-
-function parseUnitOfFontSize(fontSize: FontSize, defaultValue: UnitOfFontSize) : UnitOfFontSize {
-    const result = /(\d+)(pt|mm|em|rem|px|vh|vw|q)/.exec(fontSize);
-    if (result && result[2]) {
-        return result[2] as UnitOfFontSize;
-    } else {
-        return defaultValue;
-    }
-}
-
-function getConfig(){
-    const config = vscode.workspace.getConfiguration('Novel');
-
-    const lineHeightRate    = 1.75;
-    const fontFamily        = config.get<string>('preview.font-family', 'serif');
-    const fontSize          = config.get<FontSize>('preview.fontsize', '14pt' as FontSize);
-    const numFontSize       = parseFontSizeNum(fontSize, 14);
-    const unitOfFontSize    = parseUnitOfFontSize(fontSize, 'pt');
-    const lineLength        = config.get<number>('preview.linelength', 40);
-    const linesPerPage      = config.get<number>('preview.linesperpage', 10);
-    const pageWidth         = `${linesPerPage * numFontSize * lineHeightRate * 1.003}${unitOfFontSize}`;
-    const pageHeight        = `${lineLength * numFontSize}${unitOfFontSize}`;
-    const lineHeight        = `${numFontSize * lineHeightRate}${unitOfFontSize}`;
-    
-    const previewSettings = {
-        lineHeightRate,
-        fontFamily    ,
-        fontSize      ,
-        numFontSize   ,
-        unitOfFontSize,
-        lineLength    ,
-        linesPerPage  ,
-        pageWidth     ,
-        pageHeight    ,
-        lineHeight    ,
-    }
-    return previewSettings;
 }
 
 let keyPressFlag = false;
