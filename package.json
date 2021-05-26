@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "0.7.7",
+  "version": "0.8.0",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -40,6 +40,10 @@
       {
         "command": "Novel.export-pdf",
         "title": "Novel:PDF出力"
+      },
+      {
+        "command": "Novel.compile-draft",
+        "title": "原稿のコンパイル"
       }
     ],
     "languages": [
