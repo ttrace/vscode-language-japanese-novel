@@ -85,6 +85,12 @@
           "default": "10",
           "description": "1ページの行数を指定してください"
         },
+        "Novel.compile.separator": {
+          "type": "string",
+          "default": "＊",
+          "enum": ["*"],
+          "description": "テキストファイルを結合する際に、フォルダーの区切り文字を指定してください（実装中）"
+        },
         "Novel.preview.userregex": {
           "type": "array",
           "default": [],
