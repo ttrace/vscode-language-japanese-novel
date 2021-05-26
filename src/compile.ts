@@ -55,7 +55,11 @@ function fileList(dirPath: string) : any{
     const filesInDraftsRoot = fs.readdirSync( dirPath , { withFileTypes: true });
     const files = [];
     for (const dirent of filesInDraftsRoot) {
-        if (dirent.isDirectory()) {
+        if (dirent.isDirectory() && dirent.name == "publish"){
+            ;
+        } else if (dirent.name.match(/^\..*/)){
+            ;
+        }else if (dirent.isDirectory()) {
           const fp = path.join(dirPath, dirent.name);
           files.push({
               separator: '>',
