@@ -4,7 +4,9 @@ import * as path from 'path';
 import * as cp from 'child_process';
 import * as http from 'http';
 import * as websockets from 'ws';
-import { getConfig } from './config'
+import { getConfig } from './config';
+import compileDocs from './compile'
+
 
 let myEditor = vscode.window.activeTextEditor;
 const output = vscode.window.createOutputChannel("Novel");
@@ -14,9 +16,11 @@ let html: Buffer;
 
 //コマンド登録
 export function activate(context: vscode.ExtensionContext) {
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.compile-draft', compileDocs));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
+
 
     html = fs.readFileSync(path.join(context.extensionPath, 'htdocs', 'index.html'));
 }

@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "0.7.7",
+  "version": "0.8.0",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -40,6 +40,10 @@
       {
         "command": "Novel.export-pdf",
         "title": "Novel:PDF出力"
+      },
+      {
+        "command": "Novel.compile-draft",
+        "title": "Novel:原稿のコンパイル"
       }
     ],
     "languages": [
@@ -80,6 +84,12 @@
           "type": "number",
           "default": "10",
           "description": "1ページの行数を指定してください"
+        },
+        "Novel.compile.separator": {
+          "type": "string",
+          "default": "＊",
+          "enum": ["*"],
+          "description": "テキストファイルを結合する際に、フォルダーの区切り文字を指定してください（実装中）"
         },
         "Novel.preview.userregex": {
           "type": "array",
