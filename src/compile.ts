@@ -9,20 +9,9 @@ export default function compileDocs(): void
     const   projectPath: string     = vscode.workspace.workspaceFolders![0].uri.fsPath;
     const   config                  = vscode.workspace.getConfiguration('Novel');
     const   separatorString         = "\n\n　　　" + config.get<string>('compile.separator', '＊') +"\n\n";
-    let     draftRootPath : string  = projectPath;
-
-
+    const   draftRootPath           = draftRoot();
 
     console.log('ProjectName: ',projectName);
-    //ファイル一覧取得
-    const projectFiles = fs.readdirSync( projectPath );
-
-    //「原稿」あるいは「Draft」フォルダーを原稿フォルダのルートにする。
-    if (projectFiles.includes('Draft') && fs.statSync(projectPath+'/Draft').isDirectory()){
-        draftRootPath = draftRootPath + "/Draft";
-    }else if (projectFiles.includes('原稿') && fs.statSync(projectPath+'/原稿').isDirectory()){
-        draftRootPath = draftRootPath + "/原稿";
-    }
 
     //      publishフォルダがなければ作る
     if (!fs.existsSync( projectPath + '/publish')) {
@@ -51,8 +40,22 @@ export default function compileDocs(): void
       console.log(fileList(draftRootPath, 0).files);
 }
 
+export function draftRoot(): string{
+  const   projectPath: string     = vscode.workspace.workspaceFolders![0].uri.fsPath;
+  let     draftRootPath : string  = projectPath;
+  const projectFiles = fs.readdirSync( projectPath );
+      //「原稿」あるいは「Draft」フォルダーを原稿フォルダのルートにする。
+      if (projectFiles.includes('Draft') && fs.statSync(projectPath+'/Draft').isDirectory()){
+        draftRootPath = draftRootPath + "/Draft";
+    }else if (projectFiles.includes('原稿') && fs.statSync(projectPath+'/原稿').isDirectory()){
+        draftRootPath = draftRootPath + "/原稿";
+    }
+
+  return draftRootPath;
+}
+
 //fileList()は、ファイルパスと（再帰処理用の）ディレクトリ深度を受け取って、ファイルリストの配列と総文字数を返す。
-function fileList(dirPath: string, directoryDeptsh: number) : any{
+export function fileList(dirPath: string, directoryDeptsh: number) : any{
     let   characterCount    = 0;
     const filesInDraftsRoot = fs.readdirSync( dirPath , { withFileTypes: true });
     const files = [];
