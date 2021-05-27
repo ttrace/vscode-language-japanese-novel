@@ -5,11 +5,13 @@ import * as cp from 'child_process';
 import * as http from 'http';
 import * as websockets from 'ws';
 import { getConfig } from './config';
-import compileDocs from './compile'
+import compileDocs from './compile'; 
+import {CharacterCounter, CharacterCounterController} from './charactorcount';
 
 
 let myEditor = vscode.window.activeTextEditor;
 const output = vscode.window.createOutputChannel("Novel");
+
 
 //リソースとなるhtmlファイル
 let html: Buffer;
@@ -21,6 +23,11 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
 
+
+    const characterCounter = new CharacterCounter();
+    const controller = new CharacterCounterController(characterCounter);
+    context.subscriptions.push(controller);
+    context.subscriptions.push(characterCounter);
 
     html = fs.readFileSync(path.join(context.extensionPath, 'htdocs', 'index.html'));
 }
