@@ -201,10 +201,9 @@ function exportpdf(): void {
                     output.appendLine(`stderr: ${stderr}`);
                     return
                 }
-                    output.appendLine(`stdout: ${stdout}`);
-                    output.appendLine('PDFの保存が終わりました');
-                }
-            )
+                output.appendLine(`stdout: ${stdout}`);
+                output.appendLine('PDFの保存が終わりました');
+            })
             output.appendLine('HTMLの書き込みが完了しました');
         });
     }
