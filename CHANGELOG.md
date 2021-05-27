@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.1
+
+ステータスバーでアクティブなドキュメントの文字数、プロジェクト全体の文字数を表示できるようになりました。  
+プロジェクト全体の文字数は、ファイルを保存したタイミングで更新します。
+
+なお、MITライセンスで公開されている8amjp/vsce-charactercountの成果を使わせていただいています。
+[8amjp/vsce-charactercount](https://github.com/8amjp/vsce-charactercount)
+
 ## 0.8.0
 
 テキストファイルの結合が可能になりました。
