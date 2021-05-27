@@ -1,6 +1,4 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
 import * as cp from 'child_process';
 import * as http from 'http';
 import * as websockets from 'ws';
@@ -17,7 +15,7 @@ const output = vscode.window.createOutputChannel("Novel");
 let html: Buffer;
 
 //コマンド登録
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand('Novel.compile-draft', compileDocs));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
@@ -29,7 +27,10 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(controller);
     context.subscriptions.push(characterCounter);
 
-    html = fs.readFileSync(path.join(context.extensionPath, 'htdocs', 'index.html'));
+    const fileUri = vscode.Uri.joinPath(context.extensionUri, 'htdocs', 'index.html');
+    vscode.workspace.fs.readFile(fileUri).then((data) => {
+        html = Buffer.from(data);
+    });
 }
 
 
@@ -174,41 +175,39 @@ function verticalpreview(){
     </html>`;
 }
 
-function exportpdf(){
+function exportpdf(): void {
     const myHtml = getWebviewContent();
-    //console.log(myhtml);
-    const folderPath = vscode.workspace.workspaceFolders![0].uri.fsPath;
-    const myPath = path.join(folderPath, 'publish.html');
-    const myWorkingDirectory = path.join(folderPath, '');
-    let vivlioCommand = 'vivliostyle build ';
+    if (!vscode.workspace.workspaceFolders) {
+        output.appendLine(`not found workspace folders to publish.`);
+        return;
+    } else {
+        const folderUri = vscode.workspace.workspaceFolders[0].uri;
+        const myPath = vscode.Uri.joinPath(folderUri, 'publish.html');
+        const myWorkingDirectory = folderUri;
+        const vivlioCommand = 'vivliostyle';
+        const vivlioSubCommand = 'build';
 
-    let escapedPath = myPath;
-        escapedPath = escapedPath.replace(/ /g, '\\ ');
-    let escapedDirectory = myWorkingDirectory;
-        escapedDirectory = escapedDirectory.replace(/ /g, '\\ ');
+        output.appendLine(`starting to publish: ${myPath}`);
+        const vivlioParams = [vivlioSubCommand, myPath.fsPath, '-o', vscode.Uri.joinPath(myWorkingDirectory, "output.pdf").fsPath];
 
-        output.appendLine(`startig to publish: ${escapedPath}`);
-        vivlioCommand = vivlioCommand + escapedPath + ' -o ' + escapedDirectory + "/output.pdf";
+        output.appendLine(`starting to publish: ${vivlioCommand} ${vivlioParams}`);
+        const myHtmlBinary = Buffer.from(myHtml, 'utf8');
 
-        output.appendLine(`startig to publish: ${vivlioCommand}`);
-
-    fs.writeFile(myPath, myHtml, (err) => {
-        if (err) {console.log(err)}
-        //https://docs.vivliostyle.org/#/ja/vivliostyle-cli
-        output.appendLine(`saving pdf to ${vivlioCommand}`);
-        cp.exec(vivlioCommand, (err, stdout, stderr) => {
+        vscode.workspace.fs.writeFile(myPath, myHtmlBinary).then(() => {
+            output.appendLine(`saving pdf to ${vivlioCommand}`);
+            cp.execFile(vivlioCommand, vivlioParams, (err, stdout, stderr) => {
                 if (err) {
                     console.log(`stderr: ${stderr}`);
                     output.appendLine(`stderr: ${stderr}`);
                     return
                 }
-                output.appendLine(`stdout: ${stdout}`);
-                output.appendLine('PDFの保存が終わりました');
-            }
-        )
-        output.appendLine('HTMLの書き込みが完了しました');
-      });
-
+                    output.appendLine(`stdout: ${stdout}`);
+                    output.appendLine('PDFの保存が終わりました');
+                }
+            )
+            output.appendLine('HTMLの書き込みが完了しました');
+        });
+    }
 }
 
 
