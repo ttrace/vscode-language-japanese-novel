@@ -95,14 +95,14 @@ function launchserver(originEditor: any){
     return s;
 }
 
-function publishwebsockets(socketServer: any){
-    socketServer.clients.forEach((client: any) => {
+function publishwebsockets(socketServer: websockets.Server){
+    socketServer.clients.forEach((client: websockets) => {
         client.send(editorText("active"));
     }); 
 }
 
-function sendsettingwebsockets(socketServer: any){
-    socketServer.clients.forEach((client: any) => {
+function sendsettingwebsockets(socketServer: websockets.Server){
+    socketServer.clients.forEach((client: websockets) => {
         client.send(( JSON.stringify(getConfig())));
     }); 
 }
@@ -110,23 +110,20 @@ function sendsettingwebsockets(socketServer: any){
 let keyPressFlag = false;
 
 const publishWebsocketsDelay: any = {
-    publish: function(socketServer: any) {
+    publish: function(socketServer: websockets.Server) {
         publishwebsockets(socketServer);
         keyPressFlag = false;
         delete this.timeoutID;
     },
-    presskey: function(s: any) {
+    presskey: function(s: websockets.Server) {
         //this.cancel();
         if (!keyPressFlag){
             const currentEditor = vscode.window.activeTextEditor;
             if (currentEditor) {
                 const updateCounter = Math.ceil(currentEditor.document.getText().length / 50);
-                //const self = this;
-                const socketServer = s;
-                //const timer = timer;
                 this.timeoutID = setTimeout(socketServer => {
                     this.publish(socketServer);
-                }, updateCounter, socketServer);
+                }, updateCounter, s);
                 keyPressFlag = true;
             }
         }
