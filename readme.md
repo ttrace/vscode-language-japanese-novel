@@ -78,3 +78,6 @@ MIT
 なお縦書き表示を行う方法については、MITライセンスで公開されているn-fukiju/縦書きプレビューのコードを大いに参考にさせていただきました。
 幾らかはそのまま利用させていただいています。
 [n-fukuju/vertical-writing-vsce](https://github.com/n-fukuju/vertical-writing-vsce)
+
+文字数を計算する部分、ステータスバーでの文字数表記は、MITライセンスで公開されている8amjp/vsce-charactercountのコードを利用しています。
+[8amjp/vsce-charactercount](https://github.com/8amjp/vsce-charactercount)
