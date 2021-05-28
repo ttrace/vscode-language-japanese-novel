@@ -17,9 +17,9 @@ export type PreviewSettings = {
 };
 
 function parseFontSizeNum(fontSize: FontSize, defaultValue: number) : number {
-    const result = /(\d+)(\D+)/.exec(fontSize);
+    const result = /([\d.]+)(\D+)/.exec(fontSize);
     if (result && result[1]) {
-        return parseInt(result[1]);
+        return parseFloat(result[1]);
     } else {
         return defaultValue;
     }

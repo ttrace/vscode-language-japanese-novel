@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+  <html lang="ja">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Cat Coding</title>
+
+      <style>
+      @charset "UTF-8";
+      html {
+      /* 組み方向 */
+      -epub-writing-mode: vertical-rl;
+      -ms-writing-mode: tb-rl;
+      writing-mode: vertical-rl;
+  
+      orphans: 1;
+      widows: 1;
+      }
+  
+      * {
+      margin: 0;
+      padding: 0;
+      }
+  
+      @page {
+      size: 105mm 148mm;
+      width: 88mm;
+      /*  width: calc(84mm - 1q); */
+      height: 110mm;
+      margin-top: 20mm;
+      margin-bottom: auto;
+      margin-left: auto;
+      margin-right: auto;
+      /* 以下、マージンボックスに継承される */
+      font-size: 6pt;
+      font-family: "游明朝", "YuMincho", serif;
+      /* 本来不要（<span class="smaller"><span class="smaller">ルート要素の指定が継承される</span></span>）だが、現時点のvivliostyle.jsの制限により必要 */
+      vertical-align: top;
+      }
+  
+      @page :left {
+      margin-right: 10mm;
+      @top-left {
+          content: counter(page) "  <$projecttitle>";
+          margin-left: 12q;
+          margin-top: 135mm;
+          writing-mode: horizontal-tb;
+          /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
+      }
+      }
+      @page :right {
+      margin-right: 14mm;
+      /* border-bottom: 1pt solid black; */
+      /* 右下ノンブル */
+      @top-right {
+          content: "<$fullname>   "counter(page);
+          margin-right: 12q;
+          margin-top: 135mm;
+          writing-mode: horizontal-tb;
+          /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
+      }
+      }
+  
+      html {
+      font-family: "游明朝", "YuMincho", serif;
+      font-weight: Medium;
+      text-align: justify;
+      }
+  
+      body{
+      }
+  
+      h1 {
+      /* フォント */
+      font-weight: Extrabold;
+      /* フォントサイズ */
+      font-size: 24q;
+      /* 字下げ */
+      text-indent: 0;
+      /* 直後の改ページ・改段禁止 */
+      page-break-before: always;
+      page-break-after: always;
+      line-height: 42q;
+      letter-spacing: 0.25em;
+      display: flex;
+      align-items: center;
+      }
+  
+      h2 {
+      /* フォント */
+      font-weight: Demibold;
+      /* フォントサイズ */
+      font-size: 16q;
+      /* 字下げ */
+      text-indent: 3em;
+      /* 直後の改ページ・改段禁止 */
+      page-break-before: always;
+      page-break-after: avoid;
+      line-height: 42q;
+      margin-left: 2em;
+      }
+  
+      h2.part {
+      width: 80mm;
+      padding: 0mm 35mm;
+      font-weight: bold;
+      font-size: 16q;
+      page-break-before: always;
+      page-break-after: always;
+      margin-left: 4em;
+      }
+  
+      h1 + h2 {
+      margin-right: 16pt;
+      }
+  
+      ruby > rt {
+      font-size: 6.5q;
+      }
+  
+      p {
+        font-size: calc(110mm / 38);
+        line height: 1.65;
+        text-indent: 0em;
+        hanging-punctuation: force-end;
+        line-break:strict;
+        page-break-inside: auto;
+    }
+ 
+      div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
+        padding-block-start: calc( 10pt * 1.75);
+        }
+
+        div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
+        padding-block-end: calc( 10pt * 1.75);
+        }
+
+    
+    div.indent-1 p{
+    height: calc( 110mm - (10pt));
+    padding-top: 10pt;
+    }
+
+    div.indent-2 p{
+    height: calc( 110mm - (10pt * 2));
+    padding-top: calc(10pt * 2);
+    }
+
+    div.indent-3 p{
+    height: calc( 110mm - (10pt * 3));
+    padding-top: calc(10pt * 3);
+    }
+
+        p.goth {
+        margin-top: 3em;
+        font-family: "游ゴシック", "YuGothic", san-serif;
+        margin-block-start: 1em;
+        margin-block-end: 1em;
+        }
+  
+        p.align-rb {
+        text-align: right;
+        }
+
+        p.goth + p.goth {
+        margin-block-start: -1em;
+        }
+
+        div.codes {
+        display: inline-block;
+        margin: 3em 1em;
+        writing-mode: horizontal-tb;
+        padding: 1em;
+        font-family: "Courier", monospace;
+        font-size: 0.8em;
+        }
+  
+      div.codes p {
+      text-orientation: sideways;
+      }
+  
+      p.star {
+      text-indent: 3em;
+      margin-right: 16pt;
+      margin-left: 16pt;
+      }
+  
+      hr {
+      border: none;
+      border-right: 1pt solid black;
+      height: 6em;
+      margin: auto 8.5pt;
+      }
+  
+      /* 縦中横 */
+      .tcy {
+      -webkit-text-combine: horizontal;
+      text-combine: horizontal;
+      -ms-text-combine-horizontal: all;
+      text-combine-horizontal: digit 2;
+      text-combine-upright: digit 2;
+      }
+  
+      /* 圏点（<span class="smaller">ゴマ</span>） */
+      em.side-dot, em.sesame_dot {
+      font-style: normal;
+      -webkit-text-emphasis-style: sesame;
+      text-emphasis-style: sesame;
+      }
+  
+      /*著作者*/
+      .author {
+      position: absolute;
+      bottom: 0;
+      font-size: 8.5pt;
+      margin-top: 50pt;
+      letter-spacing: normal;
+      }
+  
+      /*画像＋キャプション*/
+      figure {
+      display: block;
+      width: 236pt;
+      -ms-writing-mode: lr-tb;
+      -webkit-writing-mode: horizontal-tb;
+      writing-mode: horizontal-tb;
+      }
+  
+      figure img {
+      width: 100%;
+      height: auto;
+      vertical-align: bottom;
+      }
+  
+      figcaption {
+      text-align: left;
+      font-size: 7pt;
+      }
+  
+      /*奥付*/
+      .colophon {
+      font-size: 7pt;
+      margin-right: 48pt;
+      }
+      /* 級さげ */
+      span.smaller{
+          font-size:6.5pt
+      }
+  
+    div.comment {
+        display:none;
+    }
+
+    p.blank {
+        color:transparent;
+    }
+
+  @media screen{
+      body {
+            writing-mode: vertical-rl;
+            font-family: serif;
+            height: 380pt;
+            overflow-y:hidden;
+            padding:0;
+        }
+        
+        #cursor {
+            background-color: rgb(125,125,125,);
+            animation-duration: 0.5s;
+            animation-name: cursorAnimation;
+            animation-iteration-count: infinite;
+        }
+  
+        p {
+            height: 380pt;
+            font-family: serif;
+            font-size: 10pt;
+            margin:0 0 0 0;
+            vertical-align: middle;
+        }
+          
+        em.side-dot {
+            font-style: normal;
+            text-emphasis: filled sesame rgb(128,128,128);
+            -webkit-text-emphasis: filled sesame rgb(128,128,128);
+        }
+        
+        span.tcy {
+            text-combine: horizontal;
+            -webkit-text-combine:horizontal;
+        }
+
+        @keyframes cursorAnimation {
+                from {
+                    background-color: rgba(66,66,66,0);
+                }
+            
+                to {
+                    background-color: rgba(125,125,125,0.7);
+                }
+            }
+  
+          body{
+              background-image:   linear-gradient(to right, rgba(50, 50, 50, 0.5) 0.5pt, rgba(0, 0, 50, 0.05) 10em);
+              background-size:    175.52499999999998pt 380pt;
+              background-repeat:  repeat-x;
+              background-position: right 0px;
+          }
+          p{
+              background-image:   linear-gradient( rgba(50, 50, 50, 1) 0.5pt, transparent 1pt),
+                                  linear-gradient(to right, rgba(50, 50, 50, 1) 0.5pt, rgba(0, 0, 50, 0.05) 1pt);
+              background-size:    17.5pt 10pt,
+                                  17.5pt 10pt;
+              background-repeat:  repeat,
+                                  repeat;
+              background-position: right 0px,
+                                  right 0px;
+          }
+
+          div.indent-1 p{
+            height: calc( 380pt - (10pt));
+            padding-top: 10pt;
+            }
+        
+            div.indent-2 p{
+            height: calc( 380pt - (10pt * 2));
+            padding-top: calc(10pt * 2);
+            }
+        
+            div.indent-3 p{
+            height: calc( 380pt - (10pt * 3));
+            padding-top: calc(10pt * 3);
+            }
+
+        
+          span.comment{
+            display:block;
+            border-radius:1em;
+            border:1.5pt solid rgba(70,70,00,0.9);
+            padding:0.25em 0.25em;
+            position:absolute;
+            margin-right: -3em;
+            margin-top: 0.5em;
+            top: 380pt;
+            background-color:rgba(50,50,00,0.5);
+            max-width: 20em;
+          }
+
+          span.comment::before{
+            content: '';
+            position: absolute;
+            right: 1em;
+            top: -15px;
+            display: block;
+            width: 0;
+            height: 0;
+            border-right: 15px solid transparent;
+            border-bottom: 15px solid rgba(70,70,00,0.9);
+            border-left: 15px solid transparent;
+          }
+
+          span.commentbody{
+              margin:0.5em 1em;
+              writing-mode:lr-tb;
+              font-family:sans-serif;
+              font-size:0.8em;
+              line-height:1;
+          }
+  
+      }
+        </style>
+      <link rel="stylesheet" href="">
+  </head>
+  <body>
+  <style>ruby rt{font-size:0.5em}</style><p>　部屋に差し込む光の筋が<ruby>小波<rt>さざなみ</rt></ruby>のように揺れる。シーリングファンの風はブラインドを揺らして目を楽しませてくれるが、空気の流れは感じられない。高い天井に大きな窓、空間を贅沢に使った居心地のいいカンファレンス・ルームは、目の前で頭を下げている黒川さんも含めて、全てがコンタクトレンズに描き出された拡張現実だ。</p><p>「昨夜のメッセージは申し訳ありませんでした。起こしてしまいませんでしたか？」</p><p>　予告された会議はテーブルの向こうで黒川さんが両手を<em class="side-dot">天板についた</em>ところから始まった。押し付けられた指が抵抗で<ruby>微<rt>かす</rt></ruby>かに歪んでいる。黒川さん、今日も気付きにくいところで<ruby>凝<rt>こ</rt></ruby>っているな。私の机に合わせた台でも用意しているのか、それとも徹夜明けの疲れをアバターで<ruby>覆<rt>おお</rt></ruby>い<ruby>隠<rt>かく</rt></ruby>しているのだろうか。<span id="cursor">　</span></p><p>「着信で目を覚ましました。すぐに寝ちゃいましたけどね」</p><p>「や、それは申し訳ないことをしてしまいました」</p><p>　顔をあげた黒川さんは<ruby>艶<rt>つや</rt></ruby>やかな顔を申し訳なさそうにしかめてみせる。こちらが悪いことをしてしまったかのように思わせる絶妙な表情の出し入れの様子からすると、今日も実写だ。間違いない。</p><p>　丸々とした顔に適度なアクセントを加える黒縁のメガネに、顔と同じく丸みのある体を包む<ruby>濃紺<rt>のうこん</rt></ruby>のサマースーツ。少し広がったＶゾーンを目の<ruby>粗<rt>あら</rt></ruby>い<ruby>臙脂<rt>えんじ</rt></ruby>色のニットタイが引き<ruby>締<rt>し</rt></ruby>める。こんな時代がかったスーツの着こなしと作り物のように<ruby>撫<rt>な</rt></ruby>でつけられた髪型ならリュージョンテックのアバター「サラリーマン」シリーズでもいいのではないかと思うのだが、なぜか彼は実写、それもバーチャルライト対応のマルチパス映像に<ruby>拘<rt>こだわ</rt></ruby>る。衣装を着込まなければならないのと、<ruby>陰影<rt>いんえい</rt></ruby>を削除する専用ライトの設置が面倒で、普通のビジネスカンファレンスで使われることは少ない。今日の黒川さんのように徹夜明けだと顔色まで再現されてしまい、疲れが見えてもおかしくないのだが、憎らしいほど元気そうだ。</p><p>「黒川さんこそ夜明け前まで大変でしたね。メッセージをもらったのが明け方でしたから、打ち合わせは明日かと思っていましたよ」</p><p>　皮肉が通じる相手でないことは承知の上だがここは言わせてもらおう。未明にメッセージをこれ以上送りつけられるのは勘弁して欲しい。</p><p>「あ、これは申し訳ない。いまから打ち合わせの時間を頂いても大丈夫ですか？」</p><p>「どうぞ、今日の午前中は空いていました」</p><p>　やっぱり動じないか。コミュニケーション・ビヘイビアを使っていても全く勝てる気がしない。このネゴを<ruby>地<rt>じ</rt></ruby>でやれるのはちょっとしたものだ。いつもこうやって仕事が滑り込んでくる。これで払いが悪いと最悪だが、彼のフェアネスだけは信用できる。</p><p>「ありがとうございます。私も昨夜報告を受け取ったばかりです。まだ詳しいことは分からないのですが、まずはお報せしておこうということで、失礼ながらメッセージを送らせていただきました。現地から送られてきた写真です。どうぞお納めください」</p><p>　黒川さんは机の上に置いてあった封筒から一枚の写真を取り出し、<ruby>淀<rt>よど</rt></ruby>みない動きで机の上を滑らせて寄こした。物理演算のタグを付けた写真を封筒から取り出して投げるなんて演技は、アバターを使っていてもリハーサルなしにやれることじゃない。まん丸な顔をしかめた黒川さんがひとり写真を投げるパントマイムを練習しているところを想像して軽く<ruby>憂<rt>う</rt></ruby>さを晴らす。</p><p>　ちょうど手の届く場所へ<ruby>測<rt>はか</rt></ruby>ったように<ruby>滑<rt>すべ</rt></ruby>り込んできた写真の中央に「<ruby>Accept for shared image<rt>共有画像を受け取る</rt></ruby>」と書かれたボタンが浮かび、セキュリティ・チェックが終わったスタンプが現れた。低解像度のサムネイルでも、<ruby>棚田<rt>たなだ</rt></ruby>の広がる<ruby>扇状地<rt>せんじょうち</rt></ruby>がロゴのマッピング中に飽きるほど見ていたマザー・メコン農場の航空写真だということは一目でわかる。空撮は終わっていたのか。</p><p>「ずいぶんと準備がいいんですね」</p><p>　<ruby>精一杯<rt>せいいっぱい</rt></ruby>の皮肉を<ruby>塗<rt>まぶ</rt></ruby>してみるが、「ええもちろん」と言わんばかりの<ruby>瞬<rt>まばた</rt></ruby>きと<ruby>頷<rt>うなず</rt></ruby>きしか引き出せなかった。皮肉を続けているとこちらが責めている気分になってしまう。勝ち目のない神経戦はやめるとしよう。</p><p>　特別な<ruby>利用許諾<rt>〔EULA/ＥＵＬＡ〕</rt></ruby>がない普通の写真データであることを確認してボタンをタップすると、ぼやけていた画像が鮮鋭に表示され、机の上に地形が盛り上がる。</p><p>「北端の区画を拡大してみてください」</p><p>　蛍光グリーンの水田にオレンジ色の楕円と文字。L&B社とマザー・メコン農場のロゴが棚田にびっしりと敷き詰められているのは<ruby>蒸留作物<rt>Distilled Crop</rt></ruby>の証だ。拡大するまでもなく、北の高台でロゴが<ruby>霞<rt>かす</rt></ruby>んでいるのが確認できる。抹茶を<ruby>篩<rt>ふるい</rt></ruby>ではたいたようだ。稲に仕込んだスタイルシートが起動しなかったのか、それとも別の草が生えてきているのか。航空写真だけではなんとも言えない。</p><p>「この緑色ですね。<ruby>物<rt>もの</rt></ruby>はなんですか？」</p><p>「稲らしい、というところまでしかわかっていません。それぞれの株の高さと葉の幅はSR-06よりも少し小ぶり、色は明らかに違います。この色は、もうお気づきでしょうがSR-06の発色チャートにない色です」</p><p>　別の草ではなく、稲か。</p><p>「色だけ違う、なんてことはないでしょうね……」</p><p>　スタイルシートが動いていないとなればこちらのミスだ。</p><p>「色だけではなさそうです。バッタなどの害虫も出ているようですから」</p><p>「……バッタ？防虫コードが壊れたのかな。スタイルシートとは関係ありませんね。SR-06のプレゼンテーション・エンジンはセキュリティやディフェンスに干渉できないように分離されてますから」</p><p>「どうでしょう。まだ何もわかってないのです。そこで調査をお願いしたいのですよ、林田さん。調査費用はL&B持ちですのでご安心ください。当方の<em class="side-dot">かし</em>でないとは思っていますけど、そうでなければ<ruby>割<rt>わ</rt></ruby>り<ruby>増<rt>ま</rt></ruby>しのギャランティを<ruby>分捕<rt>ぶんど</rt></ruby>ってきますよ。早速かかっていただけないでしょうか」</p><p>　<em class="side-dot">かし</em>？と思った時には「かし（瑕疵）：傷、欠点。本来あるべきものが欠けていること」と黒川さんの胸元にテロップが出ていた。なるほど、古い言い回しだ。そもそもL&Bとの業務契約は<ruby>〔AS-IS/ＡＳ・ＩＳ〕<rt>アズ・イズ</rt></ruby>のベストエフォートだ。双方で行う検収と第三者委員会の検証を終えたら、その後見つかった不具合を保証する必要はない。とはいえ、バグを仕込んでおいて高額のギャラは交渉できないわけだ。</p><p>「早速、というと？」</p><p>「現地でサンプリングした葉から〔DNA/ＤＮＡ〕を抽出してお送りします。まず、これを確認してください」</p><p>「お急ぎですね。わかりました。〔DNA/ＤＮＡ〕の採取はいつになりますか？」</p><p>「既にアップロードが始まっています。カンボジアとこちらの帯域次第ではありますが、今日の午前中には共有フォルダで使えるようになっていると思いますよ」</p><p>「……さすが黒川さん」</p><p>　やめようと思っていたのだが、つい皮肉が出てしまった。</p><p>「いえいえ、お<ruby>褒<rt>ほ</rt></ruby>めには及びません。では、よろしくお願いします。なにかお気づきのことがありましたら、遠慮なくメッセージください」</p><p>　黒川さんが立ち上がり、一礼して消える。</p><p>　常に真顔で感謝を返す黒川さんに勝てるわけがないのだ。</p>
+  
+  <script>
+  
+  setTimeout( (function(){
+      var width = document.body.clientWidth;
+      var cursor = document.getElementById('cursor');
+      var panelWidth = window.innerWidth;
+      var scrollEnd = cursor.offsetLeft - width + (panelWidth / 2);
+      window.scrollTo( scrollEnd , scrollEnd);
+      console.log(width, cursor, panelWidth, scrollEnd);
+  }), 1);
+
+</script>
+  </body>
+  </html>

@@ -127,7 +127,10 @@ const publishWebsocketsDelay: any = {
         if (!keyPressFlag){
             const currentEditor = vscode.window.activeTextEditor;
             if (currentEditor) {
-                const updateCounter = Math.ceil(currentEditor.document.getText().length / 50);
+                const updateCounter = Math.min(
+                                        Math.ceil(currentEditor.document.getText().length / 50),
+                                        1500
+                                        );
                 this.timeoutID = setTimeout(socketServer => {
                     this.publish(socketServer);
                 }, updateCounter, s);
