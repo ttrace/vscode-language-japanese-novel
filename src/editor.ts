@@ -2,16 +2,12 @@ import * as vscode from 'vscode';
 
 export type OriginEditor = vscode.TextEditor | "active" | undefined;
 
-export function editorText(originEditor: OriginEditor) {
-    let myEditor = vscode.window.activeTextEditor;
-
-    if(originEditor === "active"){
-        myEditor = vscode.window.activeTextEditor;
-    } else {
-        myEditor = originEditor;
+export function editorText(originEditor: OriginEditor) : string {
+    const myEditor = (originEditor === "active") ? vscode.window.activeTextEditor : originEditor;
+    if (!myEditor) {
+        return "";
     }
-
-    const text = myEditor!.document.getText();
+    const text = myEditor.document.getText();
     const cursorOffset = myEditor ? myEditor.document.offsetAt(myEditor.selection.anchor) : 0;
     let myHTML = "";
 
