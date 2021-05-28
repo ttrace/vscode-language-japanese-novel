@@ -35,7 +35,7 @@ export function editorText(originEditor: OriginEditor) : string {
     return markUpHtml(myHTML);
 }
 
-function markUpHtml( myHtml: string ){
+export function markUpHtml( myHtml: string ){
     let taggedHTML = myHtml;
     //configuration 読み込み
     const config = vscode.workspace.getConfiguration('Novel');
