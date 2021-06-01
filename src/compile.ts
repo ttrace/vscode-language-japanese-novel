@@ -58,6 +58,7 @@ export function draftRoot(): string{
 export function fileList(dirPath: string, directoryDeptsh: number) : any{
     let   characterCount    = 0;
     const filesInDraftsRoot = fs.readdirSync( dirPath , { withFileTypes: true });
+    const labelOfList = path.basename(dirPath);
     const files = [];
     const maxDirectoryDepth = 6;
     for (const dirent of filesInDraftsRoot) {
@@ -94,6 +95,7 @@ export function fileList(dirPath: string, directoryDeptsh: number) : any{
     }
     //ファイルリストの配列と総文字数を返す
     return {
+        label: labelOfList,
         files: files.flat(),
         length: characterCount,
       };
