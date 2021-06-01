@@ -13,7 +13,7 @@ export class CharacterCounter {
     private _countingFolder = '';
     private _folderCount = {
                             label: '',
-                            amountLength: '';
+                            amountLength: '',
                             };
     public updateCharacterCount() {
         if (!this._statusBarItem) {
