@@ -1,6 +1,7 @@
 //Original code is published by 8amjp/vsce-charactercount] https://github.com/8amjp/vsce-charactercount under MIT
 
 "use strict";
+import { PathLike } from 'fs';
 import { window, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, workspace } from 'vscode';
 import {fileList, draftRoot} from './compile';
 
@@ -9,6 +10,11 @@ let projectCharacterCount = Intl.NumberFormat().format(fileList(draftRoot(), 0).
 export class CharacterCounter {
 
     private _statusBarItem!: StatusBarItem;
+    private _countingFolder = '';
+    private _folderCount = {
+                            label: '',
+                            amountLength: '';
+                            };
     public updateCharacterCount() {
         if (!this._statusBarItem) {
             this._statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
@@ -21,7 +27,11 @@ export class CharacterCounter {
         const doc = editor.document;
 
         const characterCount = Intl.NumberFormat().format(this._getCharacterCount(doc));
-        this._statusBarItem.text = `$(pencil) ${characterCount} 文字／$(book) ${projectCharacterCount}文字`;
+        if( this._countingFolder != '' ){
+            this._statusBarItem.text = `$(book) ${projectCharacterCount}文字／$(folder-opened) ${this._folderCount.label} ${this._folderCount.amountLength}文字 ／$(pencil) ${characterCount} 文字`;
+        } else {
+            this._statusBarItem.text = `$(book) ${projectCharacterCount}文字／$(pencil) ${characterCount} 文字`;
+        }
         this._statusBarItem.show();
     }
 
@@ -42,8 +52,24 @@ export class CharacterCounter {
 
     public _updateProjectCharacterCount(): any{
         projectCharacterCount = Intl.NumberFormat().format(fileList(draftRoot(), 0).length);
+        if(this._countingFolder != ''){
+            const files = fileList(this._countingFolder, 0);
+            console.log(files);
+
+            this._folderCount = {
+                label:files.label,
+                amountLength: Intl.NumberFormat().format(files.length),
+            };
+        }
         this.updateCharacterCount();
     }
+
+    public _setCounterToFolder( pathToFolder: string ) : any{
+        this._countingFolder = pathToFolder;
+        this._updateProjectCharacterCount();
+    }
+
+
 
     public dispose() {
         this._statusBarItem.dispose();
