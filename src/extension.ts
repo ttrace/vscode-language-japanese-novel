@@ -3,9 +3,11 @@ import * as cp from 'child_process';
 import * as http from 'http';
 import * as websockets from 'ws';
 import { getConfig } from './config';
+
 import compileDocs from './compile'; 
 import {CharacterCounter, CharacterCounterController} from './charactorcount';
 import { editorText, OriginEditor } from './editor'
+
 
 const output = vscode.window.createOutputChannel("Novel");
 
@@ -24,6 +26,10 @@ export function activate(context: vscode.ExtensionContext): void {
     const controller = new CharacterCounterController(characterCounter);
     context.subscriptions.push(controller);
     context.subscriptions.push(characterCounter);
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.set-counter', (e) => {
+        const path = e.fsPath;
+        characterCounter._setCounterToFolder(path);
+    }));
 
     const fileUri = vscode.Uri.joinPath(context.extensionUri, 'htdocs', 'index.html');
     vscode.workspace.fs.readFile(fileUri).then((data) => {

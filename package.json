@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -44,6 +44,10 @@
       {
         "command": "Novel.compile-draft",
         "title": "Novel:原稿のコンパイル"
+      },
+      {
+        "command": "Novel.set-counter",
+        "title": "Novel:文字数カウント開始"
       }
     ],
     "languages": [
@@ -97,6 +101,13 @@
           "description": "正規表現でHTML出力を調整することができます。複数の処理を行う場合は配列を増やしてください。\n（例） [\"い\", \"<span class='small'>ゐ</span>]\",[\"<p>[^「](.+?)</p>\",\"<p>　$1</p>\"], [ RegExp , Str ]）"
         }
       }
+    },
+    "menus": {
+      "explorer/context" : [{
+        "when": "explorerResourceIsFolder == true",
+        "command": "Novel.set-counter",
+        "group": "YourGroup@1"
+      }]
     }
   },
   "devDependencies": {
