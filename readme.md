@@ -59,7 +59,7 @@ contributed by [yasudaz](https://github.com/yasudaz)
 この小説言語モードは、実験的に[Vivliostyle/CLI](https://vivliostyle.org/ja/)を用いて縦書きのPDFを出力します。
 ワークスペースが必要になるので、フォルダを開いて利用してください。
 
-PDF出力を試したい方は、以下のコマンドをターミナルで実行して、VivlioStleをインストールしてからPDF出力を実行してください。
+PDF出力を試したい方は、以下のコマンドをターミナルで実行して、VivlioStyleをインストールしてからPDF出力を実行してください。
 
 ```
 npm install @vivliostyle/cli -g
