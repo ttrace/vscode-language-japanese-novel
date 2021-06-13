@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.8.4
+
+テキストファイルを開いたときに、機能拡張が動作しなくなってしまう問題を修正しました。
+relolving: [textファイルを単独で開いたときにcommand not foundが出る](https://github.com/ttrace/vscode-language-japanese-novel/issues/22)
+
 ## 0.8.3
 
 特定フォルダーの文字数をカウントできるようになりました。  
