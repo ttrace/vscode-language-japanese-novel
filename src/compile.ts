@@ -41,17 +41,21 @@ export default function compileDocs(): void
 }
 
 export function draftRoot(): string{
-  const   projectPath: string     = vscode.workspace.workspaceFolders![0].uri.fsPath;
-  let     draftRootPath : string  = projectPath;
-  const projectFiles = fs.readdirSync( projectPath );
-      //「原稿」あるいは「Draft」フォルダーを原稿フォルダのルートにする。
-      if (projectFiles.includes('Draft') && fs.statSync(projectPath+'/Draft').isDirectory()){
-        draftRootPath = draftRootPath + "/Draft";
-    }else if (projectFiles.includes('原稿') && fs.statSync(projectPath+'/原稿').isDirectory()){
-        draftRootPath = draftRootPath + "/原稿";
-    }
+  if( vscode.workspace.name == undefined ){
+    return "";
+  } else {
+    const   projectPath: string     = vscode.workspace.workspaceFolders![0].uri.fsPath;
+    let     draftRootPath : string  = projectPath;
+    const projectFiles = fs.readdirSync( projectPath );
+        //「原稿」あるいは「Draft」フォルダーを原稿フォルダのルートにする。
+        if (projectFiles.includes('Draft') && fs.statSync(projectPath+'/Draft').isDirectory()){
+          draftRootPath = draftRootPath + "/Draft";
+      }else if (projectFiles.includes('原稿') && fs.statSync(projectPath+'/原稿').isDirectory()){
+          draftRootPath = draftRootPath + "/原稿";
+      }
 
-  return draftRootPath;
+    return draftRootPath;
+  }
 }
 
 //fileList()は、ファイルパスと（再帰処理用の）ディレクトリ深度を受け取って、ファイルリストの配列と総文字数を返す。
