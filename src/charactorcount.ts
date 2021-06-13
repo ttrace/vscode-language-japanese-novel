@@ -5,7 +5,13 @@ import { PathLike } from 'fs';
 import { window, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, workspace } from 'vscode';
 import {fileList, draftRoot} from './compile';
 
-let projectCharacterCount = Intl.NumberFormat().format(fileList(draftRoot(), 0).length);
+let projectCharacterCount = "";
+
+if( draftRoot() != ""){
+    projectCharacterCount = Intl.NumberFormat().format(fileList(draftRoot(), 0).length);
+} else {
+    projectCharacterCount = "0";
+}
 
 export class CharacterCounter {
 
@@ -27,7 +33,10 @@ export class CharacterCounter {
         const doc = editor.document;
 
         const characterCount = Intl.NumberFormat().format(this._getCharacterCount(doc));
-        if( this._countingFolder != '' ){
+        if( draftRoot() == ""){
+            //テキストファイルを開いているとき
+            this._statusBarItem.text = `$(pencil) ${characterCount} 文字`;
+        } else if( this._countingFolder != '' ){
             this._statusBarItem.text = `$(book) ${projectCharacterCount}文字／$(folder-opened) ${this._folderCount.label} ${this._folderCount.amountLength}文字 ／$(pencil) ${characterCount} 文字`;
         } else {
             this._statusBarItem.text = `$(book) ${projectCharacterCount}文字／$(pencil) ${characterCount} 文字`;

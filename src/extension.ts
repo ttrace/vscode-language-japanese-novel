@@ -3,14 +3,12 @@ import * as cp from 'child_process';
 import * as http from 'http';
 import * as websockets from 'ws';
 import { getConfig } from './config';
-
 import compileDocs from './compile'; 
+import { draftRoot } from './compile'; 
 import {CharacterCounter, CharacterCounterController} from './charactorcount';
 import { editorText, OriginEditor } from './editor'
 
-
 const output = vscode.window.createOutputChannel("Novel");
-
 //リソースとなるhtmlファイル
 let html: Buffer;
 
@@ -18,9 +16,7 @@ let html: Buffer;
 export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand('Novel.compile-draft', compileDocs));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
-    context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
-
 
     const characterCounter = new CharacterCounter();
     const controller = new CharacterCounterController(characterCounter);
