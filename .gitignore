@@ -5,3 +5,4 @@ node_modules
 out
 .vscode-test/
 **/publish/**
+publish.html
