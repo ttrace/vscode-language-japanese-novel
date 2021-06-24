@@ -2,6 +2,11 @@
 
 ## 0.9.0
 
+HTML形式のコメントアウトにもカラーリングを行うことにしました。
+
+内部的な変更ですが、縦書きのプレビューだけを送信するhttpサーバーから、一般的なhttpサーバーに拡張しました。  
+JavascriptやCSSを読み込むことができますので、今後の変更が楽になるかと思います。
+
 HTMLにリセットCSSを導入しました。
 (modern-css-reset)[https://github.com/andy-piccalilli/modern-css-reset]
 
