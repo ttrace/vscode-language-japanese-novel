@@ -1,152 +1,160 @@
 {
-    "scopeName": "source.novel",
-    "patterns": [{ "include": "#expression" }],
-    "repository": {
-      "expression": {
-        "patterns": [
-          { "include": "#rubymother"},
-          { "include": "#aozora-motherword"},
-          { "include": "#original-word"},
-          { "include": "#numbers"},
-          { "include": "#units"},
-          { "include": "#aozora-expression" },
-          { "include": "#ruby-expression"},
-          { "include": "#parenthesis-expression"},
-          { "include": "#cornerfilledparenthesis-expression"},
-          { "include": "#cornerparenthesis-expression"},
-          { "include": "#japanesequote-expression"},
-          { "include": "#dialogue-expression" }
-        ]
+  "scopeName": "source.novel",
+  "patterns": [{ "include": "#expression" }],
+  "repository": {
+    "expression": {
+      "patterns": [
+        { "include": "#rubymother"},
+        { "include": "#aozora-motherword"},
+        { "include": "#original-word"},
+        { "include": "#numbers"},
+        { "include": "#units"},
+        { "include": "#aozora-expression" },
+        { "include": "#ruby-expression"},
+        { "include": "#parenthesis-expression"},
+        { "include": "#cornerfilledparenthesis-expression"},
+        { "include": "#cornerparenthesis-expression"},
+        { "include": "#japanesequote-expression"},
+        { "include": "#dialogue-expression" },
+        { "include": "#comment-out" }
+      ]
+    },
+    "rubymother": {
+      "match": "((｜.+?)|([\u4E00-\u9FFF\u3005-\u3007]+))(?=《.+?》)",
+      "name": "keyword"
+    },
+    "aozora-motherword": {
+      "match": "(.+?)(?=［＃「\\1」)",
+      "name": "keyword"
+    },
+    "original-word": {
+      "match": "〈.+?〉",
+      "name": "keyword"
+    },
+    "numbers": {
+      "match": "[一二三四五六七八九十〇]+|[0-9]+|[０-９]+",
+      "name": "constant.numeric"
+    },
+    "units": {
+      "match":"(?<=[一二三四五六七八九十〇]+|[0-9]+|[０-９]+)([一-龠]+|[ァ-ー]+)",
+      "name": "variable.parameter"
+    },
+    "aozora-expression":{
+      "begin": "［",
+      "end": "］",
+      "beginCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "rubymother": {
-        "match": "((｜.+?)|([\u4E00-\u9FFF\u3005-\u3007]+))(?=《.+?》)",
-        "name": "keyword"
+      "endCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "aozora-motherword": {
-        "match": "(.+?)(?=［＃「\\1」)",
-        "name": "keyword"
+      "name": "keyword",
+      "patterns": [
+        { "include": "#aozora-parameter" }
+      ]
+    },
+    "aozora-parameter": {
+      "begin": "「",
+      "end": "」",
+      "beginCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "original-word": {
-        "match": "〈.+?〉",
-        "name": "keyword"
+      "endCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "dialogue-inline": {
-        "match": "([^」]+(?=〈.+?〉)|(?=《.+?》)|[^」])",
-        "name": "comment.line.unquoted"
+      "name": "keyword"
+    },
+    "parenthesis-expression":{
+      "begin": "（",
+      "end": "）",
+      "beginCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "numbers": {
-        "match": "[一二三四五六七八九十〇]+|[0-9]+|[０-９]+",
-        "name": "constant.numeric"
+      "endCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "units": {
-        "match":"(?<=[一二三四五六七八九十〇]+|[0-9]+|[０-９]+)([一-龠]+|[ァ-ー]+)",
-        "name": "variable.parameter"
+      "name": "keyword"
+    },
+    "cornerfilledparenthesis-expression":{
+      "begin": "【",
+      "end": "】",
+      "beginCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "aozora-expression":{
-        "begin": "［",
-        "end": "］",
-        "beginCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "endCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "name": "keyword",
-        "patterns": [
-          { "include": "#aozora-parameter" }
-        ]
+      "endCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "aozora-parameter": {
-        "begin": "「",
-        "end": "」",
-        "beginCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "endCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "name": "keyword"
+      "name": "keyword"
+    },
+    "cornerparenthesis-expression":{
+      "begin": "［",
+      "end": "］",
+      "beginCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "parenthesis-expression":{
-        "begin": "（",
-        "end": "）",
-        "beginCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "endCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "name": "keyword"
+      "endCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "cornerfilledparenthesis-expression":{
-        "begin": "【",
-        "end": "】",
-        "beginCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "endCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "name": "keyword"
+      "name": "keyword"
+    },
+    "japanesequote-expression":{
+      "begin": "〝",
+      "end": "〟",
+      "beginCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "cornerparenthesis-expression":{
-        "begin": "［",
-        "end": "］",
-        "beginCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "endCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "name": "keyword"
+      "endCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "japanesequote-expression":{
-        "begin": "〝",
-        "end": "〟",
-        "beginCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "endCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "name": "keyword"
+      "name": "keyword"
+    },
+    "ruby-expression":{
+      "begin": "《",
+      "end": "》",
+      "beginCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "ruby-expression":{
-        "begin": "《",
-        "end": "》",
-        "beginCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "endCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "name": "keyword"
+      "endCaptures": {
+        "0": { "name": "string.quoted" }
       },
-      "dialogue-expression": {
-        "begin": "「",
-        "end": "」",
-        "beginCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "endCaptures": {
-          "0": { "name": "string.quoted" }
-        },
-        "name": "expression.group",
-        "patterns": [
-          { "include": "#parenthesis-expression"},
-          { "include": "#cornerfilledparenthesis-expression"},
-          { "include": "#cornerparenthesis-expression"},
-          { "include": "#japanesequote-expression"},
-          { "include": "#aozora-expression" },
-          { "include": "#aozora-parameter" },
-          { "include": "#ruby-expression"},
-          { "include": "#rubymother"},
-          { "include": "#original-word"},
-          { "include": "#numbers"},
-          { "include": "#units"},
-          { "include": "#dialogue-inline"},
-          { "include": "#parens"}
-        ]
-      }
+      "name": "keyword"
+    },
+    "dialogue-expression": {
+      "begin": "「",
+      "end": "」",
+      "beginCaptures": {
+        "0": { "name": "string.quoted" }
+      },
+      "endCaptures": {
+        "0": { "name": "string.quoted" }
+      },
+      "name": "comment.block ",
+      "patterns": [
+        { "include": "#parenthesis-expression"},
+        { "include": "#cornerfilledparenthesis-expression"},
+        { "include": "#cornerparenthesis-expression"},
+        { "include": "#japanesequote-expression"},
+        { "include": "#aozora-expression" },
+        { "include": "#aozora-parameter" },
+        { "include": "#ruby-expression"},
+        { "include": "#rubymother"},
+        { "include": "#original-word"},
+        { "include": "#numbers"},
+        { "include": "#units"},
+        { "include": "#dialogue-inline"},
+        { "include": "#parens"}
+      ]
+    },
+    "comment-out":{
+      "begin": "<!--  ",
+      "end": "  -->",
+      "beginCaptures": {
+        "0": { "name": "string.quoted" }
+      },
+      "endCaptures": {
+        "0": { "name": "string.quoted" }
+      },
+      "name": "entity"
     }
   }
+}

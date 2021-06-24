@@ -10,6 +10,7 @@ import compileDocs from './compile';
 import { draftRoot } from './compile'; 
 import {CharacterCounter, CharacterCounterController} from './charactorcount';
 import { editorText, OriginEditor } from './editor'
+import { urlToOptions } from 'vscode-test/out/util';
 
 const output = vscode.window.createOutputChannel("Novel");
 //リソースとなるhtmlファイル
@@ -80,8 +81,9 @@ function launchserver(originEditor: OriginEditor){
             }
         }
     
-        const uri = url.parse(request.url).pathname;
-        let filename = path.join(documentRoot.path, uri);
+        //const uri = url.parse(request.url).pathname;
+        const uri = request.url;
+        let filename = path.join(documentRoot.path, uri!);
     
         fs.stat(filename, (err, stats) => {
 
@@ -89,7 +91,7 @@ function launchserver(originEditor: OriginEditor){
             if (err) { Response["404"](); return ; }
             if (fs.statSync(filename).isDirectory()) { filename += '/index.html'; }
 
-            fs.readFile(filename, "binary", function(err, file){
+            fs.readFile(filename, function(err, file){
             if (err) { Response["500"](err); return ; }
                 Response["200"](file, filename);   
             }); 
