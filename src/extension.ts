@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import * as cp from 'child_process';
 import * as http from 'http';
+import * as url from 'url';
+import * as path from 'path';
+import * as fs from 'fs';
 import * as websockets from 'ws';
 import { getConfig } from './config';
 import compileDocs from './compile'; 
@@ -11,6 +14,7 @@ import { editorText, OriginEditor } from './editor'
 const output = vscode.window.createOutputChannel("Novel");
 //リソースとなるhtmlファイル
 let html: Buffer;
+let documentRoot: vscode.Uri;
 
 //コマンド登録
 export function activate(context: vscode.ExtensionContext): void {
@@ -29,9 +33,10 @@ export function activate(context: vscode.ExtensionContext): void {
     }));
 
     const fileUri = vscode.Uri.joinPath(context.extensionUri, 'htdocs', 'index.html');
-    vscode.workspace.fs.readFile(fileUri).then((data) => {
-        html = Buffer.from(data);
-    });
+    documentRoot = vscode.Uri.joinPath(context.extensionUri, 'htdocs');
+//    vscode.workspace.fs.readFile(fileUri).then((data) => {
+//        html = Buffer.from(data);
+//    });
 }
 
 
@@ -47,13 +52,48 @@ function launchserver(originEditor: OriginEditor){
 //    const html = fs.readFileSync(path.join(folderPath, 'htdocs/index.html'));
     
 
-
     const viewerServer = http.createServer(function(request, response) {
-        response.writeHead(200, {
-            'Content-Type': 'text/html',
-            'Cache-Control': 'private, max-age=0'
+        const Response = {
+            "200":function(file: Buffer, filename:string){
+                //const extname = path.extname(filename);
+                const header = {
+                    "Access-Control-Allow-Origin":"*",
+                    "Pragma": "no-cache",
+                    "Cache-Control" : "no-cache"       
+                }
+    
+                response.writeHead(200, header);
+                response.write(file, "binary");
+                response.end();
+            },
+            "404":function(){
+                response.writeHead(404, {"Content-Type": "text/plain"});
+                response.write("404 Not Found\n");
+                response.end();
+    
+            },
+            "500":function(err:unknown){
+                response.writeHead(500, {"Content-Type": "text/plain"});
+                response.write(err + "\n");
+                response.end();
+    
+            }
+        }
+    
+        const uri = url.parse(request.url).pathname;
+        let filename = path.join(documentRoot.path, uri);
+    
+        fs.stat(filename, (err, stats) => {
+
+            console.log(filename+" "+stats);
+            if (err) { Response["404"](); return ; }
+            if (fs.statSync(filename).isDirectory()) { filename += '/index.html'; }
+
+            fs.readFile(filename, "binary", function(err, file){
+            if (err) { Response["500"](err); return ; }
+                Response["200"](file, filename);   
+            }); 
         });
-        response.end(html);
     })
     
     viewerServer.listen(8080);

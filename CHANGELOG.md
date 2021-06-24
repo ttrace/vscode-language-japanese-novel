@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.0
+
+HTMLにリセットCSSを導入しました。
+(modern-css-reset)[https://github.com/andy-piccalilli/modern-css-reset]
+
 ## 0.8.4
 
 フォルダーではなくテキストファイルを単独で開いたときに、機能拡張が動作しなくなってしまう問題を修正しました。
