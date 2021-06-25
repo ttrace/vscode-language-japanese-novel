@@ -59,13 +59,12 @@ export function draftRoot(): string{
   }
 }
 
-const fileTree = new TreeModel();
 
 //fileList()は、ファイルパスと（再帰処理用の）ディレクトリ深度を受け取って、ファイルリストの配列と総文字数を返す。
 export function fileList(dirPath: string) : any{
     let   characterCount    = 0;
     const filesInFolder = getFiles( dirPath );
-    const root = fileTree.parse({});
+    const root = {};
 
   
     console.log('files from system:',filesInFolder);
@@ -122,14 +121,20 @@ function getFiles(dirPath: string){
   return filesInFolder;
 }
 
-export function draftsObject(dirPath: string){
-  //const results: never[] = [];
-  const root = fileTree.parse({});
+//型の指定
+export function draftsObject(dirPath: string):
+{
+  dir: string;
+  name: string;
+  length: number;
+}[]
+//ここから本体コード
+{
+  const results = [];
 
   const filesInFolder = getFiles( dirPath );
  
   for (const dirent of filesInFolder) {
-    let   characterCount    = 0;
   
     if (dirent.isDirectory() && dirent.name == "publish"){
         console.log('publish folder');
@@ -138,18 +143,22 @@ export function draftsObject(dirPath: string){
     }else if (dirent.isDirectory()) {
 
       const directoryPath = path.join(dirPath, dirent.name);
-      const containerFiles = draftsObject(directoryPath);
-      
-      const directory = fileTree.parse({
+      const containerFiles: any = draftsObject(directoryPath);
+
+      let containerLength = 0;
+      containerFiles.forEach((element: string | any[]) => {
+        containerLength += element.length;
+      });
+
+      const directory = {
         dir: path.join(dirPath, dirent.name),
         name:    dirent.name,
-        length:  containerFiles.length,
-      });
-      directory.addChild(containerFiles);
-      root.addChild(directory);
-    
-      characterCount += containerFiles.length;
+        length:  containerLength,
+        children: containerFiles,
+      };
 
+      results.push(directory);
+    
     } else if (dirent.isFile() && ['.txt'].includes(path.extname(dirent.name))) {
       //文字数カウントテスト
       let   readingFile = fs.readFileSync(path.join(dirPath, dirent.name), 'utf-8');
@@ -160,17 +169,39 @@ export function draftsObject(dirPath: string){
                 .replace(/[|｜]/g, '')       // ルビ開始記号
                 .replace(/<!--(.+?)-->/, ''); // コメントアウト
 
-      const fileNode = fileTree.parse({
+      const fileNode = {
         dir: path.join(dirPath, dirent.name),
         name: dirent.name,
         length: readingFile.length,
-      });
-      root.addChild(fileNode);
-      console.log("addFileNode",root);
-      characterCount += readingFile.length;
+      };
+      results.push(fileNode);
     }
   }
-  console.log('root of fileTree',root);
-  return root;
+  console.log('root of fileTree',results);
+  return results;
 }
 
+export function totalLength(dirPath: string): number{
+  let result = 0;
+  const drafts = draftsObject(dirPath);
+  drafts.forEach(element => {
+    result += element.length;
+  });
+  return result;
+}
+
+export class treeModel {
+  private _treeModel = draftsObject(draftRoot());
+  private _tree = new TreeModel();
+  private _root = this._tree.parse(this._treeModel);
+
+
+  public _searchNameFileByPath( path: string ): string{
+
+    const targetObject =  this._root.first( function(obj) {
+      return obj.dir == path;
+    });
+    console.log('Filter',targetObject);
+    return '';
+  }
+}

@@ -47,7 +47,7 @@
       },
       {
         "command": "Novel.set-counter",
-        "title": "Novel:文字数カウント開始"
+        "title": "Novel:締め切りフォルダー"
       }
     ],
     "languages": [

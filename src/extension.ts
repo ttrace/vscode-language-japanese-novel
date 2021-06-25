@@ -28,9 +28,36 @@ export function activate(context: vscode.ExtensionContext): void {
     const controller = new CharacterCounterController(characterCounter);
     context.subscriptions.push(controller);
     context.subscriptions.push(characterCounter);
-    context.subscriptions.push(vscode.commands.registerCommand('Novel.set-counter', (e) => {
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.set-counter', async (e) => {
         const path = e.fsPath;
-        characterCounter._setCounterToFolder(path);
+        let currentLength = 0
+        
+        draftsObject(path).forEach(element =>{
+            currentLength += element.length;
+        });
+
+        // InputBoxを呼び出す。awaitで完了を待つ。
+        let result = await vscode.window.showInputBox({
+            prompt: '目標となる文字数を入力してください',
+            placeHolder: `現在の文字数：${currentLength}`
+        });
+        // ここで入力を処理する
+        if (result) {
+            try{
+                parseInt(result);
+                // 入力が正常に行われている
+                vscode.window.showInformationMessage(`目標の文字数を: ${result}文字に設定しました`);
+            } catch (error){
+                vscode.window.showWarningMessage(`数字を入力してください`);
+                result = '0';
+            }
+
+        } else {
+            // 入力がキャンセルされた
+            vscode.window.showWarningMessage(`目標文字数は設定しません`);
+            result = '0';
+        }
+        characterCounter._setCounterToFolder(path, parseInt(result!));
     }));
 
     documentRoot = vscode.Uri.joinPath(context.extensionUri, 'htdocs');
@@ -106,7 +133,9 @@ function launchserver(originEditor: OriginEditor){
                 console.log("sending body");
                 ws.send( editorText(originEditor));
             } else if (message === "giveMeObject"){
-                ws.send( JSON.stringify(draftsObject(draftRoot())));
+                const sendingObjects = draftsObject(draftRoot());
+                console.log('send:',sendingObjects);
+                ws.send( JSON.stringify(sendingObjects));
             }
         });
     });

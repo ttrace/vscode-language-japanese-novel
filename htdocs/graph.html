@@ -23,17 +23,23 @@
             });
 
             sock.addEventListener("message", e => {
+                console.log("メッセージ受信", e.data);
                 const   novelObject = JSON.parse( e.data );
-                const   draftFiles  = novelObject.files;
-                const   amountLength = novelObject.length;
+//                const   draftFiles  = novelObject.files;
+//                const   amountLength = novelObject.length;
+                let amountLength = 0;
 
                 console.log("メッセージ受信", novelObject);
 
                 graph.append('<ul id="graphWrapper"></ul>');
                 const   graphWrapper = $('#graphWrapper');
 
+                novelObject.forEach(element =>{
+                    amountLength += element.length;
+                });
+
                 let     cyclicColor = 1;
-                draftFiles.forEach(element => {
+                novelObject.forEach(element => {
                     const listItem = $('<li>');
                     const currentColor = cyclicColor % 4;
                     const widhOfItem = element.length/amountLength;
