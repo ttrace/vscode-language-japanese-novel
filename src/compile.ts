@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as TreeModel from 'tree-model';
 
 //fsモジュールの使い方 https://qiita.com/oblivion/items/2725a4b3ca3a99f8d1a3
 export default function compileDocs(): void
@@ -188,20 +187,4 @@ export function totalLength(dirPath: string): number{
     result += element.length;
   });
   return result;
-}
-
-export class treeModel {
-  private _treeModel = draftsObject(draftRoot());
-  private _tree = new TreeModel();
-  private _root = this._tree.parse(this._treeModel);
-
-
-  public _searchNameFileByPath( path: string ): string{
-
-    const targetObject =  this._root.first( function(obj) {
-      return obj.dir == path;
-    });
-    console.log('Filter',targetObject);
-    return '';
-  }
 }

@@ -1,10 +1,9 @@
 //Original code is published by 8amjp/vsce-charactercount] https://github.com/8amjp/vsce-charactercount under MIT
 
 "use strict";
-import { PathLike } from 'fs';
 import * as path from 'path';
 import { window, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, workspace } from 'vscode';
-import {draftsObject, totalLength, fileList, draftRoot, treeModel} from './compile';
+import {totalLength, draftRoot} from './compile';
 
 let projectCharacterCount = "";
 
