@@ -1,14 +1,14 @@
 //Original code is published by 8amjp/vsce-charactercount] https://github.com/8amjp/vsce-charactercount under MIT
 
 "use strict";
-import { PathLike } from 'fs';
+import * as path from 'path';
 import { window, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, workspace } from 'vscode';
-import {fileList, draftRoot} from './compile';
+import {totalLength, draftRoot} from './compile';
 
 let projectCharacterCount = "";
 
 if( draftRoot() != ""){
-    projectCharacterCount = Intl.NumberFormat().format(fileList(draftRoot(), 0).length);
+    projectCharacterCount = Intl.NumberFormat().format(totalLength(draftRoot()));
 } else {
     projectCharacterCount = "0";
 }
@@ -17,6 +17,7 @@ export class CharacterCounter {
 
     private _statusBarItem!: StatusBarItem;
     private _countingFolder = '';
+    private _countingTarget = '0';
     private _folderCount = {
                             label: '',
                             amountLength: '',
@@ -37,7 +38,12 @@ export class CharacterCounter {
             //テキストファイルを開いているとき
             this._statusBarItem.text = `$(pencil) ${characterCount} 文字`;
         } else if( this._countingFolder != '' ){
-            this._statusBarItem.text = `$(book) ${projectCharacterCount}文字／$(folder-opened) ${this._folderCount.label} ${this._folderCount.amountLength}文字 ／$(pencil) ${characterCount} 文字`;
+            //締め切りフォルダーが設定されている時
+            let targetNumberText = this._folderCount.amountLength;
+            if(this._countingTarget != '0'){
+                targetNumberText += '/' + this._countingTarget;
+            }
+            this._statusBarItem.text = `$(book) ${projectCharacterCount}文字  $(folder-opened) ${this._folderCount.label} ${targetNumberText}文字  $(pencil) ${characterCount} 文字`;
         } else {
             this._statusBarItem.text = `$(book) ${projectCharacterCount}文字／$(pencil) ${characterCount} 文字`;
         }
@@ -60,21 +66,20 @@ export class CharacterCounter {
     }
 
     public _updateProjectCharacterCount(): any{
-        projectCharacterCount = Intl.NumberFormat().format(fileList(draftRoot(), 0).length);
+        projectCharacterCount = Intl.NumberFormat().format(totalLength(draftRoot()));
         if(this._countingFolder != ''){
-            const files = fileList(this._countingFolder, 0);
-            console.log(files);
 
             this._folderCount = {
-                label:files.label,
-                amountLength: Intl.NumberFormat().format(files.length),
+                label:path.basename(this._countingFolder),
+                amountLength: Intl.NumberFormat().format(totalLength(this._countingFolder)),
             };
         }
         this.updateCharacterCount();
     }
 
-    public _setCounterToFolder( pathToFolder: string ) : any{
+    public _setCounterToFolder( pathToFolder: string, targetCharacter: number ) : any{
         this._countingFolder = pathToFolder;
+        this._countingTarget = Intl.NumberFormat().format(targetCharacter);
         this._updateProjectCharacterCount();
     }
 

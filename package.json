@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -47,7 +47,7 @@
       },
       {
         "command": "Novel.set-counter",
-        "title": "Novel:文字数カウント開始"
+        "title": "Novel:締め切りフォルダー"
       }
     ],
     "languages": [
@@ -92,7 +92,9 @@
         "Novel.compile.separator": {
           "type": "string",
           "default": "＊",
-          "enum": ["*"],
+          "enum": [
+            "*"
+          ],
           "description": "テキストファイルを結合する際に、フォルダーの区切り文字を指定してください（実装中）"
         },
         "Novel.preview.userregex": {
@@ -103,11 +105,13 @@
       }
     },
     "menus": {
-      "explorer/context" : [{
-        "when": "explorerResourceIsFolder == true",
-        "command": "Novel.set-counter",
-        "group": "YourGroup@1"
-      }]
+      "explorer/context": [
+        {
+          "when": "explorerResourceIsFolder == true",
+          "command": "Novel.set-counter",
+          "group": "YourGroup@1"
+        }
+      ]
     }
   },
   "devDependencies": {

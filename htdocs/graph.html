@@ -4,10 +4,54 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>グラフ</title>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-        <link rel="stylesheet" href="reset.css">
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="css/reset.css">
+        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/graph.css">
     </head>
     <body>
-
+        <div id='graph'></div>
     </body>
+    <script>
+        const sock = new WebSocket("ws://"+ location.hostname +":5001");
+
+        window.onload = function(){
+            const graph = $('#graph');
+
+            sock.addEventListener("open", e => {
+                console.log("接続");
+                sock.send('giveMeObject');
+            });
+
+            sock.addEventListener("message", e => {
+                console.log("メッセージ受信", e.data);
+                const   novelObject = JSON.parse( e.data );
+//                const   draftFiles  = novelObject.files;
+//                const   amountLength = novelObject.length;
+                let amountLength = 0;
+
+                console.log("メッセージ受信", novelObject);
+
+                graph.append('<ul id="graphWrapper"></ul>');
+                const   graphWrapper = $('#graphWrapper');
+
+                novelObject.forEach(element =>{
+                    amountLength += element.length;
+                });
+
+                let     cyclicColor = 1;
+                novelObject.forEach(element => {
+                    const listItem = $('<li>');
+                    const currentColor = cyclicColor % 4;
+                    const widhOfItem = element.length/amountLength;
+
+                    listItem.html(`${element.name}, ${element.length}`);
+                    listItem.css('width', widhOfItem * 100 + '%');
+                    listItem.addClass(`color${currentColor}`);
+                    graphWrapper.append(listItem);
+
+                    cyclicColor++;
+                });
+            });
+        }
+    </script>
 </html>

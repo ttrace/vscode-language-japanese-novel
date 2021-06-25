@@ -27,7 +27,7 @@ export default function compileDocs(): void
       }
 
       //  テキストを書き込む
-      const filelist = fileList(draftRootPath, 0).files;
+      const filelist = fileList(draftRootPath).files;
       filelist.forEach((listItem: { dir: number | fs.PathLike; depthIndicator: number; }) => {
           let appendingContext= "";
           if(listItem.dir){
@@ -37,7 +37,7 @@ export default function compileDocs(): void
           }
           fs.appendFileSync( compiledTextFilePath, appendingContext);
       });
-      console.log(fileList(draftRootPath, 0).files);
+      //console.log(fileList(draftRootPath, 0).files);
 }
 
 export function draftRoot(): string{
@@ -58,28 +58,38 @@ export function draftRoot(): string{
   }
 }
 
+
 //fileList()は、ファイルパスと（再帰処理用の）ディレクトリ深度を受け取って、ファイルリストの配列と総文字数を返す。
-export function fileList(dirPath: string, directoryDeptsh: number) : any{
+export function fileList(dirPath: string) : any{
     let   characterCount    = 0;
-    const filesInDraftsRoot = fs.readdirSync( dirPath , { withFileTypes: true });
+    const filesInFolder = getFiles( dirPath );
+    const root = {};
+
+  
+    console.log('files from system:',filesInFolder);
+
     const labelOfList = path.basename(dirPath);
     const files = [];
     const maxDirectoryDepth = 6;
-    for (const dirent of filesInDraftsRoot) {
+
+    for (const dirent of filesInFolder) {
         if (dirent.isDirectory() && dirent.name == "publish"){
             console.log('publish folder');
         } else if (dirent.name.match(/^\..*/)){
             console.log('invisible docs');
-        }else if (dirent.isDirectory() && directoryDeptsh <= maxDirectoryDepth) {
+        }else if (dirent.isDirectory()) {
+
           const fp = path.join(dirPath, dirent.name);
-          const containerFiles = fileList(fp, directoryDeptsh + 1);
+          const containerFiles = fileList(fp);
+          
           files.push({
-              depthIndicator:   directoryDeptsh,
               directoryName:    dirent.name,
               directoryLength:  containerFiles.length,
           });
+
           characterCount += containerFiles.length;
           files.push(containerFiles.files);
+
         } else if (dirent.isFile() && ['.txt'].includes(path.extname(dirent.name))) {
           //文字数カウントテスト
           let   readingFile = fs.readFileSync(path.join(dirPath, dirent.name), 'utf-8');
@@ -103,4 +113,78 @@ export function fileList(dirPath: string, directoryDeptsh: number) : any{
         files: files.flat(),
         length: characterCount,
       };
+}
+
+function getFiles(dirPath: string){
+  const filesInFolder = fs.readdirSync( dirPath , { withFileTypes: true });
+  return filesInFolder;
+}
+
+//型の指定
+export function draftsObject(dirPath: string):
+{
+  dir: string;
+  name: string;
+  length: number;
+}[]
+//ここから本体コード
+{
+  const results = [];
+
+  const filesInFolder = getFiles( dirPath );
+ 
+  for (const dirent of filesInFolder) {
+  
+    if (dirent.isDirectory() && dirent.name == "publish"){
+        console.log('publish folder');
+    } else if (dirent.name.match(/^\..*/)){
+        console.log('invisible docs');
+    }else if (dirent.isDirectory()) {
+
+      const directoryPath = path.join(dirPath, dirent.name);
+      const containerFiles: any = draftsObject(directoryPath);
+
+      let containerLength = 0;
+      containerFiles.forEach((element: string | any[]) => {
+        containerLength += element.length;
+      });
+
+      const directory = {
+        dir: path.join(dirPath, dirent.name),
+        name:    dirent.name,
+        length:  containerLength,
+        children: containerFiles,
+      };
+
+      results.push(directory);
+    
+    } else if (dirent.isFile() && ['.txt'].includes(path.extname(dirent.name))) {
+      //文字数カウントテスト
+      let   readingFile = fs.readFileSync(path.join(dirPath, dirent.name), 'utf-8');
+            //カウントしない文字を除外 from https://github.com/8amjp/vsce-charactercount by MIT license
+            readingFile = readingFile
+                .replace(/\s/g, '')          // すべての空白文字
+                .replace(/《(.+?)》/g, '')    // ルビ範囲指定記号とその中の文字
+                .replace(/[|｜]/g, '')       // ルビ開始記号
+                .replace(/<!--(.+?)-->/, ''); // コメントアウト
+
+      const fileNode = {
+        dir: path.join(dirPath, dirent.name),
+        name: dirent.name,
+        length: readingFile.length,
+      };
+      results.push(fileNode);
+    }
+  }
+  console.log('root of fileTree',results);
+  return results;
+}
+
+export function totalLength(dirPath: string): number{
+  let result = 0;
+  const drafts = draftsObject(dirPath);
+  drafts.forEach(element => {
+    result += element.length;
+  });
+  return result;
 }
