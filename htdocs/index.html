@@ -7,11 +7,11 @@
         <link rel="stylesheet" href="css/reset.css">
         <link rel="stylesheet" href="css/style.css">
         <link rel="stylesheet" href="css/preview.css">
+        <link rel="stylesheet" href="css/graph.css">
 
     </head>
-    <body>
+    <body id="preview">
         <div id='draft'></div>
-        <div id='graph'></div>
     <script>
     
     // 監視ターゲットの取得
@@ -41,21 +41,43 @@
             sock.addEventListener("open", e => {
                 console.log("接続が開かれたときに呼び出されるイベント");
                 sock.send('hello');
+            //    sock.send('giveMeObject');
             });
 
             sock.addEventListener("message", e => {
                 console.log("サーバーからメッセージを受信したときに呼び出されるイベント");
                 //console.log(e.data);
                 if (e.data[0] === '<'){
-                draftwrapper.textContent = '';
-                draftwrapper.insertAdjacentHTML('afterbegin', e.data)
+                    draftwrapper.textContent = '';
+                    draftwrapper.insertAdjacentHTML('afterbegin', e.data)
                 } else {
+                    const message = JSON.parse( e.data );
+
+                    if( message.files ){
+                    //    loadGraph(message);
+                    } else {
+                        loadSettings(message);
+                    }
+                    
+                }
+            });
+
+            sock.addEventListener("close", e => {
+                console.log("接続が閉じられたときに呼び出されるイベント");
+            });
+
+            sock.addEventListener("error", e => {
+                console.log("エラーが発生したときに呼び出されるイベント");
+            });
+        }
+
+    function loadSettings(message){
                     const styleSheetList = document.styleSheets ;
                     let styleSheet = styleSheetList[0] ;
 
-                        previewsettings = JSON.parse( e.data );
+                        previewsettings = message;
 
-                    //CSS settings      
+                    //CSS settings
                         console.log(previewsettings);
                         // styleSheet.insertRule( "p{font-size: calc(110mm / " + previewsettings.lineLength + ") ; }" ) ;
                         styleSheet.insertRule( `@media screen{
@@ -103,15 +125,34 @@
                         }`);
                         console.log('sent giveme');
                         sock.send('givemedata');
-                }
-            });
+                    }
 
-            sock.addEventListener("close", e => {
-                console.log("接続が閉じられたときに呼び出されるイベント");
-            });
+        function loadGraph(message){
+            const graph = $('#graph');
 
-            sock.addEventListener("error", e => {
-                console.log("エラーが発生したときに呼び出されるイベント");
+            sock.addEventListener("message", e => {
+                const   novelObject = message;
+                const   draftFiles  = novelObject.files;
+                const   amountLength = novelObject.length;
+
+                console.log("メッセージ受信", novelObject);
+
+                graph.append('<ul id="graphWrapper"></ul>');
+                const   graphWrapper = $('#graphWrapper');
+
+                let     cyclicColor = 1;
+                draftFiles.forEach(element => {
+                    const listItem = $('<li>');
+                    const currentColor = cyclicColor % 4;
+                    const widhOfItem = element.length/amountLength;
+
+                    listItem.html(`${element.name}, ${element.length}`);
+                    listItem.css('width', widhOfItem * 100 + '%');
+                    listItem.addClass(`color${currentColor}`);
+                    graphWrapper.append(listItem);
+
+                    cyclicColor++;
+                });
             });
         }
     </script>

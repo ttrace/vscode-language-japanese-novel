@@ -1,0 +1,41 @@
+@charset "UTF-8";
+#graph{
+    writing-mode: horizontal-tb;
+    position: fixed;
+    width: 100%;
+}
+
+#graphWrapper{
+    display         : flex;
+    justify-content :space-between;
+    width: 100%;
+    padding: 0;
+}
+
+#preview #graph{
+    position: fixed;
+    bottom: 0px;
+    right:0px;
+    height: 2em;
+    width: 100vw;
+}
+
+#graphWrapper li{
+    list-style: none;
+}
+
+.color0{
+    background-color:saddlebrown;
+}
+
+.color1{
+    background-color: salmon;
+}
+
+.color2{
+    background-color: seagreen;
+}
+
+.color3{
+    background-color: steelblue;
+}

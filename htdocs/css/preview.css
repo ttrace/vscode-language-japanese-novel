@@ -58,6 +58,9 @@ font-weight: Medium;
 text-align: justify;
 }
 
+#draft{
+  height: calc(100vh - 2em);
+}
 
 h1 {
 /* フォント */

@@ -6,8 +6,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as websockets from 'ws';
 import { getConfig } from './config';
-import compileDocs from './compile'; 
-import { draftRoot } from './compile'; 
+import compileDocs, { draftRoot } from './compile'; 
+import { fileList } from './compile'; 
 import {CharacterCounter, CharacterCounterController} from './charactorcount';
 import { editorText, OriginEditor } from './editor'
 import { urlToOptions } from 'vscode-test/out/util';
@@ -33,26 +33,15 @@ export function activate(context: vscode.ExtensionContext): void {
         characterCounter._setCounterToFolder(path);
     }));
 
-    const fileUri = vscode.Uri.joinPath(context.extensionUri, 'htdocs', 'index.html');
     documentRoot = vscode.Uri.joinPath(context.extensionUri, 'htdocs');
-//    vscode.workspace.fs.readFile(fileUri).then((data) => {
-//        html = Buffer.from(data);
-//    });
 }
 
 
 function launchserver(originEditor: OriginEditor){
     //もしサーバーが動いていたら止めて再起動する……のを、実装しなきゃなあ。
     //https://sasaplus1.hatenadiary.com/entry/20121129/1354198092 が良さそう。
-
-
     
-    // Node http serverを起動する
-
-//    const folderPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-//    const html = fs.readFileSync(path.join(folderPath, 'htdocs/index.html'));
-    
-
+    //Webサーバの起動。ドキュメントルートはnode_modules/novel-writer/htdocsになる。
     const viewerServer = http.createServer(function(request, response) {
         const Response = {
             "200":function(file: Buffer, filename:string){
@@ -81,7 +70,6 @@ function launchserver(originEditor: OriginEditor){
             }
         }
     
-        //const uri = url.parse(request.url).pathname;
         const uri = request.url;
         let filename = path.join(documentRoot.path, uri!);
     
@@ -117,6 +105,8 @@ function launchserver(originEditor: OriginEditor){
             } else if (message === "givemedata"){
                 console.log("sending body");
                 ws.send( editorText(originEditor));
+            } else if (message === "giveMeObject"){
+                ws.send( JSON.stringify(fileList(draftRoot(),0)));
             }
         });
     });
