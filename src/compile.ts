@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as TreeModel from 'tree-model';
 
 //fsモジュールの使い方 https://qiita.com/oblivion/items/2725a4b3ca3a99f8d1a3
 export default function compileDocs(): void
@@ -37,7 +38,7 @@ export default function compileDocs(): void
           }
           fs.appendFileSync( compiledTextFilePath, appendingContext);
       });
-      console.log(fileList(draftRootPath, 0).files);
+      //console.log(fileList(draftRootPath, 0).files);
 }
 
 export function draftRoot(): string{
@@ -58,8 +59,15 @@ export function draftRoot(): string{
   }
 }
 
+
+
 //fileList()は、ファイルパスと（再帰処理用の）ディレクトリ深度を受け取って、ファイルリストの配列と総文字数を返す。
 export function fileList(dirPath: string, directoryDeptsh: number) : any{
+    const fileTree = new TreeModel();
+    const root = fileTree.parse({});
+
+    console.log("root表示",root);
+
     let   characterCount    = 0;
     const filesInDraftsRoot = fs.readdirSync( dirPath , { withFileTypes: true });
     const labelOfList = path.basename(dirPath);
@@ -78,6 +86,15 @@ export function fileList(dirPath: string, directoryDeptsh: number) : any{
               directoryName:    dirent.name,
               directoryLength:  containerFiles.length,
           });
+
+          const directory = fileTree.parse({
+            dir: path.join(dirPath, dirent.name),
+            name:    dirent.name,
+            length:  containerFiles.length,
+          });
+          root.addChild(directory);
+          console.log("add Directory",root);
+
           characterCount += containerFiles.length;
           files.push(containerFiles.files);
         } else if (dirent.isFile() && ['.txt'].includes(path.extname(dirent.name))) {
@@ -94,6 +111,15 @@ export function fileList(dirPath: string, directoryDeptsh: number) : any{
             name: dirent.name,
             length: readingFile.length,
           });
+
+          const fileNode = fileTree.parse({
+            dir: path.join(dirPath, dirent.name),
+            name: dirent.name,
+            length: readingFile.length,
+          });
+          root.addChild(fileNode);
+          console.log("addFileNode",root);
+
           characterCount += readingFile.length;
         }
     }
