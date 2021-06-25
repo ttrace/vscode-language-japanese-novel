@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as websockets from 'ws';
 import { getConfig } from './config';
 import compileDocs, { draftRoot } from './compile'; 
-import { fileList } from './compile'; 
+import { fileList, draftsObject} from './compile'; 
 import {CharacterCounter, CharacterCounterController} from './charactorcount';
 import { editorText, OriginEditor } from './editor'
 import { urlToOptions } from 'vscode-test/out/util';
@@ -106,7 +106,7 @@ function launchserver(originEditor: OriginEditor){
                 console.log("sending body");
                 ws.send( editorText(originEditor));
             } else if (message === "giveMeObject"){
-                ws.send( JSON.stringify(fileList(draftRoot(),0)));
+                ws.send( JSON.stringify(draftsObject(draftRoot())));
             }
         });
     });

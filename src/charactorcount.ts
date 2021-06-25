@@ -8,7 +8,7 @@ import {fileList, draftRoot} from './compile';
 let projectCharacterCount = "";
 
 if( draftRoot() != ""){
-    projectCharacterCount = Intl.NumberFormat().format(fileList(draftRoot(), 0).length);
+    projectCharacterCount = Intl.NumberFormat().format(fileList(draftRoot()).length);
 } else {
     projectCharacterCount = "0";
 }
@@ -60,9 +60,9 @@ export class CharacterCounter {
     }
 
     public _updateProjectCharacterCount(): any{
-        projectCharacterCount = Intl.NumberFormat().format(fileList(draftRoot(), 0).length);
+        projectCharacterCount = Intl.NumberFormat().format(fileList(draftRoot()).length);
         if(this._countingFolder != ''){
-            const files = fileList(this._countingFolder, 0);
+            const files = fileList(this._countingFolder);
             console.log(files);
 
             this._folderCount = {
