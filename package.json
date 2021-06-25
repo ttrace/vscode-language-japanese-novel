@@ -92,7 +92,9 @@
         "Novel.compile.separator": {
           "type": "string",
           "default": "＊",
-          "enum": ["*"],
+          "enum": [
+            "*"
+          ],
           "description": "テキストファイルを結合する際に、フォルダーの区切り文字を指定してください（実装中）"
         },
         "Novel.preview.userregex": {
@@ -103,11 +105,13 @@
       }
     },
     "menus": {
-      "explorer/context" : [{
-        "when": "explorerResourceIsFolder == true",
-        "command": "Novel.set-counter",
-        "group": "YourGroup@1"
-      }]
+      "explorer/context": [
+        {
+          "when": "explorerResourceIsFolder == true",
+          "command": "Novel.set-counter",
+          "group": "YourGroup@1"
+        }
+      ]
     }
   },
   "devDependencies": {
@@ -128,6 +132,7 @@
     "mocha": "^8.4.0",
     "path": "^0.12.7",
     "sinon": "^10.0.0",
+    "tree-model": "^1.0.7",
     "typescript": "^4.2.4",
     "utf-8-validate": "^5.0.5",
     "vscode-test": "^1.5.2"
