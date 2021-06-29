@@ -98,7 +98,7 @@ function launchserver(originEditor: OriginEditor){
         }
     
         const uri = request.url;
-        let filename = path.join(documentRoot.path, uri!);
+        let filename = path.join(documentRoot.fsPath, uri!);
     
         fs.stat(filename, (err, stats) => {
 
