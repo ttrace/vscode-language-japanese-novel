@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.2
+
+Windowsでサーバーが404になるバグに対処しました。  
+報告してくださった[Orito Itsuki](https://github.com/MatchaChoco010)さん、教えてくださった[開途](https://twitter.com/Kaito_YST)さん、ありがとうございます！
+resolving a bug > [:bug: fix windows server path issue](https://github.com/ttrace/vscode-language-japanese-novel/pull/24) by [Orito Itsuki](https://github.com/MatchaChoco010)
+
 ## 0.9.1
 
 文字数カウントのメニューを「締め切りフォルダー」に変更しました。  
