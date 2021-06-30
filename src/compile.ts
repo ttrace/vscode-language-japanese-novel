@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as TreeModel from 'tree-model';
+import { dir } from 'console';
 
 //fsモジュールの使い方 https://qiita.com/oblivion/items/2725a4b3ca3a99f8d1a3
 export default function compileDocs(): void
@@ -117,6 +118,7 @@ export function fileList(dirPath: string) : any{
 }
 
 function getFiles(dirPath: string){
+  console.log("path",dirPath);
   const filesInFolder = fs.readdirSync( dirPath , { withFileTypes: true });
   return filesInFolder;
 }

@@ -25,7 +25,7 @@ export class CharacterCounter {
                             label: '',
                             amountLengthNum: 0,
                             };
-    private _countingObject = draftsObject(draftRoot());
+
     private _isEditorChildOfTargetFolder = false;
 
     public updateCharacterCount() {
@@ -109,10 +109,13 @@ export class CharacterCounter {
     }
 
     private _lengthByPath(dirPath: string): number{
+        if(draftRoot() == ""){
+            return 0;
+        }
         const tree = new TreeModel();
         const draftTree = tree.parse({dir: draftRoot(),name: 'root',length: 0});
       
-        this._countingObject.forEach(element => {
+        draftsObject(draftRoot()).forEach(element => {
           const draftNode = tree.parse(element);
           draftTree.addChild(draftNode);
         });
@@ -122,11 +125,14 @@ export class CharacterCounter {
     }
 
     public _setIfChildOfTarget(): boolean{
+        if(draftRoot() == ""){
+            return false;
+        }
         const tree = new TreeModel();
         const draftTree = tree.parse({dir: draftRoot(),name: 'root',length: 0});
         const activeDocumentPath = window.activeTextEditor?.document.uri.fsPath;
 
-        this._countingObject.forEach(element => {
+        draftsObject(draftRoot()).forEach(element => {
             const draftNode = tree.parse(element);
             draftTree.addChild(draftNode);
           });
@@ -149,7 +155,7 @@ export class CharacterCounter {
     }
 
     public _updateCountingObject(){
-        this._countingObject = draftsObject(draftRoot());
+        //this._countingObject = draftsObject(draftRoot());
         return true;
     }
 
