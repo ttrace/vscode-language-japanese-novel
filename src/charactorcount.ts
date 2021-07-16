@@ -60,7 +60,6 @@ export class CharacterCounter {
             let targetNumberTextNum = this._folderCount.amountLengthNum;
             let targetNumberText = Intl.NumberFormat().format(targetNumberTextNum);
             if(this._isEditorChildOfTargetFolder){
-                //console.log(targetNumberTextNum);
                 targetNumberTextNum = targetNumberTextNum - savedCharacterCountNum + characterCountNum;
                 targetNumberText = Intl.NumberFormat().format(targetNumberTextNum);
             }
@@ -114,13 +113,15 @@ export class CharacterCounter {
         }
         const tree = new TreeModel();
         const draftTree = tree.parse({dir: draftRoot(),name: 'root',length: 0});
-      
+        console.log('rootだけ',draftsObject(draftRoot()));
+
         draftsObject(draftRoot()).forEach(element => {
           const draftNode = tree.parse(element);
           draftTree.addChild(draftNode);
         });
-      
         const targetFileNode = draftTree.first(node => node.model.dir === dirPath);
+        console.log('ターゲットのパス',dirPath);
+        console.log('ターゲットファイル',targetFileNode);
         return targetFileNode!.model.length;
     }
 

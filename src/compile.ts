@@ -142,6 +142,8 @@ export function draftsObject(dirPath: string):
         console.log('publish folder');
     } else if (dirent.name.match(/^\..*/)){
         console.log('invisible docs');
+    } else if(dirent.isDirectory() && dirent.name == "dict"){
+      console.log('dictionary folder');
     }else if (dirent.isDirectory()) {
 
       const directoryPath = path.join(dirPath, dirent.name);
