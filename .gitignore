@@ -6,3 +6,4 @@ out
 .vscode-test/
 **/publish/**
 publish.html
+.DS_Store
