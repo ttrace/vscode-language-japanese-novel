@@ -7,6 +7,7 @@ import * as TreeModel from 'tree-model';
 
 import { window, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, workspace } from 'vscode';
 import {totalLength, draftRoot} from './compile';
+import { dir } from 'console';
 
 let projectCharacterCountNum = 0;
 
@@ -51,7 +52,7 @@ export class CharacterCounter {
         } else {
             savedCharacterCountNum = this._lengthByPath(docPath);
         }
-        console.log('全キャラクター',projectCharacterCountNum, savedCharacterCountNum, characterCountNum);
+
         const totalCharacterCountNum = projectCharacterCountNum - savedCharacterCountNum + characterCountNum;
         const totalCharacterCount = Intl.NumberFormat().format(totalCharacterCountNum)
 
@@ -93,6 +94,7 @@ export class CharacterCounter {
         projectCharacterCountNum = totalLength(draftRoot());
         if(this._countingFolder != ''){
 
+            //締め切りフォルダーの更新
             this._folderCount = {
                 label:path.basename(this._countingFolder),
                 amountLengthNum: totalLength(this._countingFolder),
@@ -121,7 +123,11 @@ export class CharacterCounter {
         });
       
         const targetFileNode = draftTree.first(node => node.model.dir === dirPath);
-        return targetFileNode!.model.length;
+        if(targetFileNode){
+            return targetFileNode!.model.length;
+        } else {
+            return 0;
+        }
     }
 
     public _setIfChildOfTarget(): boolean{
