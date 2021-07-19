@@ -30,6 +30,7 @@ export class CharacterCounter {
                             };
 
     private _isEditorChildOfTargetFolder = false;
+    timeoutID: any;
 
     public updateCharacterCount() {
         if (!this._statusBarItem) {
@@ -62,7 +63,9 @@ export class CharacterCounter {
         if(this.ifEditDistance){
             if(this.editDistance == -1){
                 editDistance = `／$(record-keys)$(sync)文字`;
-            }else{
+            }else if(this.keyPressFlag){
+                editDistance = `／$(record-keys)${Intl.NumberFormat().format(this.editDistance)}$(sync)文字`;
+            } else{
                 editDistance = `／$(record-keys)${Intl.NumberFormat().format(this.editDistance)}文字`;
             }
         }
@@ -226,26 +229,55 @@ export class CharacterCounter {
         } else {
             window.showInformationMessage(`原稿がGitの管理下にないようです`);
             this.ifEditDistance = false;
-            this._updateEditDistance();
+            this._updateEditDistanceDelay();
         }
     }
 
     public _setLatestUpdate(latestGitText: any){
         this.latestText = latestGitText;
         console.log('latest from Git:', latestGitText);
-        this._updateEditDistance();
-    } 
+        this._updateEditDistanceDelay();
+    }
 
-    public _updateEditDistance(){
+    private keyPressFlag = false;
+
+    public _updateEditDistanceActual(){
         const currentText = window.activeTextEditor?.document.getText();
         console.log('現在の原稿',currentText);
         console.log('latestの原稿',this.latestText);
         if(this.latestText != ''){
             this.editDistance = levenshteinEditDistance(this.latestText, currentText!, false);
-            console.log('edit distance',this.editDistance);
+            this.keyPressFlag = false;
             this.updateCharacterCount();
         }
-        //this.editDistance = UpdateingeditDistance;
+        delete this.timeoutID;
+    }
+
+    public _updateEditDistanceDelay(){
+        if (!this.keyPressFlag){
+            this.keyPressFlag = true;
+            const updateCounter = Math.min(
+                Math.ceil(
+                    window.activeTextEditor!.document.getText().length / 100),
+                    500
+                );
+                console.log('timeoutID',this.timeoutID,updateCounter);
+            this.timeoutID = setTimeout(socketServer => {
+                this._updateEditDistanceActual();
+            }, updateCounter);
+
+            }
+        }
+
+    public _timerCancel(){
+      if(typeof this.timeoutID == "number") {
+        this.clearTimeout(this.timeoutID);
+        delete this.timeoutID;
+      }
+    }
+
+    clearTimeout(timeoutID: number) {
+        throw new Error('Method not implemented.');
     }
 
 
@@ -274,7 +306,7 @@ export class CharacterCounterController {
 
     private _onEvent() {
         this._characterCounter.updateCharacterCount();
-        if(this._characterCounter.ifEditDistance) this._characterCounter._updateEditDistance();
+        if(this._characterCounter.ifEditDistance) this._characterCounter._updateEditDistanceDelay();
     }
 
     private _onFocusChanged() {
