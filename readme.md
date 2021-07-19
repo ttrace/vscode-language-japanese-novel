@@ -26,12 +26,12 @@
 
 ### 編集距離の表示
 
-Gitでファイルの履歴を管理している場合には、前日の状態から現在までの編集距離を文字数で表示することができます。  
+Gitでファイルの履歴を管理している場合には、前日の状態から現在までの編集距離をリアルタイムに表示します。  
 改稿した分量を把握するのにお使いください。
 
-git mvを使わずにファイル名を変更するとファイルの継続性がなくなり、編集距離を計算できなくなります。
+なお、git mvを使わずにファイル名を変更するとファイルの継続性がなくなり、編集距離を表示できなくなります。
 
-[編集距離](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/edit-distance.png)
+![編集距離](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/edit-distance.png)
 
 ### 制限事項
 
