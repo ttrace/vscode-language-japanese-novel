@@ -184,53 +184,52 @@ export class CharacterCounter {
     public ifEditDistance = false;
 
     public _setEditDistance(){
-        const novelGit = new NovelGit();
         const activeDocumentPath = window.activeTextEditor!.document.uri.fsPath;
-        if( novelGit._isGitRepo()){
 
         const relatevePath = path.relative(this.projectPath, activeDocumentPath);
 
         const git: SimpleGit = simpleGit(this.projectPath);
-        let latestHash = '';
+        console.log('git.revparse()',git.revparse(['--is-inside-work-tree']));
+        git.revparse('--is-inside-work-tree')
+            .then(() => {
+            let latestHash = '';
 
-        const logOption = {file: relatevePath,'--before': 'yesterday',n: 1};
-        let showString = '';
-        git.log(logOption)
-            .catch((err) => {
-                console.error('failed:',err);
-                window.showInformationMessage(`昨日以前に書かれた原稿がGitにコミットされていないようです`);
-                this.ifEditDistance = false;
-                this.latestText = '';
-                this.updateCharacterCount();
-                })
-            .then((logs: any) => {
-                console.log(logs);
-                if(logs.total === 0){
-                    window.showInformationMessage(`昨日以前に書かれた原稿がGitにコミットされていないようです`);
+            const logOption = {file: relatevePath,'--before': 'yesterday',n: 1};
+            let showString = '';
+            git.log(logOption)
+                .catch((err) => {
+                    console.error('failed:',err);
+                    window.showInformationMessage(`Gitのレポジトリが`);
                     this.ifEditDistance = false;
                     this.latestText = '';
                     this.updateCharacterCount();
-                } else {
-                    latestHash = logs.all[0].hash;
-                    showString = latestHash+":"+relatevePath;
-                    console.log('showString: ',showString);
-                    git.show(showString)
-                    .catch((err) => console.error('failed to git show:', err))
-                    .then((showLog) =>{
-                        if(typeof showLog === 'string'){
-                            this.latestText = showLog;
-                            this.ifEditDistance = true;
-                            this.updateCharacterCount();
-                        }
                     })
-                }
-            });
-
-        } else {
-            window.showInformationMessage(`原稿がGitの管理下にないようです`);
-            this.ifEditDistance = false;
-            this._updateEditDistanceDelay();
-        }
+                .then((logs: any) => {
+                    console.log(logs);
+                    if(logs.total === 0){
+                        window.showInformationMessage(`昨日以前に書かれた原稿がGitにコミットされていないようです`);
+                        this.ifEditDistance = false;
+                        this.latestText = '';
+                        this.updateCharacterCount();
+                    } else {
+                        latestHash = logs.all[0].hash;
+                        showString = latestHash+":"+relatevePath;
+                        console.log('showString: ',showString);
+                        git.show(showString)
+                        .catch((err) => console.error('failed to git show:', err))
+                        .then((showLog) =>{
+                            if(typeof showLog === 'string'){
+                                this.latestText = showLog;
+                                this.ifEditDistance = true;
+                                this.updateCharacterCount();
+                            }
+                        })
+                    }
+                });
+            })
+            .catch((err) => {
+                console.error('git.revparse:',err);
+            })
     }
 
     public _setLatestUpdate(latestGitText: any){

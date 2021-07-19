@@ -8,5 +8,4 @@ out
 publish.html
 .DS_Store
 test/testForTexts/*
-test/testForNestedDirectory/Draft
 test/testForNestedDirectory/-Draft
