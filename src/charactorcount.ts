@@ -7,7 +7,8 @@ import * as TreeModel from 'tree-model';
 
 import { window, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, workspace } from 'vscode';
 import {totalLength, draftRoot} from './compile';
-import { dir } from 'console';
+import {NovelGit} from './git';
+import { gitP } from 'simple-git';
 
 let projectCharacterCountNum = 0;
 
@@ -18,7 +19,6 @@ if( draftRoot() != ""){
 }
 
 export class CharacterCounter {
-
     private _statusBarItem!: StatusBarItem;
     private _countingFolder = '';
     private _countingTargetNum = 0;
@@ -164,6 +164,22 @@ export class CharacterCounter {
         return true;
     }
 
+    public _setEditDistance(){
+        let latestEditionStr = '';
+        const novelGit = new NovelGit();
+        const activeDocumentPath = window.activeTextEditor!.document.uri.fsPath;
+        if( novelGit._isGitRepo()){
+            latestEditionStr = novelGit._getDayBackString(activeDocumentPath);
+        } else {
+            window.showInformationMessage(`原稿がGitの管理下にないようです`);
+        }
+        console.log('前日の原稿',latestEditionStr);
+    }
+
+    private _updateEditDistance(){
+        return null;
+    }
+
     public dispose() {
         this._statusBarItem.dispose();
     }
@@ -193,6 +209,8 @@ export class CharacterCounterController {
 
     private _onFocusChanged() {
         this._characterCounter._setIfChildOfTarget();
+        //編集処理の初期化
+        this._characterCounter._setEditDistance();
     }
 
     private _onSave() {

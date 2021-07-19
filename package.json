@@ -13,8 +13,8 @@
   "dependencies": {
     "http": "^0.0.1-security",
     "http-server": "^0.12.3",
-    "ws": "^7.4.5",
-    "tree-model": "^1.0.7"
+    "tree-model": "^1.0.7",
+    "ws": "^7.4.5"
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -132,6 +132,7 @@
     "http-server": "^0.12.3",
     "mocha": "^8.4.0",
     "path": "^0.12.7",
+    "simple-git": "^2.41.1",
     "sinon": "^10.0.0",
     "typescript": "^4.2.4",
     "utf-8-validate": "^5.0.5",
