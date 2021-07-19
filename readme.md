@@ -31,6 +31,7 @@ Gitでファイルの履歴を管理している場合には、前日の状態�
 
 git mvを使わずにファイル名を変更するとファイルの継続性がなくなり、編集距離を計算できなくなります。
 
+[編集距離](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/edit-distance.png)
 
 ### 制限事項
 
