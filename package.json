@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -13,8 +13,9 @@
   "dependencies": {
     "http": "^0.0.1-security",
     "http-server": "^0.12.3",
+    "tree-model": "^1.0.7",
     "ws": "^7.4.5",
-    "tree-model": "^1.0.7"
+    "simple-git": "^2.41.1"
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -130,7 +131,9 @@
     "glob": "^7.1.6",
     "http": "^0.0.1-security",
     "http-server": "^0.12.3",
+    "levenshtein-edit-distance": "^3.0.0",
     "mocha": "^8.4.0",
+    "node-levenshtein": "^3.0.7",
     "path": "^0.12.7",
     "sinon": "^10.0.0",
     "typescript": "^4.2.4",
