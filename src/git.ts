@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import simpleGit, {SimpleGit} from 'simple-git';
+import {CharacterCounter, CharacterCounterController} from './charactorcount';
 
 //instruction: from https://github.com/steveukx/git-js#readme
 
@@ -46,8 +47,10 @@ export class NovelGit {
                     git.show(showString)
                     .catch((err) => console.error('failed to git show:', err))
                     .then((showLog) =>{
+                        const counter = new CharacterCounter();
+                        counter._setLatestUpdate(showLog!);
                         console.log('log of Show: ',showLog);
-                        return showLog;
+
                     })
                 }
             });

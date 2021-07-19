@@ -132,6 +132,7 @@
     "http-server": "^0.12.3",
     "levenshtein-edit-distance": "^3.0.0",
     "mocha": "^8.4.0",
+    "node-levenshtein": "^3.0.7",
     "path": "^0.12.7",
     "simple-git": "^2.41.1",
     "sinon": "^10.0.0",

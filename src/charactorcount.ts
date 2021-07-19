@@ -9,7 +9,8 @@ import { window, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem
 
 import {totalLength, draftRoot} from './compile';
 import {NovelGit} from './git';
-import {levenshteinEditDistance} from 'levenshtein-edit-distance'
+import simpleGit, {SimpleGit} from 'simple-git';
+//import {levenshteinEditDistance} from 'levenshtein-edit-distance';
 
 let projectCharacterCountNum = 0;
 
@@ -57,6 +58,15 @@ export class CharacterCounter {
         const totalCharacterCountNum = projectCharacterCountNum - savedCharacterCountNum + characterCountNum;
         const totalCharacterCount = Intl.NumberFormat().format(totalCharacterCountNum);
 
+        let editDistance = '';
+        if(this.ifEditDistance){
+            if(this.editDistance == -1){
+                editDistance = `／$(record-keys)$(sync)文字`;
+            }else{
+                editDistance = `／$(record-keys)${Intl.NumberFormat().format(this.editDistance)}文字`;
+            }
+        }
+
         if( this._countingFolder != '' ){
             //締め切りフォルダーが設定されている時_countingTargetNum
             let targetNumberTextNum = this._folderCount.amountLengthNum;
@@ -68,9 +78,9 @@ export class CharacterCounter {
             if(this._countingTargetNum != 0){
                 targetNumberText += '/' + countingTarget;
             }
-            this._statusBarItem.text = `$(book) ${totalCharacterCount}文字  $(folder-opened) ${this._folderCount.label} ${targetNumberText}文字  $(pencil) ${characterCount} 文字`;
+            this._statusBarItem.text = ` ${totalCharacterCount}文字  $(folder-opened) ${this._folderCount.label} ${targetNumberText}文字  $(pencil) ${characterCount} 文字${editDistance}`;
         } else {
-            this._statusBarItem.text = `$(book) ${totalCharacterCount}文字／$(pencil) ${characterCount} 文字／ed：${this.editDistance}`;
+            this._statusBarItem.text = `$(book) ${totalCharacterCount}文字／$(pencil) ${characterCount} 文字${editDistance}`;
         }
         this._statusBarItem.show();
     }
@@ -165,27 +175,79 @@ export class CharacterCounter {
         return true;
     }
 
-    private editDistance = 0;
-    private latestText ='';
+    public editDistance = -1;
+    public latestText ='';
+    private projectPath: string = workspace.workspaceFolders![0].uri.fsPath;
+    public ifEditDistance = false;
+
     public _setEditDistance(){
-        
         const novelGit = new NovelGit();
         const activeDocumentPath = window.activeTextEditor!.document.uri.fsPath;
         if( novelGit._isGitRepo()){
-            this.latestText = novelGit._getDayBackString(activeDocumentPath);
+
+        const relatevePath = path.relative(this.projectPath, activeDocumentPath);
+
+        const git: SimpleGit = simpleGit(this.projectPath);
+        let latestHash = '';
+
+        const logOption = {file: relatevePath,'--before': 'yesterday',n: 1};
+        let showString = '';
+        git.log(logOption)
+            .catch((err) => {
+                console.error('failed:',err);
+                window.showInformationMessage(`昨日以前に書かれた原稿がGitにコミットされていないようです`);
+                this.ifEditDistance = false;
+                this.latestText = '';
+                this.updateCharacterCount();
+                })
+            .then((logs: any) => {
+                console.log(logs);
+                if(logs.total === 0){
+                    window.showInformationMessage(`昨日以前に書かれた原稿がGitにコミットされていないようです`);
+                    this.ifEditDistance = false;
+                    this.latestText = '';
+                    this.updateCharacterCount();
+                } else {
+                    latestHash = logs.all[0].hash;
+                    showString = latestHash+":"+relatevePath;
+                    console.log('showString: ',showString);
+                    git.show(showString)
+                    .catch((err) => console.error('failed to git show:', err))
+                    .then((showLog) =>{
+                        if(typeof showLog === 'string'){
+                            this.latestText = showLog;
+                            this.ifEditDistance = true;
+                            this.updateCharacterCount();
+                        }
+                    })
+                }
+            });
+
         } else {
             window.showInformationMessage(`原稿がGitの管理下にないようです`);
+            this.ifEditDistance = false;
+            this._updateEditDistance();
         }
-        this._updateEditDistance;
-        const currentText = window.activeTextEditor?.document.getText();
-        const UpdateingeditDistance = levenshteinEditDistance(this.latestText, currentText!);
-        //console.log('前日の原稿',this.latestText);
     }
 
+    public _setLatestUpdate(latestGitText: any){
+        this.latestText = latestGitText;
+        console.log('latest from Git:', latestGitText);
+        this._updateEditDistance();
+    } 
+
     public _updateEditDistance(){
-        
+        const currentText = window.activeTextEditor?.document.getText();
+        console.log('現在の原稿',currentText);
+        console.log('latestの原稿',this.latestText);
+        if(this.latestText != ''){
+            this.editDistance = levenshteinEditDistance(this.latestText, currentText!, false);
+            console.log('edit distance',this.editDistance);
+            this.updateCharacterCount();
+        }
         //this.editDistance = UpdateingeditDistance;
     }
+
 
     public dispose() {
         this._statusBarItem.dispose();
@@ -199,6 +261,7 @@ export class CharacterCounterController {
 
     constructor(characterCounter: CharacterCounter) {
         this._characterCounter = characterCounter;
+        this._characterCounter._setEditDistance();
         this._characterCounter.updateCharacterCount();
 
         const subscriptions: Disposable[] = [];
@@ -211,18 +274,21 @@ export class CharacterCounterController {
 
     private _onEvent() {
         this._characterCounter.updateCharacterCount();
-        this._characterCounter._updateEditDistance();
+        if(this._characterCounter.ifEditDistance) this._characterCounter._updateEditDistance();
     }
 
     private _onFocusChanged() {
         this._characterCounter._setIfChildOfTarget();
         //編集処理の初期化
+        this._characterCounter.ifEditDistance = false;
+        this._characterCounter.latestText = '';
+        this._characterCounter.editDistance = -1;
         this._characterCounter._setEditDistance();
+        this._characterCounter._updateCountingObject();
     }
 
     private _onSave() {
         this._characterCounter._updateCountingObject();
-        this._characterCounter._updateEditDistance();
         this._characterCounter._updateProjectCharacterCount();
     }
 
@@ -230,3 +296,81 @@ export class CharacterCounterController {
         this._disposable.dispose();
     }
 }
+
+//codes from https://www.npmjs.com/package/levenshtein-edit-distance
+//MIT license
+
+/** @type {Array.<number>} */
+const codes: Array<number> = [];
+/** @type {Array.<number>} */
+const cache: Array<number> = [];
+
+/**
+ * @param {string} value
+ * @param {string} other
+ * @param {boolean} [insensitive]
+ * @returns {number}
+ */
+
+function levenshteinEditDistance(value: string, other: string, insensitive: boolean): number {
+    /** @type {number} */
+    let code: number;
+    /** @type {number} */
+    let result: number;
+    /** @type {number} */
+    let distance: number;
+    /** @type {number} */
+    let distanceOther: number
+    /** @type {number} */
+    let index: number;
+    /** @type {number} */
+    let indexOther: number
+  
+    if (value === other) {
+      return 0
+    }
+  
+    if (value.length === 0) {
+      return other.length
+    }
+  
+    if (other.length === 0) {
+      return value.length
+    }
+  
+    if (insensitive) {
+      value = value.toLowerCase()
+      other = other.toLowerCase()
+    }
+  
+    index = 0
+  
+    while (index < value.length) {
+      codes[index] = value.charCodeAt(index)
+      cache[index] = ++index
+    }
+  
+    indexOther = 0
+  
+    while (indexOther < other.length) {
+      code = other.charCodeAt(indexOther)
+      result = distance = indexOther++
+      index = -1
+  
+      while (++index < value.length) {
+        distanceOther = code === codes[index] ? distance : distance + 1
+        distance = cache[index]
+        cache[index] = result =
+          distance > result
+            ? distanceOther > result
+              ? result + 1
+              : distanceOther
+            : distanceOther > distance
+            ? distance + 1
+            : distanceOther
+      }
+    }
+  
+    return result!;
+  }
+  
