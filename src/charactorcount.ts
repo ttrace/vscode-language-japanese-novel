@@ -6,9 +6,10 @@ import { draftsObject } from './compile';
 import * as TreeModel from 'tree-model';
 
 import { window, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, workspace } from 'vscode';
+
 import {totalLength, draftRoot} from './compile';
 import {NovelGit} from './git';
-import { gitP } from 'simple-git';
+import {levenshteinEditDistance} from 'levenshtein-edit-distance'
 
 let projectCharacterCountNum = 0;
 
@@ -54,7 +55,7 @@ export class CharacterCounter {
         }
 
         const totalCharacterCountNum = projectCharacterCountNum - savedCharacterCountNum + characterCountNum;
-        const totalCharacterCount = Intl.NumberFormat().format(totalCharacterCountNum)
+        const totalCharacterCount = Intl.NumberFormat().format(totalCharacterCountNum);
 
         if( this._countingFolder != '' ){
             //締め切りフォルダーが設定されている時_countingTargetNum
@@ -69,7 +70,7 @@ export class CharacterCounter {
             }
             this._statusBarItem.text = `$(book) ${totalCharacterCount}文字  $(folder-opened) ${this._folderCount.label} ${targetNumberText}文字  $(pencil) ${characterCount} 文字`;
         } else {
-            this._statusBarItem.text = `$(book) ${totalCharacterCount}文字／$(pencil) ${characterCount} 文字`;
+            this._statusBarItem.text = `$(book) ${totalCharacterCount}文字／$(pencil) ${characterCount} 文字／ed：${this.editDistance}`;
         }
         this._statusBarItem.show();
     }
@@ -164,20 +165,26 @@ export class CharacterCounter {
         return true;
     }
 
+    private editDistance = 0;
+    private latestText ='';
     public _setEditDistance(){
-        let latestEditionStr = '';
+        
         const novelGit = new NovelGit();
         const activeDocumentPath = window.activeTextEditor!.document.uri.fsPath;
         if( novelGit._isGitRepo()){
-            latestEditionStr = novelGit._getDayBackString(activeDocumentPath);
+            this.latestText = novelGit._getDayBackString(activeDocumentPath);
         } else {
             window.showInformationMessage(`原稿がGitの管理下にないようです`);
         }
-        console.log('前日の原稿',latestEditionStr);
+        this._updateEditDistance;
+        const currentText = window.activeTextEditor?.document.getText();
+        const UpdateingeditDistance = levenshteinEditDistance(this.latestText, currentText!);
+        //console.log('前日の原稿',this.latestText);
     }
 
-    private _updateEditDistance(){
-        return null;
+    public _updateEditDistance(){
+        
+        //this.editDistance = UpdateingeditDistance;
     }
 
     public dispose() {
@@ -197,7 +204,6 @@ export class CharacterCounterController {
         const subscriptions: Disposable[] = [];
         window.onDidChangeTextEditorSelection(this._onEvent, this, subscriptions);
         workspace.onDidSaveTextDocument(this._onSave, this, subscriptions);
-        //window.onDidChangeActiveTextEditor(this._onEvent, this, subscriptions);        
         window.onDidChangeActiveTextEditor(this._onFocusChanged, this, subscriptions);
 
         this._disposable = Disposable.from(...subscriptions);
@@ -205,6 +211,7 @@ export class CharacterCounterController {
 
     private _onEvent() {
         this._characterCounter.updateCharacterCount();
+        this._characterCounter._updateEditDistance();
     }
 
     private _onFocusChanged() {
@@ -215,6 +222,7 @@ export class CharacterCounterController {
 
     private _onSave() {
         this._characterCounter._updateCountingObject();
+        this._characterCounter._updateEditDistance();
         this._characterCounter._updateProjectCharacterCount();
     }
 

@@ -130,6 +130,7 @@
     "glob": "^7.1.6",
     "http": "^0.0.1-security",
     "http-server": "^0.12.3",
+    "levenshtein-edit-distance": "^3.0.0",
     "mocha": "^8.4.0",
     "path": "^0.12.7",
     "simple-git": "^2.41.1",
