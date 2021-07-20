@@ -193,21 +193,13 @@ export class CharacterCounter {
         git.revparse('--is-inside-work-tree')
             .then(() => {
             let latestHash = '';
-
             const logOption = {file: relatevePath,'--before': 'yesterday',n: 1};
             let showString = '';
             git.log(logOption)
-                .catch((err) => {
-                    console.error('failed:',err);
-                    window.showInformationMessage(`Gitのレポジトリが`);
-                    this.ifEditDistance = false;
-                    this.latestText = '';
-                    this.updateCharacterCount();
-                    })
                 .then((logs: any) => {
                     console.log(logs);
                     if(logs.total === 0){
-                        window.showInformationMessage(`昨日以前に書かれた原稿がGitにコミットされていないようです`);
+                        window.showInformationMessage(`比較対象になるファイルがGitにコミットされていないようです`);
                         this.ifEditDistance = false;
                         this.latestText = '';
                         this.updateCharacterCount();
@@ -216,7 +208,6 @@ export class CharacterCounter {
                         showString = latestHash+":"+relatevePath;
                         console.log('showString: ',showString);
                         git.show(showString)
-                        .catch((err) => console.error('failed to git show:', err))
                         .then((showLog) =>{
                             if(typeof showLog === 'string'){
                                 this.latestText = showLog;
@@ -224,8 +215,16 @@ export class CharacterCounter {
                                 this.updateCharacterCount();
                             }
                         })
+                        .catch((err) => console.error('failed to git show:', err))
                     }
-                });
+                })
+                .catch((err) => {
+                    console.error('failed:',err);
+                    window.showInformationMessage(`Gitのレポジトリを確かめてください`);
+                    this.ifEditDistance = false;
+                    this.latestText = '';
+                    this.updateCharacterCount();
+                    });
             })
             .catch((err) => {
                 console.error('git.revparse:',err);
