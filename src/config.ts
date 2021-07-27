@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 export type UnitOfFontSize = 'pt' | 'mm' | 'em' | 'rem' | 'px' | 'vh' | 'vw' | 'q';
 export type FontSize = `${number}${UnitOfFontSize}`;
 
-export type PreviewSettings = {
+export type NovelSettings = {
     lineHeightRate: number,
     fontFamily: string,
     fontSize: FontSize,
@@ -14,6 +14,8 @@ export type PreviewSettings = {
     pageWidth: string,
     pageHeight: string,
     lineHeight: string,
+    userRegex: Array<[string, string]>,
+    separator: string
 };
 
 function parseFontSizeNum(fontSize: FontSize, defaultValue: number) : number {
@@ -34,7 +36,7 @@ function parseUnitOfFontSize(fontSize: FontSize, defaultValue: UnitOfFontSize) :
     }
 }
 
-export function getConfig() : PreviewSettings {
+export function getConfig() : NovelSettings {
     const config = vscode.workspace.getConfiguration('Novel');
 
     const lineHeightRate    = 1.75;
@@ -47,8 +49,10 @@ export function getConfig() : PreviewSettings {
     const pageWidth         = `${linesPerPage * numFontSize * lineHeightRate * 1.003}${unitOfFontSize}`;
     const pageHeight        = `${lineLength * numFontSize}${unitOfFontSize}`;
     const lineHeight        = `${numFontSize * lineHeightRate}${unitOfFontSize}`;
+    const userRegex         = config.get<Array<[string, string]>>('preview.userregex', []);
+    const separator         = config.get<string>('compile.separator', '＊');
 
-    const previewSettings = {
+    const novelSettings = {
         lineHeightRate,
         fontFamily    ,
         fontSize      ,
@@ -59,7 +63,9 @@ export function getConfig() : PreviewSettings {
         pageWidth     ,
         pageHeight    ,
         lineHeight    ,
+        userRegex     ,
+        separator
     }
-    return previewSettings;
+    return novelSettings;
 }
 
