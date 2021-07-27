@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0
+
+[Masayoshi Takahashi](https://github.com/takahashim)さんのPR、[Use fastest-levenshtein instead of (a copy of) levenshtein-edit-distance #26](https://github.com/ttrace/vscode-language-japanese-novel/pull/26)をマージして、編集距離を用いるnpmモジュールを、[fastest-levenshtein](https://github.com/ka-weihe/fastest-levenshtein)に変更しました。
+
 ## 0.9.9
 
 編集距離を算出する基準ファイルの更新日を、24時間前から、当日の0時に変更しました。
