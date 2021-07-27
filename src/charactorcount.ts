@@ -193,7 +193,7 @@ export class CharacterCounter {
         git.revparse('--is-inside-work-tree')
             .then(() => {
             let latestHash = '';
-            const logOption = {file: relatevePath,'--before': 'yesterday',n: 1};
+            const logOption = {file: relatevePath,'--until': 'today00:00:00',n: 1};
             let showString = '';
             git.log(logOption)
                 .then((logs: any) => {
