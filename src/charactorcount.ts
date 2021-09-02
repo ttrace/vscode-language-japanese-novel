@@ -51,7 +51,7 @@ export class CharacterCounter {
         
         if( draftRoot() == ""){
             //テキストファイルを直接開いているとき
-            this._statusBarItem.text = `$(pencil) ${Intl.NumberFormat().format(this._getCharacterCount(doc))} 文字`;
+            this._statusBarItem.text = `$(note) ${Intl.NumberFormat().format(this._getCharacterCount(doc))} 文字`;
         } else {
             savedCharacterCountNum = this._lengthByPath(docPath);
         }
@@ -62,11 +62,12 @@ export class CharacterCounter {
         let editDistance = '';
         if(this.ifEditDistance){
             if(this.editDistance == -1){
-                editDistance = `／$(record-keys)$(sync)文字`;
+                editDistance = `／$(compare-changes)$(sync)文字`;
+                this._updateEditDistanceDelay();
             }else if(this.keyPressFlag){
-                editDistance = `／$(record-keys)${Intl.NumberFormat().format(this.editDistance)}$(sync)文字`;
+                editDistance = `／$(compare-changes)${Intl.NumberFormat().format(this.editDistance)}$(sync)文字`;
             } else{
-                editDistance = `／$(record-keys)${Intl.NumberFormat().format(this.editDistance)}文字`;
+                editDistance = `／$(compare-changes)${Intl.NumberFormat().format(this.editDistance)}文字`;
             }
         }
 
@@ -81,9 +82,9 @@ export class CharacterCounter {
             if(this._countingTargetNum != 0){
                 targetNumberText += '/' + countingTarget;
             }
-            this._statusBarItem.text = ` ${totalCharacterCount}文字  $(folder-opened) ${this._folderCount.label} ${targetNumberText}文字  $(pencil) ${characterCount} 文字${editDistance}`;
+            this._statusBarItem.text = ` ${totalCharacterCount}文字  $(folder-opened) ${this._folderCount.label} ${targetNumberText}文字  $(note) ${characterCount} 文字${editDistance}`;
         } else {
-            this._statusBarItem.text = `$(book) ${totalCharacterCount}文字／$(pencil) ${characterCount} 文字${editDistance}`;
+            this._statusBarItem.text = `$(book) ${totalCharacterCount}文字／$(note) ${characterCount} 文字${editDistance}`;
         }
         this._statusBarItem.show();
     }
@@ -200,16 +201,37 @@ export class CharacterCounter {
             let showString = '';
             git.log(logOption)
                 .then((logs: any) => {
-                    console.log(logs);
-                    if(logs.total === 0){
-                        window.showInformationMessage(`比較対象になるファイルがGitにコミットされていないようです`);
-                        this.ifEditDistance = false;
-                        this.latestText = '';
-                        this.updateCharacterCount();
+                    //console.log(logs);
+                    if(logs.total === 0){       //昨日以前のコミットがなかった場合、当日中に作られた最古のコミットを比較対象に設定する。
+                        const logOptionLatest = {file: relatevePath,'--reverse': null, '--max-count': '10'};
+                        git.log(logOptionLatest)
+                            .then((logsLatest: any) => {
+                                if(logsLatest.total === 0){
+                                    window.showInformationMessage(`比較対象になるファイルがGitにコミットされていないようです`);
+                                    this.ifEditDistance = false;
+                                    this.latestText = '';
+                                    this.updateCharacterCount();
+                                } else {
+                                latestHash = logsLatest.all[0].hash;
+                                showString = latestHash+":"+relatevePath;
+                                console.log('最終更新: ',showString);
+                                git.show(showString)
+                                    .then((showLog) =>{
+                                        console.log('最終更新テキスト: ',typeof showLog,showLog);
+                                        if(typeof showLog === 'string'){
+                                            if(showLog == '') showLog = ' ';
+                                            this.latestText = showLog;
+                                            this.ifEditDistance = true;
+                                            this.updateCharacterCount();
+                                        }
+                                    })
+                                    .catch((err) => console.error('failed to git show:', err))
+                                }})
+                            .catch((err) => console.error('failed to git show:', err))
                     } else {
                         latestHash = logs.all[0].hash;
                         showString = latestHash+":"+relatevePath;
-                        console.log('showString: ',showString);
+                        //console.log('showString: ',showString);
                         git.show(showString)
                         .then((showLog) =>{
                             if(typeof showLog === 'string'){
@@ -314,7 +336,7 @@ export class CharacterCounterController {
         this._characterCounter._setIfChildOfTarget();
         //編集処理の初期化
         this._characterCounter.ifEditDistance = false;
-        this._characterCounter.latestText = '';
+        this._characterCounter.latestText = '\n';
         this._characterCounter.editDistance = -1;
         this._characterCounter._setEditDistance();
         this._characterCounter._updateCountingObject();
