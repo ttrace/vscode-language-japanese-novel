@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { getConfig } from './config';
 
 export type OriginEditor = vscode.TextEditor | "active" | undefined;
 
@@ -38,8 +39,8 @@ export function editorText(originEditor: OriginEditor) : string {
 export function markUpHtml( myHtml: string ){
     let taggedHTML = myHtml;
     //configuration 読み込み
-    const config = vscode.workspace.getConfiguration('Novel');
-    const userRegex = config.get<Array<[string, string]>>('preview.userregex', []);
+    const config = getConfig();
+    const userRegex = config.userRegex;
     if (userRegex.length > 0){
         userRegex.forEach( function(element){
                 const thisMatch = new RegExp(element[0], 'gi');

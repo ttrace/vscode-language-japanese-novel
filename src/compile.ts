@@ -1,14 +1,15 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { getConfig } from './config';
 
 //fsモジュールの使い方 https://qiita.com/oblivion/items/2725a4b3ca3a99f8d1a3
 export default function compileDocs(): void
 {
     const   projectName             = vscode.workspace.workspaceFolders![0].name;
     const   projectPath: string     = vscode.workspace.workspaceFolders![0].uri.fsPath;
-    const   config                  = vscode.workspace.getConfiguration('Novel');
-    const   separatorString         = "\n\n　　　" + config.get<string>('compile.separator', '＊') +"\n\n";
+    const   config                  = getConfig();
+    const   separatorString         = "\n\n　　　" + config.separator +"\n\n";
     const   draftRootPath           = draftRoot();
 
     console.log('ProjectName: ',projectName);
