@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2
+
+- [Takahashi Masayoshi](https://github.com/takahashim)さんのPR、[Unify all settings of this extension with NovelSettings](https://github.com/ttrace/vscode-language-japanese-novel/pull/27)をマージしました
+- 1.0.1 で書いた編集距離に関するワーニングを整理しました。
+
 ## 1.0.1
 
 昨日以前のコミットがないときに編集距離が機能しない問題を解消しました。  

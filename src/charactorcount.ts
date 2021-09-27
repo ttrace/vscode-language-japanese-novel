@@ -5,10 +5,11 @@ import * as path from 'path';
 import { draftsObject } from './compile'; 
 import * as TreeModel from 'tree-model';
 
-import { window, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, workspace } from 'vscode';
+import { window, Disposable, StatusBarAlignment, StatusBarItem, TextDocument, workspace } from 'vscode';
 
 import {totalLength, draftRoot} from './compile';
 import simpleGit, {SimpleGit} from 'simple-git';
+import { time } from 'console';
 //import {levenshteinEditDistance} from 'levenshtein-edit-distance';
 
 let projectCharacterCountNum = 0;
@@ -29,9 +30,9 @@ export class CharacterCounter {
                             };
 
     private _isEditorChildOfTargetFolder = false;
-    timeoutID: any;
+    timeoutID: unknown;
 
-    public updateCharacterCount() {
+    public updateCharacterCount(): void {
         if (!this._statusBarItem) {
             this._statusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
         } 
@@ -103,7 +104,7 @@ export class CharacterCounter {
         return characterCount;
     }
 
-    public _updateProjectCharacterCount(): any{
+    public _updateProjectCharacterCount(): void{
         projectCharacterCountNum = totalLength(draftRoot());
         if(this._countingFolder != ''){
 
@@ -116,7 +117,7 @@ export class CharacterCounter {
         this.updateCharacterCount();
     }
 
-    public _setCounterToFolder( pathToFolder: string, targetCharacter: number ) : any{
+    public _setCounterToFolder( pathToFolder: string, targetCharacter: number ): void{
         this._countingFolder = pathToFolder;
         this._countingTargetNum = targetCharacter;
         this._updateProjectCharacterCount();
@@ -137,7 +138,7 @@ export class CharacterCounter {
         });
         const targetFileNode = draftTree.first(node => node.model.dir === dirPath);
         if(targetFileNode){
-            return targetFileNode!.model.length;
+            return targetFileNode.model.length;
         } else {
             return 0;
         }
@@ -159,7 +160,7 @@ export class CharacterCounter {
 
         if(deadLineFolderNode?.hasChildren){
             const treeForTarget = new TreeModel();
-            const targetTree = treeForTarget.parse(deadLineFolderNode!.model);
+            const targetTree = treeForTarget.parse(deadLineFolderNode.model);
 
             const ifEditorIsChild = targetTree.first(node => node.model.dir === activeDocumentPath);
             if(ifEditorIsChild){
@@ -173,7 +174,7 @@ export class CharacterCounter {
         return false;
     }
 
-    public _updateCountingObject(){
+    public _updateCountingObject(): boolean{
         //this._countingObject = draftsObject(draftRoot());
         return true;
     }
@@ -200,13 +201,13 @@ export class CharacterCounter {
             const logOption = {file: relatevePath,'--until': 'today00:00:00',n: 1};
             let showString = '';
             git.log(logOption)
-                .then((logs: any) => {
+                .then((logs) => {
                     //console.log(logs);
                     if(logs.total === 0){       //昨日以前のコミットがなかった場合、当日中に作られた最古のコミットを比較対象に設定する。
                         const logOptionLatest = {file: relatevePath,'--reverse': null, '--max-count': '10'};
                         git.log(logOptionLatest)
-                            .then((logsLatest: any) => {
-                                if(logsLatest.total === 0){
+                            .then((logsLatest) => {
+                                if(logsLatest?.total === 0){
                                     window.showInformationMessage(`比較対象になるファイルがGitにコミットされていないようです`);
                                     this.ifEditDistance = false;
                                     this.latestText = '';
@@ -256,7 +257,7 @@ export class CharacterCounter {
             })
     }
 
-    public _setLatestUpdate(latestGitText: any){
+    public _setLatestUpdate(latestGitText: any): void{
         this.latestText = latestGitText;
         console.log('latest from Git:', latestGitText);
         this._updateEditDistanceDelay();
@@ -264,47 +265,47 @@ export class CharacterCounter {
 
     private keyPressFlag = false;
 
-    public _updateEditDistanceActual(){
+    public _updateEditDistanceActual(): void{
         const currentText = window.activeTextEditor?.document.getText();
         console.log('現在の原稿',currentText);
         console.log('latestの原稿',this.latestText);
-        if(this.latestText != ''){
-            this.editDistance = levenshteinEditDistance(this.latestText, currentText!, false);
+        if(this.latestText != '' && typeof currentText == "string"){
+            this.editDistance = levenshteinEditDistance(this.latestText, currentText, false);
             this.keyPressFlag = false;
             this.updateCharacterCount();
         }
         delete this.timeoutID;
     }
 
-    public _updateEditDistanceDelay(){
-        if (!this.keyPressFlag){
+    public _updateEditDistanceDelay(): void{
+        if (!this.keyPressFlag && window.activeTextEditor){
             this.keyPressFlag = true;
             const updateCounter = Math.min(
                 Math.ceil(
-                    window.activeTextEditor!.document.getText().length / 100),
+                    window.activeTextEditor.document.getText().length / 100),
                     500
                 );
                 console.log('timeoutID',this.timeoutID,updateCounter);
-            this.timeoutID = setTimeout(socketServer => {
+            this.timeoutID = setTimeout(() => {
                 this._updateEditDistanceActual();
             }, updateCounter);
 
             }
         }
 
-    public _timerCancel(){
+    public _timerCancel(): void{
       if(typeof this.timeoutID == "number") {
         this.clearTimeout(this.timeoutID);
         delete this.timeoutID;
       }
     }
 
-    clearTimeout(timeoutID: number) {
-        throw new Error('Method not implemented.');
+    clearTimeout(timeoutID: number): void{
+        throw new Error('Method not implemented.'+ timeoutID);
     }
 
 
-    public dispose() {
+    public dispose(): void {
         this._statusBarItem.dispose();
     }
 }
@@ -347,7 +348,7 @@ export class CharacterCounterController {
         this._characterCounter._updateProjectCharacterCount();
     }
 
-    public dispose() {
+    public dispose(): void {
         this._disposable.dispose();
     }
 }

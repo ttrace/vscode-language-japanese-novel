@@ -46,6 +46,7 @@ export class NovelGit {
                     .catch((err) => console.error('failed to git show:', err))
                     .then((showLog) =>{
                         const counter = new CharacterCounter();
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                         counter._setLatestUpdate(showLog!);
                         console.log('log of Show: ',showLog);
 
