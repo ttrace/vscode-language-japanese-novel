@@ -8,7 +8,6 @@ import * as TreeModel from 'tree-model';
 import { window, Disposable, ExtensionContext, StatusBarAlignment, StatusBarItem, TextDocument, workspace } from 'vscode';
 
 import {totalLength, draftRoot} from './compile';
-import {NovelGit} from './git';
 import simpleGit, {SimpleGit} from 'simple-git';
 //import {levenshteinEditDistance} from 'levenshtein-edit-distance';
 
@@ -184,12 +183,13 @@ export class CharacterCounter {
     private projectPath = '';
     public ifEditDistance = false;
 
-    public _setEditDistance(){
+    public _setEditDistance(): void{
         if( workspace.workspaceFolders == undefined ){
             return;
         }
-        const activeDocumentPath = window.activeTextEditor!.document.uri.fsPath;
-        this.projectPath = workspace.workspaceFolders![0].uri.fsPath;
+        const activeDocumentPath = window.activeTextEditor?.document.uri.fsPath;
+        if (typeof activeDocumentPath != "string") return;
+        this.projectPath = workspace.workspaceFolders[0].uri.fsPath;        
         const relatevePath = path.relative(this.projectPath, activeDocumentPath);
 
         const git: SimpleGit = simpleGit(this.projectPath);

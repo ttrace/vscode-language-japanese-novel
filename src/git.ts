@@ -7,12 +7,10 @@ import {CharacterCounter, CharacterCounterController} from './charactorcount';
 
 export class NovelGit {
     private projectPath: string = vscode.workspace.workspaceFolders![0].uri.fsPath;
-    //private activeDocumentPath = vscode.window.activeTextEditor?.document.uri.fsPath;
-    //static _getDayBackFileString: any;
 
-    public _isGitRepo(): boolean{
+    public async _isGitRepo(): Promise<boolean>{
         const git: SimpleGit = simpleGit(this.projectPath);
-        if(git.checkIsRepo()){
+        if(await git.checkIsRepo()){
             return true;
         } else {
             return false;
