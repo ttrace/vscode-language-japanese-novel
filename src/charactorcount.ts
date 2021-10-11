@@ -9,8 +9,7 @@ import { window, Disposable, StatusBarAlignment, StatusBarItem, TextDocument, wo
 
 import {totalLength, draftRoot} from './compile';
 import simpleGit, {SimpleGit} from 'simple-git';
-import { time } from 'console';
-//import {levenshteinEditDistance} from 'levenshtein-edit-distance';
+import {distance} from 'fastest-levenshtein';
 
 let projectCharacterCountNum = 0;
 
@@ -257,7 +256,7 @@ export class CharacterCounter {
             })
     }
 
-    public _setLatestUpdate(latestGitText: any): void{
+    public _setLatestUpdate(latestGitText: string): void{
         this.latestText = latestGitText;
         console.log('latest from Git:', latestGitText);
         this._updateEditDistanceDelay();
@@ -270,7 +269,7 @@ export class CharacterCounter {
         console.log('現在の原稿',currentText);
         console.log('latestの原稿',this.latestText);
         if(this.latestText != '' && typeof currentText == "string"){
-            this.editDistance = levenshteinEditDistance(this.latestText, currentText, false);
+            this.editDistance = distance(this.latestText, currentText);
             this.keyPressFlag = false;
             this.updateCharacterCount();
         }
@@ -352,81 +351,3 @@ export class CharacterCounterController {
         this._disposable.dispose();
     }
 }
-
-//codes from https://www.npmjs.com/package/levenshtein-edit-distance
-//MIT license
-
-/** @type {Array.<number>} */
-const codes: Array<number> = [];
-/** @type {Array.<number>} */
-const cache: Array<number> = [];
-
-/**
- * @param {string} value
- * @param {string} other
- * @param {boolean} [insensitive]
- * @returns {number}
- */
-
-function levenshteinEditDistance(value: string, other: string, insensitive: boolean): number {
-    /** @type {number} */
-    let code: number;
-    /** @type {number} */
-    let result: number;
-    /** @type {number} */
-    let distance: number;
-    /** @type {number} */
-    let distanceOther: number
-    /** @type {number} */
-    let index: number;
-    /** @type {number} */
-    let indexOther: number
-  
-    if (value === other) {
-      return 0
-    }
-  
-    if (value.length === 0) {
-      return other.length
-    }
-  
-    if (other.length === 0) {
-      return value.length
-    }
-  
-    if (insensitive) {
-      value = value.toLowerCase()
-      other = other.toLowerCase()
-    }
-  
-    index = 0
-  
-    while (index < value.length) {
-      codes[index] = value.charCodeAt(index)
-      cache[index] = ++index
-    }
-  
-    indexOther = 0
-  
-    while (indexOther < other.length) {
-      code = other.charCodeAt(indexOther)
-      result = distance = indexOther++
-      index = -1
-  
-      while (++index < value.length) {
-        distanceOther = code === codes[index] ? distance : distance + 1
-        distance = cache[index]
-        cache[index] = result =
-          distance > result
-            ? distanceOther > result
-              ? result + 1
-              : distanceOther
-            : distanceOther > distance
-            ? distance + 1
-            : distanceOther
-      }
-    }
-  
-    return result!;
-  }
-  

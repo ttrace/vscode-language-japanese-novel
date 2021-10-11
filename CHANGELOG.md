@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.3
+
+- 1.0.0でマージした[Masayoshi Takahashi](https://github.com/takahashim)さんのPRを再度マージして、[Use fastest-levenshtein instead of (a copy of) levenshtein-edit-distance #26](https://github.com/ttrace/vscode-language-japanese-novel/pull/26)をマージして、編集距離を用いるnpmモジュールを、[fastest-levenshtein](https://github.com/ka-weihe/fastest-levenshtein)に変更しました。
+- 縦書きプレビューに自動縦中横機能をつけました。二桁の半角数字を縦中横でプレビューします。
+
+
 ## 1.0.2
 
 - [Takahashi Masayoshi](https://github.com/takahashim)さんのPR、[Unify all settings of this extension with NovelSettings](https://github.com/ttrace/vscode-language-japanese-novel/pull/27)をマージしました

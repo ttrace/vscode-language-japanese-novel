@@ -47,9 +47,10 @@ export class NovelGit {
                     .then((showLog) =>{
                         const counter = new CharacterCounter();
                         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                        counter._setLatestUpdate(showLog!);
-                        console.log('log of Show: ',showLog);
-
+                        if(typeof showLog == "string"){
+                            counter._setLatestUpdate(showLog);
+                            console.log('log of Show: ',showLog);
+                        }
                     })
                 }
             });
