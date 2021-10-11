@@ -27,7 +27,9 @@
     "test": "node ./out/test/runTest.js"
   },
   "activationEvents": [
-    "*"
+    "onLanguage:novel",
+    "onLanguage:markdown",
+    "onLanguage:plaintext"
   ],
   "contributes": {
     "commands": [
