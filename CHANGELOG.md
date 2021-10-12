@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5
+
+- novel、markdown、plaintext以外の書類やウインドウを開いているときに、文字数カウントをしないように修正しました。
+
 ## 1.0.4 debug release
 
 - パッケージングのミスを修正しました。

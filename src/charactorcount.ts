@@ -40,6 +40,11 @@ export class CharacterCounter {
             this._statusBarItem.hide();
             return;
         }
+        if (editor.document.languageId != "novel" && editor.document.languageId != "markdown" && editor.document.languageId != "plaintext") {
+            this._statusBarItem.hide();
+            return;
+        }
+
         const doc = editor.document;
         const docPath = editor.document.uri.fsPath;
         const characterCountNum = this._getCharacterCount(doc);
