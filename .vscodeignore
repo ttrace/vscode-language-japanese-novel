@@ -2,3 +2,4 @@
 **/tsconfig.json
 !file.ts
 .vscode-test/
+outer-resource/**
