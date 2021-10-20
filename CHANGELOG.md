@@ -2,7 +2,7 @@
 
 ## 1.0.7
 
-- [Issue ユーザー定義検索置換後に2桁の数字が含まれていると意図しない置換が発生する #30](https://github.com/ttrace/vscode-language-japanese-novel/issues/30) by [nakaba-yono](https://github.com/nakaba-yono)に対処しました。
+- [Issue ユーザー定義検索置換後に2桁の数字が含まれていると意図しない置換が発生する \#30](https://github.com/ttrace/vscode-language-japanese-novel/issues/30) by [nakaba-yono](https://github.com/nakaba-yono)に対処しました。
 
 ## 1.0.6
 
@@ -18,7 +18,7 @@
 
 ## 1.0.3
 
-- 1.0.0でマージした[Masayoshi Takahashi](https://github.com/takahashim)さんのPRを再度マージして、[Use fastest-levenshtein instead of (a copy of) levenshtein-edit-distance #26](https://github.com/ttrace/vscode-language-japanese-novel/pull/26)をマージして、編集距離を用いるnpmモジュールを、[fastest-levenshtein](https://github.com/ka-weihe/fastest-levenshtein)に変更しました。
+- 1.0.0でマージした[Masayoshi Takahashi](https://github.com/takahashim)さんのPRを再度マージして、[Use fastest-levenshtein instead of (a copy of) levenshtein-edit-distance \#26](https://github.com/ttrace/vscode-language-japanese-novel/pull/26)をマージして、編集距離を用いるnpmモジュールを、[fastest-levenshtein](https://github.com/ka-weihe/fastest-levenshtein)に変更しました。
 - 縦書きプレビューに自動縦中横機能をつけました。二桁の半角数字を縦中横でプレビューします。
 
 
@@ -38,7 +38,7 @@ v1.0.1以降は、前日までのコミットが見つからない場合（作�
 
 ## 1.0.0
 
-[Masayoshi Takahashi](https://github.com/takahashim)さんのPR、[Use fastest-levenshtein instead of (a copy of) levenshtein-edit-distance #26](https://github.com/ttrace/vscode-language-japanese-novel/pull/26)をマージして、編集距離を用いるnpmモジュールを、[fastest-levenshtein](https://github.com/ka-weihe/fastest-levenshtein)に変更しました。
+[Masayoshi Takahashi](https://github.com/takahashim)さんのPR、[Use fastest-levenshtein instead of (a copy of) levenshtein-edit-distance \#26](https://github.com/ttrace/vscode-language-japanese-novel/pull/26)をマージして、編集距離を用いるnpmモジュールを、[fastest-levenshtein](https://github.com/ka-weihe/fastest-levenshtein)に変更しました。
 
 ## 0.9.9
 
