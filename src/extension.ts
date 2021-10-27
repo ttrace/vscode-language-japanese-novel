@@ -143,13 +143,20 @@ function launchserver(originEditor: OriginEditor){
     vscode.workspace.onDidChangeTextDocument((e) => {
         let _a;
         if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
-            publishWebsocketsDelay.presskey(s);
+            const editor = vscode.window.activeTextEditor;
+            if (editor?.document.languageId == "novel" || editor?.document.languageId == "markdown" || editor?.document.languageId == "plaintext") {
+                publishWebsocketsDelay.presskey(s);
+            }
+
         }
     });
     
     vscode.window.onDidChangeTextEditorSelection((e) => {
         if (e.textEditor == vscode.window.activeTextEditor) {
-            publishWebsocketsDelay.presskey(s);
+            const editor = vscode.window.activeTextEditor;
+            if (editor?.document.languageId == "novel" || editor?.document.languageId == "markdown" || editor?.document.languageId == "plaintext") {
+                publishWebsocketsDelay.presskey(s);
+            }
         }
     });
 

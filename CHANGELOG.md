@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.8
+
+- 縦書きプレビューする言語を novel, plaintext, markdown の三種類に限定しました。
+
 ## 1.0.7
 
 - [Issue ユーザー定義検索置換後に2桁の数字が含まれていると意図しない置換が発生する \#30](https://github.com/ttrace/vscode-language-japanese-novel/issues/30) by [nakaba-yono](https://github.com/nakaba-yono)に対処しました。
