@@ -31,8 +31,9 @@
     childList: true
     })
 
-
-    const sock = new WebSocket("ws://"+ location.hostname +":5001");
+    var port = parseInt(location.port) + 1;
+    console.log("ws://"+ location.hostname +":"+port);
+    const sock = new WebSocket("ws://"+ location.hostname +":"+port);
     let previewsettings = {};
 
     window.onload = function(){

@@ -134,7 +134,7 @@ export class CharacterCounter {
         }
         const tree = new TreeModel();
         const draftTree = tree.parse({dir: draftRoot(),name: 'root',length: 0});
-        console.log('rootだけ',draftsObject(draftRoot()));
+        //console.log('rootだけ',draftsObject(draftRoot()));
 
         draftsObject(draftRoot()).forEach(element => {
           const draftNode = tree.parse(element);

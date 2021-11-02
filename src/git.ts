@@ -35,13 +35,13 @@ export class NovelGit {
                 vscode.window.showInformationMessage(`昨日以前に書かれた原稿がGitにコミットされていないようです`);
                 })
             .then((logs: any) => {
-                console.log(logs);
+                //console.log(logs);
                 if(logs.total === 0){
                     vscode.window.showInformationMessage(`昨日以前に書かれた原稿がGitにコミットされていないようです`);
                 } else {
                     latestHash = logs.all[0].hash;
                     showString = latestHash+":"+relatevePath;
-                    console.log('showString: ',showString);
+                    //console.log('showString: ',showString);
                     git.show(showString)
                     .catch((err) => console.error('failed to git show:', err))
                     .then((showLog) =>{
@@ -49,7 +49,7 @@ export class NovelGit {
                         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                         if(typeof showLog == "string"){
                             counter._setLatestUpdate(showLog);
-                            console.log('log of Show: ',showLog);
+                            //console.log('log of Show: ',showLog);
                         }
                     })
                 }
