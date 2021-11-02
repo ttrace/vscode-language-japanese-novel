@@ -11,11 +11,14 @@ import { fileList, draftsObject} from './compile';
 import {CharacterCounter, CharacterCounterController} from './charactorcount';
 import { editorText, OriginEditor } from './editor'
 import { urlToOptions } from 'vscode-test/out/util';
+import { eventNames } from 'process';
+import { EventEmitter } from 'stream';
 
 const output = vscode.window.createOutputChannel("Novel");
 //リソースとなるhtmlファイル
 let html: Buffer;
 let documentRoot: vscode.Uri;
+let WebViewPanel = false;
 
 //コマンド登録
 export function activate(context: vscode.ExtensionContext): void {
@@ -166,9 +169,53 @@ function launchserver(originEditor: OriginEditor){
             sendsettingwebsockets(s);
     });
 
+    vscode.window.onDidChangeVisibleTextEditors((e) => {
+        //ウインドウの状態変更
+        //プレビューが閉じたかどうか
+        console.log('WindowState Changed:',e);
+    });
 
     publishWebsocketsDelay.presskey(s);
 
+    if(WebViewPanel){
+
+    //    vscode.window.showInformationMessage('Hello, world!');
+    const panel = vscode.window.createWebviewPanel(
+        'preview', // Identifies the type of the webview. Used internally
+        '原稿プレビュー', // Title of the panel displayed to the user
+        vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
+        {
+            enableScripts: true,
+        } // Webview options. More on these later.
+    );
+
+    panel.webview.html = `<!DOCTYPE html>
+    <html>
+        <head>
+            <style>
+            body{
+                width:100vw;
+                height:100vh;
+                overflor:hidden;
+            }
+            </style>
+        </head>
+        <body>
+            <iframe src="http://localhost:8080" frameBorder="0" style="min-width: 100%; min-height: 100%" />
+        </body>
+    </html>`;
+
+    panel.onDidDispose(() =>{
+        console.log('closed');
+        viewerServer.close(function() {
+            console.log('HTTP サーバーを停止させました。');
+          });
+          s.close(function() {
+            console.log('WebSockets サーバーを停止させました。');
+          });
+        });
+    }
+    
     return s;
 }
 
@@ -218,8 +265,9 @@ const publishWebsocketsDelay: any = {
 
 function verticalpreview(){
     const originEditor = vscode.window.activeTextEditor;
+    WebViewPanel = true;
     launchserver(originEditor);
-
+/*
 //    vscode.window.showInformationMessage('Hello, world!');
     const panel = vscode.window.createWebviewPanel(
         'preview', // Identifies the type of the webview. Used internally
@@ -245,6 +293,12 @@ function verticalpreview(){
             <iframe src="http://localhost:8080" frameBorder="0" style="min-width: 100%; min-height: 100%" />
         </body>
     </html>`;
+
+    panel.onDidDispose(() =>{
+        console.log('closed');
+    });
+
+    */
 }
 
 function exportpdf(): void {
