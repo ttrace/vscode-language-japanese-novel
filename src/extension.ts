@@ -21,6 +21,12 @@ let html: Buffer;
 let documentRoot: vscode.Uri;
 let WebViewPanel = false;
 
+let servicePort = 8080;
+emptyPort(function(port:number) {
+    servicePort = port;
+    console.log('真の空きポート',port);
+});
+
 //コマンド登録
 export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand('Novel.compile-draft', compileDocs));
@@ -67,14 +73,10 @@ export function activate(context: vscode.ExtensionContext): void {
     documentRoot = vscode.Uri.joinPath(context.extensionUri, 'htdocs');
 }
 
-
 function launchserver(originEditor: OriginEditor){
-    //もしサーバーが動いていたら止めて再起動する……のを、実装しなきゃなあ。
-    //https://sasaplus1.hatenadiary.com/entry/20121129/1354198092 が良さそう。
-    let servicePort = 8080;
-    emptyPort(function(port:number) {
-        servicePort = port;
-        console.log('真の空きポート',port);
+    //もしサーバーが動いていたらポートの番号をずらす
+    
+
 
     
         //Webサーバの起動。ドキュメントルートはnode_modules/novel-writer/htdocsになる。
@@ -214,7 +216,6 @@ function launchserver(originEditor: OriginEditor){
         return s;
     }
     
-    });
 }
 
 
