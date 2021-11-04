@@ -517,7 +517,7 @@ function getWebviewContent() {
   
       p {
         font-size: calc(110mm / ${previewSettings.lineLength});
-        line height: 1.65;
+        line-height: 1.65;
         text-indent: 0em;
         hanging-punctuation: force-end;
         line-break:strict;
