@@ -72,6 +72,11 @@
         "path": "./syntaxes/novel.tmGrammar.json"
       }
     ],
+    "configurationDefaults": {
+      "[novel]": {
+        "editor.unicodeHighlight.ambiguousCharacters": false
+      }
+    },
     "configuration": {
       "title": "縦書きプレビュー設定",
       "properties": {
