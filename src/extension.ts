@@ -132,7 +132,8 @@ function launchserver(originEditor: OriginEditor){
         
         s.on("connection", ws => {
             //console.log(previewvariables());
-            ws.on("message", message => {
+            ws.on("message", (messageAsString) => {
+                const message = JSON.stringify(messageAsString);
         
                 console.log("Received: " + message);
 
