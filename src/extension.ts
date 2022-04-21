@@ -15,16 +15,25 @@ import { urlToOptions } from 'vscode-test/out/util';
 import { eventNames } from 'process';
 import { EventEmitter } from 'stream';
 
+import {
+    LanguageClient,
+    LanguageClientOptions,
+    ServerOptions,
+    TransportKind
+  } from 'vscode-languageclient/node';
+
 const output = vscode.window.createOutputChannel("Novel");
 //リソースとなるhtmlファイル
 let html: Buffer;
 let documentRoot: vscode.Uri;
 let WebViewPanel = false;
 
+let client: LanguageClient;
+
 let servicePort = 8080;
 emptyPort(function(port:number) {
     servicePort = port;
-    console.log('真の空きポート',port);
+   // console.log('真の空きポート',port);
 });
 
 //コマンド登録
@@ -71,6 +80,46 @@ export function activate(context: vscode.ExtensionContext): void {
     }));
 
     documentRoot = vscode.Uri.joinPath(context.extensionUri, 'htdocs');
+
+    //ランゲージサーバーの起動
+  // The server is implemented in node
+  let serverModule = context.asAbsolutePath(path.join('out', 'server', 'server.js'));
+  // The debug options for the server
+  // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
+  let debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
+
+  // If the extension is launched in debug mode then the debug server options are used
+  // Otherwise the run options are used
+  let serverOptions: ServerOptions = {
+    run: { module: serverModule, transport: TransportKind.ipc },
+    debug: {
+      module: serverModule,
+      transport: TransportKind.ipc,
+      options: debugOptions
+    }
+  };
+
+  // Options to control the language client
+  let clientOptions: LanguageClientOptions = {
+    // Register the server for plain text documents
+    documentSelector: [{ scheme: 'file', language: 'plaintext' }],
+    synchronize: {
+      // Notify the server about file changes to '.clientrc files contained in the workspace
+      fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc')
+    }
+  };
+
+  // Create the language client and start the client.
+  client = new LanguageClient(
+    'fictionServer',
+    '日本語フィクションサーバー',
+    serverOptions,
+    clientOptions
+  );
+
+  // Start the client. This will also launch the server
+  client.start();
+
 }
 
 function launchserver(originEditor: OriginEditor){
@@ -371,7 +420,11 @@ function exportpdf(): void {
 
 
 function deactivate() {
-    return undefined;
+    if (!client) {
+        return undefined;
+      }
+    return client.stop();
+    //return undefined;
 }
 
 module.exports = { activate, deactivate };
