@@ -14,6 +14,7 @@ import { editorText, OriginEditor } from './editor'
 import { urlToOptions } from 'vscode-test/out/util';
 import { eventNames } from 'process';
 import { EventEmitter } from 'stream';
+import { tokenize, DocumentSemanticTokensProvider } from './tokenize';
 
 import {
     LanguageClient,
@@ -42,6 +43,8 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
+    tokenize(context);
+//    context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel'}, new DocumentSemanticTokensProvider(), legend));
 
     const characterCounter = new CharacterCounter();
     const controller = new CharacterCounterController(characterCounter);

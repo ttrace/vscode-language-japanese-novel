@@ -1,4 +1,23 @@
- JavaScript TT
+ [noun]か
+  Available token types:
+    [noun] [string] [keyword] [number] [regexp] [operator] [namespace]
+    [type] [struct] [class] [interface] [enum] [typeParameter] [function]
+    [method] [macro] [variable] [parameter] [property] [label] [decorator]
+
+Available token modifiers:
+    [type.declaration] [type.documentation] [type.readonly] [type.static]
+    [type.abstract] [type.deprecated] [type.modification] [type.async]
+
+Some examples:
+    [class.static.token]     [type.static.abstract]
+    [class.static.token]     [type.static]
+
+    [struct]
+
+    [function.private]
+
+An error case:
+    [notInLegend]
 
 　アップロードが終わっていたファイルを解凍して驚いた。〔200/二百〕〔 GB/ＧＢ〕？異常な時間がかかっていたのは長大なコードにセキュリティー・チェックを行っていたためか。経由するサーバーで展開して｜悪意あるソフトウェア《マルウェア》の指紋《フィンガープリント》データベースと照らし合わせるだけで数時間かかってしまうのは仕方がない。
 　しかし、なにかの間違いではないだろうか。私がパッチを当てて納品したSR-06のコードは｜生《〔RAW/ＲＡＷ〕》の塩基コードでも〔100/百〕〔 MB/ＭＢ〕に達しなかった。第五世代の蒸留作物であるSR-06は生育時にナノマシンを作るための短縮《ミニファイ》コードを展開するので、採取した部位によっては元の倍程度になることも考えられる。だが、数千倍とは……圧縮されたペイロードやナノマシンを作るプリプロセッサ・プロテイン、ミニファイコードを全部展開してもそんなサイズになることは考えにくい。
