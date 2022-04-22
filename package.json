@@ -110,6 +110,12 @@
           "type": "array",
           "default": [],
           "description": "正規表現でHTML出力を調整することができます。複数の処理を行う場合は配列を増やしてください。\n（例） [\"い\", \"<span class='small'>ゐ</span>]\",[\"<p>[^「](.+?)</p>\",\"<p>　$1</p>\"], [ RegExp , Str ]）"
+        },
+        "fictionServer.maxNumberOfProblems": {
+            "scope": "resource",
+            "type": "number",
+            "default": 100,
+            "description": "Controls the maximum number of problems produced by the server."
         }
       }
     },

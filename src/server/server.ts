@@ -94,7 +94,7 @@ import {
       documentSettings.clear();
     } else {
       globalSettings = <ExampleSettings>(
-        (change.settings.languageServerExample || defaultSettings)
+        (change.settings.fictionServer || defaultSettings)
       );
     }
   
@@ -110,7 +110,7 @@ import {
     if (!result) {
       result = connection.workspace.getConfiguration({
         scopeUri: resource,
-        section: 'languageServerExample'
+        section: 'fictionServer'
       });
       documentSettings.set(resource, result);
     }
@@ -128,6 +128,7 @@ import {
     validateTextDocument(change.document);
   });
   
+  // sample of text validation
   async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     // In this simple example we get the settings for every validate run.
     let settings = await getDocumentSettings(textDocument.uri);
@@ -181,6 +182,7 @@ import {
   });
   
   // This handler provides the initial list of the completion items.
+  // 補完実行
   connection.onCompletion(
     (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
       // The pass parameter contains the position of the text document in
@@ -203,6 +205,7 @@ import {
   
   // This handler resolves additional information for the item selected in
   // the completion list.
+  // 補完終了
   connection.onCompletionResolve(
     (item: CompletionItem): CompletionItem => {
       if (item.data === 1) {
