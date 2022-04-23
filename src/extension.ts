@@ -108,9 +108,6 @@ export function activate(context: vscode.ExtensionContext): void {
         vscode.window.showErrorMessage("fiction couldn't be started.");
     }
 
-  // Start the client. This will also launch the server
-  client.start();
-
 }
 
 function launchserver(originEditor: OriginEditor){
