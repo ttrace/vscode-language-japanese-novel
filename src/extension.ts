@@ -14,7 +14,8 @@ import { editorText, OriginEditor } from './editor'
 import { urlToOptions } from 'vscode-test/out/util';
 import { eventNames } from 'process';
 import { EventEmitter } from 'stream';
-import { tokenize, DocumentSemanticTokensProvider } from './tokenize';
+//import languageclient = require("vscode-languageclient");
+import { kuromojiBuilder } from './server/server';
 
 import {
     LanguageClient,
@@ -43,7 +44,7 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
-    tokenize(context);
+    kuromojiBuilder(context);
 //    context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel'}, new DocumentSemanticTokensProvider(), legend));
 
     const characterCounter = new CharacterCounter();
@@ -84,41 +85,28 @@ export function activate(context: vscode.ExtensionContext): void {
 
     documentRoot = vscode.Uri.joinPath(context.extensionUri, 'htdocs');
 
-    //ランゲージサーバーの起動
-  // The server is implemented in node
-  const serverModule = context.asAbsolutePath(path.join('out', 'server', 'server.js'));
-  // The debug options for the server
-  // --inspect=6009: runs the server in Node's Inspector mode so VS Code can attach to the server for debugging
-  const debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
-
-  // If the extension is launched in debug mode then the debug server options are used
-  // Otherwise the run options are used
-  const serverOptions: ServerOptions = {
-    run: { module: serverModule, transport: TransportKind.ipc },
-    debug: {
-      module: serverModule,
-      transport: TransportKind.ipc,
-      options: debugOptions
+    //ランゲージサーバーの起動    
+    try {
+        const serverOptions = {
+            command: "node",
+            args: [
+                context.extensionPath + "/out/server/server.js",
+                "--language-server"
+            ]
+        };
+        const clientOptions = {
+            documentSelector: [
+                {
+                    scheme: "file",
+                    language: "novel",
+                }
+            ],
+        };
+        client = new LanguageClient("fiction-mode", serverOptions, clientOptions);
+        context.subscriptions.push(client.start());
+    } catch (e) {
+        vscode.window.showErrorMessage("fiction couldn't be started.");
     }
-  };
-
-  // Options to control the language client
-  const clientOptions: LanguageClientOptions = {
-    // Register the server for plain text documents
-    documentSelector: [{ scheme: 'file', language: 'novel' }],
-    synchronize: {
-      // Notify the server about file changes to '.clientrc files contained in the workspace
-      fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc')
-    }
-  };
-
-  // Create the language client and start the client.
-  client = new LanguageClient(
-    'fictionServer',
-    '日本語フィクションサーバー',
-    serverOptions,
-    clientOptions
-  );
 
   // Start the client. This will also launch the server
   client.start();
@@ -423,11 +411,7 @@ function exportpdf(): void {
 
 
 function deactivate() {
-    if (!client) {
-        return undefined;
-      }
-    return client.stop();
-    //return undefined;
+    if (client) return client.stop();
 }
 
 module.exports = { activate, deactivate };

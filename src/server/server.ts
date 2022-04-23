@@ -1,228 +1,208 @@
-import {
-    createConnection,
-    TextDocuments,
-    Diagnostic,
-    DiagnosticSeverity,
-    ProposedFeatures,
-    InitializeParams,
-    DidChangeConfigurationNotification,
-    CompletionItem,
-    CompletionItemKind,
-    TextDocumentPositionParams,
-    TextDocumentSyncKind,
-    InitializeResult
-  } from 'vscode-languageserver/node';
-  
-  import { TextDocument } from 'vscode-languageserver-textdocument';
-  
-  // Create a connection for the server, using Node's IPC as a transport.
-  // Also include all preview / proposed LSP features.
-  let connection = createConnection(ProposedFeatures.all);
-  
-  // Create a simple text document manager.
-  let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
-  
-  let hasConfigurationCapability: boolean = false;
-  let hasWorkspaceFolderCapability: boolean = false;
-  let hasDiagnosticRelatedInformationCapability: boolean = false;
-  
-  connection.onInitialize((params: InitializeParams) => {
-    let capabilities = params.capabilities;
-  
-    // Does the client support the `workspace/configuration` request?
-    // If not, we fall back using global settings.
-    hasConfigurationCapability = !!(
-      capabilities.workspace && !!capabilities.workspace.configuration
-    );
-    hasWorkspaceFolderCapability = !!(
-      capabilities.workspace && !!capabilities.workspace.workspaceFolders
-    );
-    hasDiagnosticRelatedInformationCapability = !!(
-      capabilities.textDocument &&
-      capabilities.textDocument.publishDiagnostics &&
-      capabilities.textDocument.publishDiagnostics.relatedInformation
-    );
-  
-    const result: InitializeResult = {
-      capabilities: {
-        textDocumentSync: TextDocumentSyncKind.Incremental,
-        // Tell the client that this server supports code completion.
-        completionProvider: {
-          resolveProvider: true
-        }
+import fs = require("fs");
+import * as vscode from 'vscode';
+import * as kuromoji from 'kuromoji';
+import path = require('path');
+import { TextDecoder, TextEncoder } from "util";
+
+let builder: any;
+
+
+const log = fs.openSync("/Users/taiyofujii/Desktop/log.txt", "w"); // ファイル名は適宜変えてください
+
+export function kuromojiBuilder(context: vscode.ExtensionContext) {
+	builder = kuromoji.builder({
+		dicPath: path.join(context.extensionPath, 'node_modules', 'kuromoji', 'dict')
+	});	
+}
+
+
+if (process.argv.length !== 3) {
+  console.log(`usage: ${process.argv[1]} [--language-server|FILE]`);
+} else if (process.argv[2] == "--language-server") {
+  languageServer();
+} else {
+  // TODO: interpret(process.argv[2]);
+}
+
+function sendMessage(msg: unknown) {
+  const s = new TextEncoder().encode(JSON.stringify(msg));
+  process.stdout.write(`Content-Length: ${s.length}\r\n\r\n`);
+  process.stdout.write(s);
+}
+
+function logMessage(message: unknown) {
+  sendMessage({ jsonrpc: "2.0", method: "window/logMessage", params: { type: 3, message } });
+}
+
+function sendErrorResponse(id: any, code: any, message: any) {
+  sendMessage({ jsonrpc: "2.0", id, error: { code, message }});
+}
+
+function languageServer() {
+  let buffer = Buffer.from(new Uint8Array(0));
+  process.stdin.on("readable", () => {
+      let chunk;
+      // eslint-disable-next-line no-cond-assign
+      while (chunk = process.stdin.read()) {
+          buffer = Buffer.concat([buffer, chunk]);
       }
-    };
-    if (hasWorkspaceFolderCapability) {
-      result.capabilities.workspace = {
-        workspaceFolders: {
-          supported: true
-        }
-      };
-    }
-    return result;
-  });
-  
-  connection.onInitialized(() => {
-    if (hasConfigurationCapability) {
-      // Register for all configuration changes.
-      connection.client.register(DidChangeConfigurationNotification.type, undefined);
-    }
-    if (hasWorkspaceFolderCapability) {
-      connection.workspace.onDidChangeWorkspaceFolders(_event => {
-        connection.console.log('Workspace folder change event received.');
-      });
-    }
-  });
-  
-  // The example settings
-  interface ExampleSettings {
-    maxNumberOfProblems: number;
-  }
-  
-  // The global settings, used when the `workspace/configuration` request is not supported by the client.
-  // Please note that this is not the case when using this server with the client provided in this example
-  // but could happen with other clients.
-  const defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
-  let globalSettings: ExampleSettings = defaultSettings;
-  
-  // Cache the settings of all open documents
-  let documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
-  
-  connection.onDidChangeConfiguration(change => {
-    if (hasConfigurationCapability) {
-      // Reset all cached document settings
-      documentSettings.clear();
-    } else {
-      globalSettings = <ExampleSettings>(
-        (change.settings.fictionServer || defaultSettings)
-      );
-    }
-  
-    // Revalidate all open text documents
-    documents.all().forEach(validateTextDocument);
-  });
-  
-  function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
-    if (!hasConfigurationCapability) {
-      return Promise.resolve(globalSettings);
-    }
-    let result = documentSettings.get(resource);
-    if (!result) {
-      result = connection.workspace.getConfiguration({
-        scopeUri: resource,
-        section: 'fictionServer'
-      });
-      documentSettings.set(resource, result);
-    }
-    return result;
-  }
-  
-  // Only keep settings for open documents
-  documents.onDidClose(e => {
-    documentSettings.delete(e.document.uri);
-  });
-  
-  // The content of a text document has changed. This event is emitted
-  // when the text document first opened or when its content has changed.
-  documents.onDidChangeContent(change => {
-    validateTextDocument(change.document);
-  });
-  
-  // sample of text validation
-  async function validateTextDocument(textDocument: TextDocument): Promise<void> {
-    // In this simple example we get the settings for every validate run.
-    let settings = await getDocumentSettings(textDocument.uri);
-  
-    // The validator creates diagnostics for all uppercase words length 2 and more
-    let text = textDocument.getText();
-    let pattern = /\b[A-Z]{2,}\b/g;
-    let m: RegExpExecArray | null;
-  
-    let problems = 0;
-    let diagnostics: Diagnostic[] = [];
-    while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
-      problems++;
-      let diagnostic: Diagnostic = {
-        severity: DiagnosticSeverity.Warning,
-        range: {
-          start: textDocument.positionAt(m.index),
-          end: textDocument.positionAt(m.index + m[0].length)
-        },
-        message: `${m[0]} is all uppercase.`,
-        source: 'ex'
-      };
-      if (hasDiagnosticRelatedInformationCapability) {
-        diagnostic.relatedInformation = [
-          {
-            location: {
-              uri: textDocument.uri,
-              range: Object.assign({}, diagnostic.range)
-            },
-            message: 'Spelling matters'
-          },
-          {
-            location: {
-              uri: textDocument.uri,
-              range: Object.assign({}, diagnostic.range)
-            },
-            message: 'Particularly for names'
+
+      const bufferString = buffer.toString();
+      if (!bufferString.includes("\r\n\r\n")) return;
+
+      const headerString = bufferString.split("\r\n\r\n", 1)[0];
+
+      let contentLength = -1;
+      const headerLength = headerString.length + 4;
+      for (const line of headerString.split("\r\n")) {
+          const [key, value] = line.split(": ");
+          if (key === "Content-Length") {
+              contentLength = parseInt(value, 10);
           }
-        ];
       }
-      diagnostics.push(diagnostic);
-    }
-  
-    // Send the computed diagnostics to VS Code.
-    connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
-  }
-  
-  connection.onDidChangeWatchedFiles(_change => {
-    // Monitored files have change in VS Code
-    connection.console.log('We received a file change event');
+
+      if (contentLength === -1) return;
+      if (buffer.length < headerLength + contentLength) return;
+
+      try {
+          const msg = JSON.parse(bufferString.slice(headerLength, headerLength + contentLength));
+          dispatch(msg); // 後述
+      } catch (e) {
+          if (e instanceof SyntaxError) {
+              sendParseErrorResponse();
+              return;
+          } else {
+              throw e;
+          }
+      } finally {
+          buffer = buffer.slice(headerLength + contentLength);
+      }
   });
-  
-  // This handler provides the initial list of the completion items.
-  // 補完実行
-  connection.onCompletion(
-    (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-      // The pass parameter contains the position of the text document in
-      // which code complete got requested. For the example we ignore this
-      // info and always provide the same completion items.
-      return [
-        {
-          label: 'TypeScript',
-          kind: CompletionItemKind.Text,
-          data: 1
-        },
-        {
-          label: 'JavaScript',
-          kind: CompletionItemKind.Text,
-          data: 2
-        }
-      ];
-    }
-  );
-  
-  // This handler resolves additional information for the item selected in
-  // the completion list.
-  // 補完終了
-  connection.onCompletionResolve(
-    (item: CompletionItem): CompletionItem => {
-      if (item.data === 1) {
-        item.detail = 'TypeScript details';
-        item.documentation = 'TypeScript documentation';
-      } else if (item.data === 2) {
-        item.detail = 'JavaScript details';
-        item.documentation = 'JavaScript documentation';
+}
+
+function sendInvalidRequestResponse() {
+  sendErrorResponse(null, -32600, "received an invalid request");
+}
+
+function sendMethodNotFoundResponse(id: any, method: any) {
+  sendErrorResponse(id, -32601, method + " is not supported");
+}
+
+const requestTable: {[key:string]: any} = {};
+const notificationTable: {[key:string]: any} = {};
+
+requestTable["initialize"] = (msg: any) => {
+  logMessage("initialize");
+  // TODO: implement
+}
+
+notificationTable["initialized"] = (msg: any) => {
+  logMessage("initialized!");
+}
+
+function dispatch(msg: any) {
+  if ("id" in msg && "method" in msg) { // request
+      if (msg.method in requestTable) {
+          requestTable[msg.method](msg);
+      } else {
+          sendMethodNotFoundResponse(msg.id, msg.method)
       }
-      return item;
-    }
-  );
-  
-  // Make the text document manager listen on the connection
-  // for open, change and close text document events
-  documents.listen(connection);
-  
-  // Listen on the connection
-  connection.listen();
-  
+  } else if ("id" in msg) { // response
+      // Ignore.
+      // This language server doesn't send any request.
+      // If this language server receives a response, that is invalid.
+  } else if ("method" in msg) { // notification
+      if (msg.method in notificationTable) {
+          notificationTable[msg.method](msg);
+      }
+  } else { // error
+      sendInvalidRequestResponse();
+  }
+}
+
+if (process.argv.length !== 3) {
+  console.log(`usage: ${process.argv[1]} [--language-server|FILE]`);
+} else if (process.argv[2] == "--language-server") {
+  languageServer();
+} else {
+  // TODO: interpret(process.argv[2]);
+}
+
+
+function sendParseErrorResponse() {
+  throw new Error("Function not implemented.");
+}
+
+/* 
+const buffers = {};
+const diagnostics = [];
+
+  //字句解析
+  //https://zenn.dev/takl/books/0fe11c6e177223/viewer/a505c9
+
+const requestTable = {};
+const notificationTable = {};
+let publishDiagnosticsCapable = false;
+
+const buffers = {};
+const diagnostics = [];
+
+
+function compile(uri: string | number, src: any) {
+  diagnostics.length = 0;
+  const tokens = tokenize(uri, src);
+  buffers[uri] = { tokens };
+}
+
+notificationTable["textDocument/didOpen"] = (msg) => {
+  const uri = msg.params.textDocument.uri;
+  const text = msg.params.textDocument.text;
+  compile(uri, text);
+  sendPublishDiagnostics(uri, diagnostics);
+}
+
+notificationTable["textDocument/didChange"] = (msg) => {
+  if (msg.params.contentChanges.length !== 0) {
+      const uri = msg.params.textDocument.uri;
+      const text = msg.params.contentChanges[msg.params.contentChanges.length - 1].text;
+      compile(uri, text);
+      sendPublishDiagnostics(uri, diagnostics);
+  }
+}
+
+function tokenize(uri, src){
+  let tokens = [];
+	const lines = src.split(/\r\n|\r|\n/);
+	for (let lineNumber = 0; lineNumber < lines.length; lineNumber++) {
+		const line = lines[lineNumber];
+		let kuromojiToken: string | any[] = [];
+
+		builder.build((err, tokenizer) => {
+			// 辞書がなかったりするとここでエラーになります(´・ω・｀)
+			if(err) { 
+				console.dir('KUROMOJI ERR'+err.message);
+				throw err; }
+			// tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
+
+			kuromojiToken = tokenizer.tokenize(line);
+			let character = 0;
+			for ( let j = 0; j < kuromojiToken.length; j++){
+				const mytoken = kuromojiToken[j];
+				character = mytoken.word_position - 1;
+				const characterLength = mytoken.surface_form.length;
+				const start = { line, character };
+				const kind = mytoken.pos;
+				const text = mytoken.surface_form;
+				//if (token.pos == '名詞') legend = '5'; 
+				
+				character = character + characterLength;
+				const end = { line, character };
+				const location = { uri, range: { start, end } };
+				tokens.push({ kind, text, location});
+				
+			}
+		});
+	}
+}
+
+*/
