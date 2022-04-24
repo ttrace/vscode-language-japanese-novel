@@ -106,8 +106,6 @@ export function activate(context: vscode.ExtensionContext): void {
 function launchserver(originEditor: OriginEditor){
     //もしサーバーが動いていたらポートの番号をずらす
     
-
-
     
         //Webサーバの起動。ドキュメントルートはnode_modules/novel-writer/htdocsになる。
         const viewerServer = http.createServer(function(request, response) {

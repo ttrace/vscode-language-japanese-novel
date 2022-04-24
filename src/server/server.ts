@@ -217,9 +217,9 @@ notificationTable["textDocument/didClose"] = (msg: any) => {
 
 function compile(uri: string, src: string) {
   diagnostics.length = 0;
-  const tokens = tokenize(uri, src);
-  logMessage(tokens);
-  buffers[uri] = { tokens };
+  tokenize(uri, src);
+//  logMessage("TOKENS:" + tokens);
+//  buffers[uri] = { tokens };
 }
 
 
@@ -228,7 +228,8 @@ function compile(uri: string, src: string) {
 
 
 function tokenize(uri: any, src: string) {
-  const tokens = [];
+
+  const tokens: { kind: any; text: any; location: { uri: any; range: { start: { lineNumber: number; character: number; }; end: { lineNumber: number; character: number; }; }; }; }[] = [];
   const lines = src.split(/\r\n|\r|\n/);
   for (let lineNumber = 0; lineNumber < lines.length; lineNumber++) {
     const line = lines[lineNumber];
@@ -242,12 +243,12 @@ function tokenize(uri: any, src: string) {
         throw err;
       }
       // tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
-
       kuromojiToken = tokenizer.tokenize(line);
       let character = 0;
       for (let j = 0; j < kuromojiToken.length; j++) {
         const mytoken = kuromojiToken[j];
         character = mytoken.word_position - 1;
+
         const characterLength = mytoken.surface_form.length;
         const start = { lineNumber, character };
         let kind = mytoken.pos;
@@ -266,10 +267,14 @@ function tokenize(uri: any, src: string) {
         const location = { uri, range: { start, end } };
         //logMessage("TOKEN: uri:" + location.uri + "?=line:" + lineNumber + "start:" + location.range.start.character + ",end:" + location.range.end.character);
         tokens.push({ kind, text, location });
-        
       }
+      if (lineNumber == lines.length -1){
+        //return tokens;
+        buffers[uri] = { tokens };
+        logMessage(buffers[uri].tokens);
+      } 
     });
-
   }
+
 }
 
