@@ -2,19 +2,14 @@ import * as vscode from 'vscode';
 import * as cp from 'child_process';
 import * as http from 'http';
 import * as net from 'net';
-import * as url from 'url';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as websockets from 'ws';
 import { getConfig } from './config';
 import compileDocs, { draftRoot } from './compile'; 
-import { fileList, draftsObject} from './compile'; 
+import { draftsObject} from './compile'; // filelist オブジェクトもある
 import {CharacterCounter, CharacterCounterController} from './charactorcount';
 import { editorText, OriginEditor } from './editor'
-import { urlToOptions } from 'vscode-test/out/util';
-import { eventNames } from 'process';
-import { EventEmitter } from 'stream';
-//import languageclient = require("vscode-languageclient");
 
 import {
     LanguageClient,
@@ -25,7 +20,7 @@ import {
 
 const output = vscode.window.createOutputChannel("Novel");
 //リソースとなるhtmlファイル
-let html: Buffer;
+//let html: Buffer;
 let documentRoot: vscode.Uri;
 let WebViewPanel = false;
 

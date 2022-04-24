@@ -3,19 +3,19 @@ import * as vscode from 'vscode';
 import * as kuromoji from 'kuromoji';
 import path = require('path');
 import { TextDecoder, TextEncoder } from "util";
-import { writer } from "repl";
 import { TextDocumentRegistrationOptions } from "vscode-languageclient";
 
 const buffers: { [key: string]: any } = {};
 const diagnostics: any = [];
 
-logMessage(process.argv[1]);
 
-/*
+let dictionaryPath = path.dirname(process.argv[1]);
+dictionaryPath = path.resolve(dictionaryPath, '..', '..', 'node_modules', 'kuromoji', 'dict')
+
 const builder = kuromoji.builder({
   dicPath: dictionaryPath
 });
-*/
+
 
 if (process.argv.length !== 3) {
   console.log(`usage: ${process.argv[1]} [--language-server|FILE]`);
@@ -64,10 +64,9 @@ function languageServer() {
 
     if (contentLength === -1) return;
     if (buffer.length < headerLength + contentLength) return;
-    
+
     try {
-    
-      const msg = JSON.parse(bufferString.slice(headerLength, headerLength + contentLength));
+      const msg = JSON.parse(buffer.toString().slice(headerLength, headerLength + contentLength));
       dispatch(msg); // 後述
     } catch (e) {
       if (e instanceof SyntaxError) {
@@ -99,23 +98,71 @@ function sendPublishDiagnostics(uri: vscode.Uri, diagnostics: { range: { start: 
 
 const requestTable: { [key: string]: any } = {};
 const notificationTable: { [key: string]: any } = {};
+const tokenTypeToIndex: { [key: string]: any } = {};
 
 let publishDiagnosticsCapable = false;
 
 requestTable["initialize"] = (msg: any) => {
   logMessage("initialize");
+  const capabilities = {
+    textDocumentSync: 1,
+    semanticTokensProvider: {}
+  };
 
   if (msg.params && msg.params.capabilities) {
     if (msg.params.capabilities.textDocument && msg.params.capabilities.textDocument.publishDiagnostics) {
       publishDiagnosticsCapable = true;
     }
+    if (msg.params.capabilities.textDocument && msg.params.capabilities.textDocument.semanticTokens && msg.params.capabilities.textDocument.semanticTokens.tokenTypes) {
+      const tokenTypes = msg.params.capabilities.textDocument.semanticTokens.tokenTypes;
+      for (const i in tokenTypes) {
+        tokenTypeToIndex[tokenTypes[i]] = i;
+        //logMessage(tokenTypes[i]); // クライアントのサポートしているトークン（単語種別）の種類
+      }
+      capabilities.semanticTokensProvider = {
+        legend: {
+          tokenTypes,
+          tokenModifiers: [] // 今回は省略
+        },
+        range: false, // textDocument/semanticTokens/range を無効にする
+        full: false    // textDocument/semanticTokens/full を有効にする
+      }
+    }
+
+    sendMessage({ jsonrpc: "2.0", id: msg.id, result: { capabilities } });
+  }
+}
+
+
+requestTable["textDocument/semanticTokens/full"] = (msg: any) => {
+  const uri = msg.params.textDocument.uri;
+
+  const data = [];
+  let line = 0;
+  let character = 0;
+  for (const token of buffers[uri].tokens) {
+
+      if (token.kind in tokenTypeToIndex) {
+          let d_line;
+          let d_char;
+          if (token.location.range.start.line === line) {
+              d_line = 0;
+              d_char = token.location.range.start.character - character;
+          } else {
+              d_line = token.location.range.start.line - line;
+              d_char = token.location.range.start.character;
+          }
+          line = token.location.range.start.line;
+          character = token.location.range.start.character;
+
+          data.push(d_line, d_char, token.text.length, tokenTypeToIndex[token.kind], 0);
+          logMessage("TOKEN" + tokenTypeToIndex[token.kind]);
+      }
   }
 
-  const capabilities = {
-    textDocumentSync: 1, // 1 は「毎回ファイルの中身を全部送る」の意。差分だけを送るモードもある。
-  };
-  sendMessage({ jsonrpc: "2.0", id: msg.id, result: { capabilities } });
+  sendMessage({ jsonrpc: "2.0", id: msg.id, result: { data } })
 }
+
 
 notificationTable["initialized"] = (msg: any) => {
   logMessage("initialized!");
@@ -141,16 +188,10 @@ function dispatch(msg: any) {
   }
 }
 
-if (process.argv.length !== 3) {
-  console.log(`usage: ${process.argv[1]} [--language-server|FILE]`);
-} else if (process.argv[2] == "--language-server") {
-  languageServer();
-} else {
-  // TODO: interpret(process.argv[2]);
-}
-
 function sendParseErrorResponse() {
-  throw new Error("Function not implemented.");
+  // If there was an error in detecting the id in the Request object (e.g. Parse error/Invalid Request), it MUST be Null.
+  // https://www.jsonrpc.org/specification#response_object
+  sendErrorResponse(null, -32700, "received an invalid JSON");
 }
 
 notificationTable["textDocument/didOpen"] = (msg: any) => {
@@ -177,6 +218,7 @@ notificationTable["textDocument/didClose"] = (msg: any) => {
 function compile(uri: string, src: string) {
   diagnostics.length = 0;
   const tokens = tokenize(uri, src);
+  logMessage(tokens);
   buffers[uri] = { tokens };
 }
 
@@ -184,16 +226,13 @@ function compile(uri: string, src: string) {
 //字句解析
 //https://zenn.dev/takl/books/0fe11c6e177223/viewer/a505c9
 
-function tokenize(uri: any, src: string) {
-  return
-}
 
-/*
 function tokenize(uri: any, src: string) {
   const tokens = [];
   const lines = src.split(/\r\n|\r|\n/);
   for (let lineNumber = 0; lineNumber < lines.length; lineNumber++) {
     const line = lines[lineNumber];
+
     let kuromojiToken: string | any[] = [];
 
     builder.build((err: any, tokenizer: any) => {
@@ -210,18 +249,27 @@ function tokenize(uri: any, src: string) {
         const mytoken = kuromojiToken[j];
         character = mytoken.word_position - 1;
         const characterLength = mytoken.surface_form.length;
-        const start = { line, character };
-        const kind = mytoken.pos;
+        const start = { lineNumber, character };
+        let kind = mytoken.pos;
+
+        if (kind === '名詞') kind = 'namespace';
+        if (kind === '動詞') kind = 'function';
+        if (kind === '副詞') kind = 'property';
+        if (kind === '助詞') kind = 'modifire';
+        if (kind === '記号') kind = 'operator';
+
         const text = mytoken.surface_form;
         //if (token.pos == '名詞') legend = '5'; 
 
         character = character + characterLength;
-        const end = { line, character };
+        const end = { lineNumber, character };
         const location = { uri, range: { start, end } };
+        //logMessage("TOKEN: uri:" + location.uri + "?=line:" + lineNumber + "start:" + location.range.start.character + ",end:" + location.range.end.character);
         tokens.push({ kind, text, location });
-
+        
       }
     });
+
   }
 }
-*/
+
