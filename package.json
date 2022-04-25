@@ -129,7 +129,20 @@
           "group": "YourGroup@1"
         }
       ]
-    }
+    },
+    "semanticTokenTypes": [
+      {
+        "id": "noun",
+        "superType": "type",
+        "description": "A template type."
+      }
+    ],
+    "semanticTokenModifiers": [
+      {
+        "id": "native",
+        "description": "Annotates a symbol that is implemented natively"
+      }
+    ]
   },
   "devDependencies": {
     "@types/glob": "^7.2.0",

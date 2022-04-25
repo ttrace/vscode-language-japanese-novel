@@ -1,12 +1,14 @@
 import * as vscode from 'vscode';
 import * as kuromoji from 'kuromoji';
+import { text } from 'stream/consumers';
+import { resolve } from 'path';
 
 const tokenTypes = new Map<string, number>();
 const tokenModifiers = new Map<string, number>();
 
 export const legend = (function () {
 	const tokenTypesLegend = [
-		'comment', 'string', 'keyword', 'number', 'regexp', 'operator', 'namespace',
+		'noun', 'string', 'keyword', 'number', 'regexp', 'operator', 'namespace',
 		'type', 'struct', 'class', 'interface', 'enum', 'typeParameter', 'function',
 		'method', 'decorator', 'macro', 'variable', 'parameter', 'property', 'label'
 	];
@@ -21,8 +23,19 @@ export const legend = (function () {
 	return new vscode.SemanticTokensLegend(tokenTypesLegend, tokenModifiersLegend);
 })();
 
-export function activate(context: vscode.ExtensionContext) {
-	context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel'}, new DocumentSemanticTokensProvider(), legend));
+
+let kuromojiDictPath = '';
+let kuromojiBuilder: any;
+let kuromojiTokenList: IParsedToken[] = [];
+
+export function activateTokenizer(context: vscode.ExtensionContext, kuromojiPath: string) {
+
+	kuromojiDictPath = kuromojiPath;
+	kuromojiBuilder = kuromoji.builder({
+		dicPath: kuromojiPath
+	});
+
+	context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel' }, new DocumentSemanticTokensProvider(), legend));
 }
 
 interface IParsedToken {
@@ -33,11 +46,13 @@ interface IParsedToken {
 	tokenModifiers: string[];
 }
 
+
 export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
 	async provideDocumentSemanticTokens(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.SemanticTokens> {
 		const allTokens = this._parseText(document.getText());
 		const builder = new vscode.SemanticTokensBuilder();
 		allTokens.forEach((token) => {
+			console.log("Token:" + token);
 			builder.push(token.line, token.startCharacter, token.length, this._encodeTokenType(token.tokenType), this._encodeTokenModifiers(token.tokenModifiers));
 		});
 		return builder.build();
@@ -65,6 +80,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 		return result;
 	}
 
+	/*
 	private _parseText(text: string): IParsedToken[] {
 		const r: IParsedToken[] = [];
 		const lines = text.split(/\r\n|\r|\n/);
@@ -81,6 +97,13 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 					break;
 				}
 				const tokenData = this._parseTextToken(line.substring(openOffset + 1, closeOffset));
+				console.log({
+					line: i,
+					startCharacter: openOffset + 1,
+					length: closeOffset - openOffset - 1,
+					tokenType: tokenData.tokenType,
+					tokenModifiers: tokenData.tokenModifiers
+				});
 				r.push({
 					line: i,
 					startCharacter: openOffset + 1,
@@ -92,14 +115,113 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 			// eslint-disable-next-line no-constant-condition
 			} while (true);
 		}
+				console.log('Return from sample:'+r)
+
 		return r;
 	}
+	*/
 
-	private _parseTextToken(text: string): { tokenType: string; tokenModifiers: string[]; } {
-		const parts = text.split('.');
-		return {
-			tokenType: parts[0],
-			tokenModifiers: parts.slice(1)
-		};
+	private _parseText(text: string): IParsedToken[] {
+		const r: IParsedToken[] = [];
+		const lines = text.split(/\r\n|\r|\n/);
+
+		const kuromojiTaskList: any = [];
+
+		for (let i = 0; i < lines.length; i++) {
+			const line = lines[i];
+
+			kuromojiBuilder.build((err: any, tokenizer: any) => {
+				// 辞書がなかったりするとここでエラーになります(´・ω・｀)
+				if (err) {
+					console.dir('Kuromoji initialize error:' + err.message);
+					throw err;
+				}
+				// tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
+				const kuromojiToken = tokenizer.tokenize(line);
+				//console.dir(kuromojiToken);
+
+				let openOffset = 0;
+				let closeOffset = 0;
+
+				for (let j = 0; j < kuromojiToken.length; j++) {
+
+					const mytoken = kuromojiToken[j];
+					openOffset = mytoken.word_position - 1;
+
+					const wordLength = mytoken.surface_form.length;
+					let kind = mytoken.pos;
+					//if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '固有名詞') {
+					//	kind = 'noun';
+
+
+					const text = mytoken.surface_form;
+
+					closeOffset = openOffset + wordLength;
+					const tokenData = parseTextToken(line.substring(openOffset, closeOffset));
+
+					//console.dir(mytoken);
+					/*console.log({
+						line: i,
+						text: text,
+						startCharacter: openOffset,
+						length: wordLength,
+						tokenType: kind,
+						tokenModifiers: tokenData.tokenModifiers
+					});
+					*/
+
+					//}
+
+					openOffset = closeOffset;
+
+					r.push({
+						line: i,
+						startCharacter: openOffset,
+						length: wordLength,
+						tokenType: kind,
+						tokenModifiers: tokenData.tokenModifiers
+					});
+				}
+			});
+
+		}
+
+		console.log("processed:" + kuromojiTaskList.length);
+		Promise.all(kuromojiTaskList).then((result) => {
+			console.log('token finished:' + result);
+
+			kuromojiTokenList.forEach((kuromojiTokenEach) => {
+				return r.push(kuromojiTokenEach);
+			});
+
+			kuromojiTokenList = [];
+			return r;
+		});
+		return r;
 	}
 }
+
+
+function kuromojiTask(line: string, i: number) {
+	return new Promise((resolve) => {
+		const lineToken: any = [];
+
+		resolve(lineToken);
+	});
+}
+
+function parseTextToken(text: string): { tokenType: string; tokenModifiers: string[]; } {
+	const parts = text.split('.');
+	return {
+		tokenType: parts[0],
+		tokenModifiers: parts.slice(1)
+	};
+}
+
+
+/*tokenModifiers:(0) []
+length:0
+[[Prototype]]:Array(0)
+[[Prototype]]:Object
+tokenType:'comment'
+*/

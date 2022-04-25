@@ -10,22 +10,13 @@ import compileDocs, { draftRoot } from './compile';
 import { draftsObject} from './compile'; // filelist オブジェクトもある
 import {CharacterCounter, CharacterCounterController} from './charactorcount';
 import { editorText, OriginEditor } from './editor'
-import { DocumentSemanticTokensProvider, legend } from './tokenize'
-
-import {
-    LanguageClient,
-    LanguageClientOptions,
-    ServerOptions,
-    TransportKind
-  } from 'vscode-languageclient/node';
+import { activateTokenizer } from './tokenize'
 
 const output = vscode.window.createOutputChannel("Novel");
 //リソースとなるhtmlファイル
 //let html: Buffer;
 let documentRoot: vscode.Uri;
 let WebViewPanel = false;
-
-let client: LanguageClient;
 
 let servicePort = 8080;
 emptyPort(function(port:number) {
@@ -35,11 +26,15 @@ emptyPort(function(port:number) {
 
 //コマンド登録
 export function activate(context: vscode.ExtensionContext): void {
+
     context.subscriptions.push(vscode.commands.registerCommand('Novel.compile-draft', compileDocs));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
-    context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel'}, new DocumentSemanticTokensProvider(), legend));
+
+    const kuromojiPath = context.extensionPath + '/node_modules/kuromoji/dict';
+    activateTokenizer(context, kuromojiPath);
+    //context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel'}, new DocumentSemanticTokensProvider(), legend));
 
     const characterCounter = new CharacterCounter();
     const controller = new CharacterCounterController(characterCounter);
@@ -400,7 +395,7 @@ function exportpdf(): void {
 
 
 function deactivate() {
-    if (client) return client.stop();
+    //
 }
 
 module.exports = { activate, deactivate };
