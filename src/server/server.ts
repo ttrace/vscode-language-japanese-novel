@@ -4,6 +4,7 @@ import * as kuromoji from 'kuromoji';
 import path = require('path');
 import { TextDecoder, TextEncoder } from "util";
 import { TextDocumentRegistrationOptions } from "vscode-languageclient";
+import { resolve } from "path";
 
 const buffers: { [key: string]: any } = {};
 const diagnostics: any = [];
@@ -63,11 +64,12 @@ function languageServer() {
     }
 
     if (contentLength === -1) return;
+    logMessage("クラッシュポイント"+buffer[0].toString);
     if (buffer.length < headerLength + contentLength) return;
 
     try {
       const msg = JSON.parse(buffer.toString().slice(headerLength, headerLength + contentLength));
-      dispatch(msg); // 後述
+      dispatch(msg);
     } catch (e) {
       if (e instanceof SyntaxError) {
         sendParseErrorResponse();
@@ -80,6 +82,7 @@ function languageServer() {
     }
   });
 }
+
 
 function sendInvalidRequestResponse() {
   sendErrorResponse(null, -32600, "received an invalid request");
@@ -117,7 +120,7 @@ requestTable["initialize"] = (msg: any) => {
       const tokenTypes = msg.params.capabilities.textDocument.semanticTokens.tokenTypes;
       for (const i in tokenTypes) {
         tokenTypeToIndex[tokenTypes[i]] = i;
-        //logMessage(tokenTypes[i]); // クライアントのサポートしているトークン（単語種別）の種類
+        logMessage(tokenTypes[i]); // クライアントのサポートしているトークン（単語種別）の種類
       }
       capabilities.semanticTokensProvider = {
         legend: {
@@ -125,7 +128,7 @@ requestTable["initialize"] = (msg: any) => {
           tokenModifiers: [] // 今回は省略
         },
         range: false, // textDocument/semanticTokens/range を無効にする
-        full: false    // textDocument/semanticTokens/full を有効にする
+        full: true    // textDocument/semanticTokens/full を有効にする
       }
     }
 
@@ -142,22 +145,22 @@ requestTable["textDocument/semanticTokens/full"] = (msg: any) => {
   let character = 0;
   for (const token of buffers[uri].tokens) {
 
-      if (token.kind in tokenTypeToIndex) {
-          let d_line;
-          let d_char;
-          if (token.location.range.start.line === line) {
-              d_line = 0;
-              d_char = token.location.range.start.character - character;
-          } else {
-              d_line = token.location.range.start.line - line;
-              d_char = token.location.range.start.character;
-          }
-          line = token.location.range.start.line;
-          character = token.location.range.start.character;
-
-          data.push(d_line, d_char, token.text.length, tokenTypeToIndex[token.kind], 0);
-          logMessage("TOKEN" + tokenTypeToIndex[token.kind]);
+    if (token.kind in tokenTypeToIndex) {
+      let d_line;
+      let d_char;
+      if (token.location.range.start.line === line) {
+        d_line = 0;
+        d_char = token.location.range.start.character - character;
+      } else {
+        d_line = token.location.range.start.line - line;
+        d_char = token.location.range.start.character;
       }
+      line = token.location.range.start.line;
+      character = token.location.range.start.character;
+
+      data.push(d_line, d_char, token.text.length, tokenTypeToIndex[token.kind], 0);
+      logMessage("TOKENBuild" + tokenTypeToIndex[token.kind] + ":" + token.text);
+    }
   }
 
   sendMessage({ jsonrpc: "2.0", id: msg.id, result: { data } })
@@ -216,24 +219,21 @@ notificationTable["textDocument/didClose"] = (msg: any) => {
 }
 
 function compile(uri: string, src: string) {
+  logMessage('Compile start:');
   diagnostics.length = 0;
-  tokenize(uri, src);
-//  logMessage("TOKENS:" + tokens);
-//  buffers[uri] = { tokens };
+  const tokens = kuromojiTokenize(uri, src);
+  
+  //buffers[uri] = { tokens };
 }
 
-
-//字句解析
-//https://zenn.dev/takl/books/0fe11c6e177223/viewer/a505c9
-
-
-function tokenize(uri: any, src: string) {
-
+let kuromojiTokenList:any = [];
+function kuromojiTokenize(uri: string, src: string) {
   const tokens: { kind: any; text: any; location: { uri: any; range: { start: { lineNumber: number; character: number; }; end: { lineNumber: number; character: number; }; }; }; }[] = [];
   const lines = src.split(/\r\n|\r|\n/);
-  for (let lineNumber = 0; lineNumber < lines.length; lineNumber++) {
-    const line = lines[lineNumber];
 
+  const kuromojiTaskList: any = [];
+
+  for (let lineNumber = 0; lineNumber < lines.length; lineNumber++) {
     let kuromojiToken: string | any[] = [];
 
     builder.build((err: any, tokenizer: any) => {
@@ -243,38 +243,60 @@ function tokenize(uri: any, src: string) {
         throw err;
       }
       // tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
-      kuromojiToken = tokenizer.tokenize(line);
-      let character = 0;
+
+      kuromojiToken = tokenizer.tokenize(lines[lineNumber]);
+
       for (let j = 0; j < kuromojiToken.length; j++) {
-        const mytoken = kuromojiToken[j];
-        character = mytoken.word_position - 1;
-
-        const characterLength = mytoken.surface_form.length;
-        const start = { lineNumber, character };
-        let kind = mytoken.pos;
-
-        if (kind === '名詞') kind = 'namespace';
-        if (kind === '動詞') kind = 'function';
-        if (kind === '副詞') kind = 'property';
-        if (kind === '助詞') kind = 'modifire';
-        if (kind === '記号') kind = 'operator';
-
-        const text = mytoken.surface_form;
-        //if (token.pos == '名詞') legend = '5'; 
-
-        character = character + characterLength;
-        const end = { lineNumber, character };
-        const location = { uri, range: { start, end } };
-        //logMessage("TOKEN: uri:" + location.uri + "?=line:" + lineNumber + "start:" + location.range.start.character + ",end:" + location.range.end.character);
-        tokens.push({ kind, text, location });
+        kuromojiTaskList.push(kuromojiTask(uri, kuromojiToken, j, lineNumber));
       }
-      if (lineNumber == lines.length -1){
-        //return tokens;
-        buffers[uri] = { tokens };
-        logMessage(buffers[uri].tokens);
-      } 
+
+      logMessage("processed:" + tokens.length);
+      Promise.all(kuromojiTaskList)
+        .then(result => {
+          logMessage('token finished:'+ kuromojiTokenList);
+          kuromojiTokenList.forEach((kuromojiTokenEach: { kind: any; text: any; location: { uri: any; range: { start: { lineNumber: number; character: number; }; end: { lineNumber: number; character: number; }; }; }; }) =>{
+            tokens.push(kuromojiTokenEach);
+          });
+          const j = result;
+          if( lineNumber == lines.length - 1){
+            buffers[uri] = { tokens };
+            logMessage('Compile finished:'+ tokens);
+          }
+          kuromojiTokenList = [];
+        });
     });
   }
-
+  //return tokens;
 }
 
+function kuromojiTask(uri: string, kuromojiToken: any, j:number, lineNumber: number) {
+  return new Promise((resolve) => {
+    //let token: { kind: string; text: any; location: { uri: any; range: { start: { lineNumber: number; character: number; }; end: { lineNumber: number; character: number; }; }; }; }[] = [];
+    let character = 0;
+    //const line = lines[lineNumber];
+
+    const mytoken = kuromojiToken[j];
+    character = mytoken.word_position - 1;
+
+    const characterLength = mytoken.surface_form.length;
+    const start = { lineNumber, character };
+    let kind = mytoken.pos;
+
+    if (kind === '名詞') kind = 'namespace';
+    if (kind === '動詞') kind = 'function';
+    if (kind === '副詞') kind = 'property';
+    if (kind === '助詞') kind = 'modifier';
+    if (kind === '記号') kind = 'operator';
+
+    const text = mytoken.surface_form;
+    //if (token.pos == '名詞') legend = '5'; 
+
+    character = character + characterLength;
+    const end = { lineNumber, character };
+    const location = { uri, range: { start, end } };
+    //logMessage("TOKEN: uri:" + location.uri + "?=line:" + lineNumber + "start:" + location.range.start.character + ",end:" + location.range.end.character);
+    //token = ;
+    kuromojiTokenList.push({ kind, text, location, j})
+    resolve(j);
+  });
+}

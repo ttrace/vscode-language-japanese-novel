@@ -10,6 +10,7 @@ import compileDocs, { draftRoot } from './compile';
 import { draftsObject} from './compile'; // filelist オブジェクトもある
 import {CharacterCounter, CharacterCounterController} from './charactorcount';
 import { editorText, OriginEditor } from './editor'
+import { DocumentSemanticTokensProvider, legend } from './tokenize'
 
 import {
     LanguageClient,
@@ -38,7 +39,7 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
-//    context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel'}, new DocumentSemanticTokensProvider(), legend));
+    context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel'}, new DocumentSemanticTokensProvider(), legend));
 
     const characterCounter = new CharacterCounter();
     const controller = new CharacterCounterController(characterCounter);
@@ -78,7 +79,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     documentRoot = vscode.Uri.joinPath(context.extensionUri, 'htdocs');
 
-    //ランゲージサーバーの起動    
+/*    //ランゲージサーバーの起動    
     try {
         const serverOptions = {
             command: "node",
@@ -100,7 +101,7 @@ export function activate(context: vscode.ExtensionContext): void {
     } catch (e) {
         vscode.window.showErrorMessage("fiction couldn't be started.");
     }
-
+*/
 }
 
 function launchserver(originEditor: OriginEditor){

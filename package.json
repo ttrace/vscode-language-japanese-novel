@@ -67,7 +67,7 @@
         "extensions": [
           ".txt"
         ],
-        "configuration": "./novel.language-configuration.json"
+      "configuration": "./novel.language-configuration.json"
       }
     ],
     "grammars": [
