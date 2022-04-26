@@ -26,7 +26,6 @@ export const legend = (function () {
 
 let kuromojiDictPath = '';
 let kuromojiBuilder: any;
-let kuromojiTokenList: IParsedToken[] = [];
 
 export function activateTokenizer(context: vscode.ExtensionContext, kuromojiPath: string) {
 
@@ -38,21 +37,21 @@ export function activateTokenizer(context: vscode.ExtensionContext, kuromojiPath
 	context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel' }, new DocumentSemanticTokensProvider(), legend));
 }
 
+
 interface IParsedToken {
 	line: number;
 	startCharacter: number;
 	length: number;
 	tokenType: string;
 	tokenModifiers: string[];
-}
-
+}let chachedToken: IParsedToken[] = [];
 
 export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
 	async provideDocumentSemanticTokens(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.SemanticTokens> {
 		const allTokens = this._parseText(document.getText());
 		const builder = new vscode.SemanticTokensBuilder();
 		allTokens.forEach((token) => {
-			console.log("Token:" + token);
+			//console.log("Token:" + allTokens);
 			builder.push(token.line, token.startCharacter, token.length, this._encodeTokenType(token.tokenType), this._encodeTokenModifiers(token.tokenModifiers));
 		});
 		return builder.build();
@@ -80,62 +79,20 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 		return result;
 	}
 
-	/*
 	private _parseText(text: string): IParsedToken[] {
 		const r: IParsedToken[] = [];
 		const lines = text.split(/\r\n|\r|\n/);
-		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i];
-			let currentOffset = 0;
-			do {
-				const openOffset = line.indexOf('[', currentOffset);
-				if (openOffset === -1) {
-					break;
-				}
-				const closeOffset = line.indexOf(']', openOffset);
-				if (closeOffset === -1) {
-					break;
-				}
-				const tokenData = this._parseTextToken(line.substring(openOffset + 1, closeOffset));
-				console.log({
-					line: i,
-					startCharacter: openOffset + 1,
-					length: closeOffset - openOffset - 1,
-					tokenType: tokenData.tokenType,
-					tokenModifiers: tokenData.tokenModifiers
-				});
-				r.push({
-					line: i,
-					startCharacter: openOffset + 1,
-					length: closeOffset - openOffset - 1,
-					tokenType: tokenData.tokenType,
-					tokenModifiers: tokenData.tokenModifiers
-				});
-				currentOffset = closeOffset;
-			// eslint-disable-next-line no-constant-condition
-			} while (true);
+
+		//const kuromojiTaskList: any = [];
+		kuromojiBuilder.build(async (err: any, tokenizer: any) => {
+		// 辞書がなかったりするとここでエラーになります(´・ω・｀)
+		if (err) {
+			console.dir('Kuromoji initialize error:' + err.message);
+			throw err;
 		}
-				console.log('Return from sample:'+r)
+			for (let i = 0; i < lines.length; i++) {
+				const line = lines[i];
 
-		return r;
-	}
-	*/
-
-	private _parseText(text: string): IParsedToken[] {
-		const r: IParsedToken[] = [];
-		const lines = text.split(/\r\n|\r|\n/);
-
-		const kuromojiTaskList: any = [];
-
-		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i];
-
-			kuromojiBuilder.build((err: any, tokenizer: any) => {
-				// 辞書がなかったりするとここでエラーになります(´・ω・｀)
-				if (err) {
-					console.dir('Kuromoji initialize error:' + err.message);
-					throw err;
-				}
 				// tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
 				const kuromojiToken = tokenizer.tokenize(line);
 				//console.dir(kuromojiToken);
@@ -150,29 +107,17 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 
 					const wordLength = mytoken.surface_form.length;
 					let kind = mytoken.pos;
-					//if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '固有名詞') {
-					//	kind = 'noun';
-
+					if (kind == '名詞') kind = '';
+					if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '固有名詞') {
+						kind = 'keyword';
+					}
+					if (kind == '動詞') kind = 'function'
+					if (kind == '助詞') kind = 'operator';
 
 					const text = mytoken.surface_form;
 
 					closeOffset = openOffset + wordLength;
-					const tokenData = parseTextToken(line.substring(openOffset, closeOffset));
-
-					//console.dir(mytoken);
-					/*console.log({
-						line: i,
-						text: text,
-						startCharacter: openOffset,
-						length: wordLength,
-						tokenType: kind,
-						tokenModifiers: tokenData.tokenModifiers
-					});
-					*/
-
-					//}
-
-					openOffset = closeOffset;
+					const tokenData = this._parseTextToken(line.substring(openOffset, closeOffset));
 
 					r.push({
 						line: i,
@@ -181,47 +126,32 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 						tokenType: kind,
 						tokenModifiers: tokenData.tokenModifiers
 					});
+					console.log(i + '/' + lines.length + ':' + j + '/' + j);
+					if (j == kuromojiToken.length - 1) {
+
+						chachedToken = chachedToken.filter((lineNum) => {
+							return (lineNum.line != i);
+						})
+						r.forEach((token) => {
+							chachedToken.push(token);
+						});
+						console.log('cache cleared!');
+					}
+					openOffset = closeOffset;
 				}
-			});
-
-		}
-
-		console.log("processed:" + kuromojiTaskList.length);
-		Promise.all(kuromojiTaskList).then((result) => {
-			console.log('token finished:' + result);
-
-			kuromojiTokenList.forEach((kuromojiTokenEach) => {
-				return r.push(kuromojiTokenEach);
-			});
-
-			kuromojiTokenList = [];
-			return r;
+			}
+			//console.dir(r);
 		});
-		return r;
+		return chachedToken;
 	}
+
+
+	private _parseTextToken(text: string): { tokenType: string; tokenModifiers: string[]; } {
+		const parts = text.split('.');
+		return {
+			tokenType: parts[0],
+			tokenModifiers: parts.slice(1)
+		};
+	}
+
 }
-
-
-function kuromojiTask(line: string, i: number) {
-	return new Promise((resolve) => {
-		const lineToken: any = [];
-
-		resolve(lineToken);
-	});
-}
-
-function parseTextToken(text: string): { tokenType: string; tokenModifiers: string[]; } {
-	const parts = text.split('.');
-	return {
-		tokenType: parts[0],
-		tokenModifiers: parts.slice(1)
-	};
-}
-
-
-/*tokenModifiers:(0) []
-length:0
-[[Prototype]]:Array(0)
-[[Prototype]]:Object
-tokenType:'comment'
-*/
