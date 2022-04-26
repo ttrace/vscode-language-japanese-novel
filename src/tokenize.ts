@@ -8,8 +8,8 @@ const tokenModifiers = new Map<string, number>();
 
 export const legend = (function () {
 	const tokenTypesLegend = [
-		'noun', 'string', 'keyword', 'number', 'regexp', 'operator', 'namespace',
-		'type', 'struct', 'class', 'interface', 'enum', 'typeParameter', 'function',
+		'proper_noun', 'noun', 'keyword', 'punctuation', 'adverb', 'interjection', 'adjective',
+		'particle', 'auailiary_verb', 'verb', 'interface', 'enum', 'typeParameter', 'function',
 		'method', 'decorator', 'macro', 'variable', 'parameter', 'property', 'label'
 	];
 	tokenTypesLegend.forEach((tokenType, index) => tokenTypes.set(tokenType, index));
@@ -95,7 +95,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 
 				// tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
 				const kuromojiToken = tokenizer.tokenize(line);
-				//console.dir(kuromojiToken);
+				console.dir(kuromojiToken);
 
 				let openOffset = 0;
 				let closeOffset = 0;
@@ -107,12 +107,17 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 
 					const wordLength = mytoken.surface_form.length;
 					let kind = mytoken.pos;
-					if (kind == '名詞') kind = '';
+					if (kind == '名詞') kind = 'noun';
 					if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '固有名詞') {
-						kind = 'keyword';
+						kind = 'proper_noun';
 					}
-					if (kind == '動詞') kind = 'function'
-					if (kind == '助詞') kind = 'operator';
+					if (kind == '記号') kind = 'punctuation';
+					if (kind == '動詞') kind = 'verb';
+					if (kind == '助動詞') kind = 'auailiary_verb';
+					if (kind == '助詞') kind = 'particle';
+					if (kind == '副詞') kind = 'adverb';
+					if (kind == '感動詞') kind = 'interjection';
+					if (kind == '形容詞') kind = 'adjective';
 
 					const text = mytoken.surface_form;
 

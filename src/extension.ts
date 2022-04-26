@@ -74,29 +74,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
     documentRoot = vscode.Uri.joinPath(context.extensionUri, 'htdocs');
 
-/*    //ランゲージサーバーの起動    
-    try {
-        const serverOptions = {
-            command: "node",
-            args: [
-                context.extensionPath + "/out/server/server.js",
-                "--language-server"
-            ]
-        };
-        const clientOptions = {
-            documentSelector: [
-                {
-                    scheme: "file",
-                    language: "novel",
-                }
-            ],
-        };
-        client = new LanguageClient("fiction-mode", serverOptions, clientOptions);
-        context.subscriptions.push(client.start());
-    } catch (e) {
-        vscode.window.showErrorMessage("fiction couldn't be started.");
-    }
-*/
+
 }
 
 function launchserver(originEditor: OriginEditor){
