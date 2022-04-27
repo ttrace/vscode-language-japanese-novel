@@ -24,17 +24,18 @@ export const legend = (function () {
 })();
 
 
-let kuromojiDictPath = '';
+//let kuromojiDictPath = '';
 let kuromojiBuilder: any;
 
 export function activateTokenizer(context: vscode.ExtensionContext, kuromojiPath: string) {
 
-	kuromojiDictPath = kuromojiPath;
+	//kuromojiDictPath = kuromojiPath;
 	kuromojiBuilder = kuromoji.builder({
 		dicPath: kuromojiPath
 	});
 
 	context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel' }, new DocumentSemanticTokensProvider(), legend));
+
 }
 
 
@@ -47,6 +48,7 @@ interface IParsedToken {
 }let chachedToken: IParsedToken[] = [];
 
 export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
+	//export class provideDocumentSemanticTokensEdits implements vscode.DocumentSemanticTokensProvider {
 	async provideDocumentSemanticTokens(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.SemanticTokens> {
 		const allTokens = this._parseText(document.getText());
 		const builder = new vscode.SemanticTokensBuilder();
@@ -85,11 +87,11 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 
 		//const kuromojiTaskList: any = [];
 		kuromojiBuilder.build(async (err: any, tokenizer: any) => {
-		// 辞書がなかったりするとここでエラーになります(´・ω・｀)
-		if (err) {
-			console.dir('Kuromoji initialize error:' + err.message);
-			throw err;
-		}
+			// 辞書がなかったりするとここでエラーになります(´・ω・｀)
+			if (err) {
+				console.dir('Kuromoji initialize error:' + err.message);
+				throw err;
+			}
 			for (let i = 0; i < lines.length; i++) {
 				const line = lines[i];
 
@@ -106,31 +108,36 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 					openOffset = mytoken.word_position - 1;
 
 					const wordLength = mytoken.surface_form.length;
+					let tokenActivity = false;
 					let kind = mytoken.pos;
 					if (kind == '名詞') kind = 'noun';
 					if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '固有名詞') {
 						kind = 'proper_noun';
+						tokenActivity = true;
 					}
 					if (kind == '記号') kind = 'punctuation';
 					if (kind == '動詞') kind = 'verb';
 					if (kind == '助動詞') kind = 'auailiary_verb';
-					if (kind == '助詞') kind = 'particle';
+					if (kind == '助詞') {
+						kind = 'particle'
+						tokenActivity = true;
+					}
 					if (kind == '副詞') kind = 'adverb';
 					if (kind == '感動詞') kind = 'interjection';
 					if (kind == '形容詞') kind = 'adjective';
 
-					const text = mytoken.surface_form;
-
 					closeOffset = openOffset + wordLength;
 					const tokenData = this._parseTextToken(line.substring(openOffset, closeOffset));
 
-					r.push({
-						line: i,
-						startCharacter: openOffset,
-						length: wordLength,
-						tokenType: kind,
-						tokenModifiers: tokenData.tokenModifiers
-					});
+					if (tokenActivity == true) {
+						r.push({
+							line: i,
+							startCharacter: openOffset,
+							length: wordLength,
+							tokenType: kind,
+							tokenModifiers: tokenData.tokenModifiers
+						});
+					}
 					console.log(i + '/' + lines.length + ':' + j + '/' + j);
 					if (j == kuromojiToken.length - 1) {
 
@@ -142,10 +149,10 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 						});
 						console.log('cache cleared!');
 					}
+
 					openOffset = closeOffset;
 				}
 			}
-			//console.dir(r);
 		});
 		return chachedToken;
 	}
@@ -160,3 +167,4 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 	}
 
 }
+
