@@ -50,7 +50,7 @@ margin-right: 14mm;
     writing-mode: horizontal-tb;
     /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
 }
-}
+
 
 html {
 font-family: "游明朝", "YuMincho", serif;

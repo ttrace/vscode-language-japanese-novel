@@ -212,6 +212,7 @@ function launchserver(originEditor: OriginEditor){
                 </style>
             </head>
             <body>
+                <p>ポート番号：${servicePort}</p>
                 <iframe src="http://localhost:${servicePort}" frameBorder="0" style="min-width: 100%; min-height: 100%" />
             </body>
         </html>`;
