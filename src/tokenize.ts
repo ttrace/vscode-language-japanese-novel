@@ -9,7 +9,7 @@ const tokenModifiers = new Map<string, number>();
 export const legend = (function () {
 	const tokenTypesLegend = [
 		'proper_noun', 'noun', 'keyword', 'punctuation', 'adverb', 'interjection', 'adjective',
-		'particle', 'auailiary_verb', 'verb', 'interface', 'enum', 'typeParameter', 'function',
+		'particle', 'auailiary_verb', 'verb', 'pronoun', 'enum', 'typeParameter', 'function',
 		'method', 'decorator', 'macro', 'variable', 'parameter', 'property', 'label'
 	];
 	tokenTypesLegend.forEach((tokenType, index) => tokenTypes.set(tokenType, index));
@@ -26,6 +26,7 @@ export const legend = (function () {
 
 //let kuromojiDictPath = '';
 let kuromojiBuilder: any;
+let tokenCaching = false;
 
 export function activateTokenizer(context: vscode.ExtensionContext, kuromojiPath: string) {
 
@@ -34,11 +35,8 @@ export function activateTokenizer(context: vscode.ExtensionContext, kuromojiPath
 		dicPath: kuromojiPath
 	});
 
-	//context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel' }, new DocumentSemanticTokensProvider(), legend));
-
+	context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel' }, new DocumentSemanticTokensProvider(), legend));
 }
-
-
 
 interface IParsedToken {
 	line: number;
@@ -50,14 +48,91 @@ interface IParsedToken {
 
 export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
 	async provideDocumentSemanticTokens(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.SemanticTokens> {
-		const allTokens = parseText();
-		const builder = new vscode.SemanticTokensBuilder();
-		allTokens.forEach((token) => {
-			//console.log("Token:" + allTokens);
-			builder.push(token.line, token.startCharacter, token.length, this._encodeTokenType(token.tokenType), this._encodeTokenModifiers(token.tokenModifiers));
+		//const allTokens = this._parseText(document.getText());
+		return new Promise((resolve, reject) => {
+			const r: number[][] = [];
+			const builder = new vscode.SemanticTokensBuilder();
+
+
+
+			kuromojiBuilder.build(async (err: any, tokenizer: any) => {
+				tokenCaching = true;
+				// 辞書がなかったりするとここでエラーになります(´・ω・｀)
+				if (err) {
+					console.dir('Kuromoji initialize error:' + err.message);
+					throw err;
+				}
+				//		for (let i = 0; i < lines.length; i++) {
+				let i = 0;
+				//const line = lines[i];
+
+				// tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
+				const kuromojiToken = tokenizer.tokenize(document.getText());
+
+				//console.dir(kuromojiToken);
+				let lineOffset = 0;
+				let openOffset = 0;
+				let closeOffset = 0;
+				let j = 0;
+				for await (let mytoken of kuromojiToken) {
+
+					mytoken = kuromojiToken[j];
+					if (mytoken.surface_form == '\n') {
+						i++;
+						lineOffset = mytoken.word_position;
+						console.log('line-feed:' + i);
+					}
+					openOffset = mytoken.word_position - lineOffset - 1;
+
+					let wordLength = 0;
+					wordLength = mytoken.surface_form.length;
+					let tokenActivity = false;
+					let kind = mytoken.pos;
+					//console.log(mytoken.surface_form);
+					if (kind == '名詞') kind = 'noun';
+					if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '固有名詞') {
+						kind = 'proper_noun';
+						tokenActivity = true;
+					}
+					if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '代名詞') {
+						kind = 'pronoun';
+						tokenActivity = true;
+					}
+					if (kind == '記号') kind = 'punctuation';
+					if (kind == '動詞') kind = 'verb';
+					if (kind == '助動詞') kind = 'auailiary_verb';
+					if (kind == '助詞') {
+						kind = 'particle'
+						tokenActivity = true;
+					}
+					if (kind == '副詞') kind = 'adverb';
+					if (kind == '感動詞') kind = 'interjection';
+					if (kind == '形容詞') kind = 'adjective';
+
+					closeOffset = openOffset + wordLength;
+					const tokenData = parseTextToken(document.getText().substring(openOffset, closeOffset));
+					const tokenModifierNum = encodeTokenModifiers(tokenData.tokenModifiers);
+
+					if (tokenActivity == true) {
+						builder.push(i, openOffset, wordLength, encodeTokenType(kind), tokenModifierNum);
+						console.log(i + ':' + j + '/' + openOffset + ':' + mytoken.surface_form);
+					}
+					openOffset = closeOffset;
+					if (j == kuromojiToken.length - 1) {
+						resolve(builder.build());
+						//const builder = new vscode.SemanticTokensBuilder();
+						//return builder.build();
+					}
+					j++;
+				}
+			});
+
+
+
+
 		});
-		return builder.build();
 	}
+
 
 	private _encodeTokenType(tokenType: string): number {
 		if (tokenTypes.has(tokenType)) {
@@ -80,10 +155,204 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 		}
 		return result;
 	}
-}
 
-function parseText() {
-	return chachedToken;
+
+	morphemeBuilderAll(text: string) {
+		const r: IParsedToken[] = [];
+		//const lines = text?.split(/\r\n|\r|\n/);
+		const builder = new vscode.SemanticTokensBuilder();
+		kuromojiBuilder.build((err: any, tokenizer: any) => {
+			tokenCaching = true;
+			// 辞書がなかったりするとここでエラーになります(´・ω・｀)
+			if (err) {
+				console.dir('Kuromoji initialize error:' + err.message);
+				throw err;
+			}
+			//		for (let i = 0; i < lines.length; i++) {
+			let i = 0;
+			//const line = lines[i];
+
+			// tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
+			const kuromojiToken = tokenizer.tokenize(text);
+
+			//console.dir(kuromojiToken);
+			let lineOffset = 0;
+			let openOffset = 0;
+			let closeOffset = 0;
+
+			for (let j = 0; j < kuromojiToken.length; j++) {
+
+				const mytoken = kuromojiToken[j];
+				if (mytoken.surface_form == '\n') {
+					i++;
+					lineOffset = mytoken.word_position;
+					console.log('line-feed:' + i);
+				}
+				openOffset = mytoken.word_position - lineOffset - 1;
+
+				const wordLength = mytoken.surface_form.length;
+				let tokenActivity = false;
+				let kind = mytoken.pos;
+
+				if (kind == '名詞') kind = 'noun';
+				if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '固有名詞') {
+					kind = 'proper_noun';
+					tokenActivity = true;
+				}
+				if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '代名詞') {
+					kind = 'pronoun';
+					tokenActivity = true;
+				}
+				if (kind == '記号') kind = 'punctuation';
+				if (kind == '動詞') kind = 'verb';
+				if (kind == '助動詞') kind = 'auailiary_verb';
+				if (kind == '助詞') {
+					kind = 'particle'
+					tokenActivity = true;
+				}
+				if (kind == '副詞') kind = 'adverb';
+				if (kind == '感動詞') kind = 'interjection';
+				if (kind == '形容詞') kind = 'adjective';
+
+				closeOffset = openOffset + wordLength;
+				const tokenData = this._parseTextToken(text.substring(openOffset, closeOffset));
+				const tokenModifierNum = encodeTokenModifiers(tokenData.tokenModifiers);
+
+				if (tokenActivity == true) {
+					r.push({
+						line: i,
+						startCharacter: openOffset,
+						length: wordLength,
+						tokenType: kind,
+						tokenModifiers: tokenData.tokenModifiers
+					});
+
+					//console.log(i + ':' + j + '/' + openOffset + ':' + mytoken.surface_form);
+				}
+				openOffset = closeOffset;
+
+				if (j >= kuromojiToken.length - 1) {
+					chachedToken = [];
+					r.forEach((token) => {
+						chachedToken.push(token);
+						const tokenModifierNum = encodeTokenModifiers(tokenData.tokenModifiers);
+						builder.push(token.line, token.startCharacter, token.length, this._encodeTokenType(token.tokenType), tokenModifierNum);
+						tokenCaching = false;
+					});
+				}
+
+			}
+			builder.build();
+			console.log('builder making');
+
+		});
+		console.log('cache changed!');
+	}
+
+	morphemeBuilder(text: string, lineNumber: number) {
+		const r: IParsedToken[] = [];
+		kuromojiBuilder.build((err: any, tokenizer: any) => {
+			lineTokenCaching = true;
+			if (err) {
+				console.dir('Kuromoji initialize error:' + err.message);
+				throw err;
+			}
+			const kuromojiToken = tokenizer.tokenize(text);
+
+			let openOffset = 0;
+			let closeOffset = 0;
+
+			for (let j = 0; j < kuromojiToken.length; j++) {
+
+				const mytoken = kuromojiToken[j];
+				openOffset = mytoken.word_position - 1;
+
+				const wordLength = mytoken.surface_form.length;
+				let tokenActivity = false;
+				let kind = mytoken.pos;
+				if (kind == '名詞') kind = 'noun';
+				if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '固有名詞') {
+					kind = 'proper_noun';
+					tokenActivity = true;
+				}
+				if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '代名詞') {
+					kind = 'pronoun';
+					tokenActivity = true;
+				}
+				if (kind == '記号') kind = 'punctuation';
+				if (kind == '動詞') kind = 'verb';
+				if (kind == '助動詞') kind = 'auailiary_verb';
+				if (kind == '助詞') {
+					kind = 'particle'
+					tokenActivity = true;
+				}
+				if (kind == '副詞') kind = 'adverb';
+				if (kind == '感動詞') kind = 'interjection';
+				if (kind == '形容詞') kind = 'adjective';
+
+				closeOffset = openOffset + wordLength;
+				const tokenData = parseTextToken(text.substring(openOffset, closeOffset));
+				const tokenModifierNum = encodeTokenModifiers(tokenData.tokenModifiers);
+
+
+				//console.log('pushing toke to Builder' + j + '/' + kuromojiToken.length);
+
+				if (tokenActivity == true) {
+					r.push({
+						line: lineNumber,
+						startCharacter: openOffset,
+						length: wordLength,
+						tokenType: kind,
+						tokenModifiers: tokenData.tokenModifiers
+					});
+				}
+				//console.log(lineNumber + '/' + text.length + ':' + j + '/' + j);
+				if (j == kuromojiToken.length - 1) {
+
+					chachedToken = chachedToken.filter((lineNum) => {
+						return (lineNum.line != lineNumber);
+					})
+					r.forEach((token) => {
+						chachedToken.push(token);
+					});
+
+					console.log('cache changed!');
+					lineTokenCaching = false;
+
+					//const builder = new vscode.SemanticTokensBuilder();
+
+					//builder.build();
+
+				}
+				openOffset = closeOffset;
+			}
+		});
+
+	}
+
+	private _parseText(text: string) {
+
+		const lineText = vscode.window.activeTextEditor?.document.lineAt(vscode.window.activeTextEditor?.selection.active.line);
+		if (lineText != undefined && typeof lineText.text == "string" && typeof lineText?.lineNumber == "number" && lineTokenCaching == false) {
+			console.log(lineText);
+			this.morphemeBuilder(lineText.text, lineText.lineNumber);
+
+		}
+
+		if (tokenCaching == false) {
+			this.morphemeBuilderAll(text);
+		}
+		console.log('parse_text');
+		return chachedToken;
+	}
+
+	private _parseTextToken(text: string): { tokenType: string; tokenModifiers: string[]; } {
+		const parts = text.split('.');
+		return {
+			tokenType: parts[0],
+			tokenModifiers: parts.slice(1)
+		};
+	}
 }
 
 function parseTextToken(text: string): { tokenType: string; tokenModifiers: string[]; } {
@@ -116,145 +385,9 @@ function encodeTokenType(tokenType: string): number {
 	return 0;
 }
 
-export async function morphemeBuilderAll(text: string) {
-	const r: IParsedToken[] = [];
-	const lines = text?.split(/\r\n|\r|\n/);
 
-	kuromojiBuilder.build((err: any, tokenizer: any) => {
-		// 辞書がなかったりするとここでエラーになります(´・ω・｀)
-		if (err) {
-			console.dir('Kuromoji initialize error:' + err.message);
-			throw err;
-		}
-		for (let i = 0; i < lines.length; i++) {
-			const line = lines[i];
+let lineTokenCaching = false;
 
-			// tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
-			const kuromojiToken = tokenizer.tokenize(line);
-			//console.dir(kuromojiToken);
-
-			let openOffset = 0;
-			let closeOffset = 0;
-
-			for (let j = 0; j < kuromojiToken.length; j++) {
-
-				const mytoken = kuromojiToken[j];
-				openOffset = mytoken.word_position - 1;
-
-				const wordLength = mytoken.surface_form.length;
-				let tokenActivity = false;
-				let kind = mytoken.pos;
-				if (kind == '名詞') kind = 'noun';
-				if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '固有名詞') {
-					kind = 'proper_noun';
-					tokenActivity = true;
-				}
-				if (kind == '記号') kind = 'punctuation';
-				if (kind == '動詞') kind = 'verb';
-				if (kind == '助動詞') kind = 'auailiary_verb';
-				if (kind == '助詞') {
-					kind = 'particle'
-					tokenActivity = true;
-				}
-				if (kind == '副詞') kind = 'adverb';
-				if (kind == '感動詞') kind = 'interjection';
-				if (kind == '形容詞') kind = 'adjective';
-
-				closeOffset = openOffset + wordLength;
-				const tokenData = parseTextToken(line.substring(openOffset, closeOffset));
-
-				if (tokenActivity == true) {
-					r.push({
-						line: i,
-						startCharacter: openOffset,
-						length: wordLength,
-						tokenType: kind,
-						tokenModifiers: tokenData.tokenModifiers
-					});
-				}
-				console.log(i + '/' + lines.length + ':' + j + '/' + j);
-				if (j == kuromojiToken.length - 1) {
-
-					chachedToken = chachedToken.filter((lineNum) => {
-						return (lineNum.line != i);
-					})
-					r.forEach((token) => {
-						chachedToken.push(token);
-					});
-					console.log('cache changed!');
-
-				}
-				openOffset = closeOffset;
-			}
-		}
-	});
-}
-
-
-export async function morphemeBuilder(text: string, lineNumber: number) {
-	const r: IParsedToken[] = [];
-	kuromojiBuilder.build((err: any, tokenizer: any) => {
-		if (err) {
-			console.dir('Kuromoji initialize error:' + err.message);
-			throw err;
-		}
-		const kuromojiToken = tokenizer.tokenize(text);
-		let openOffset = 0;
-		let closeOffset = 0;
-
-		for (let j = 0; j < kuromojiToken.length; j++) {
-
-			const mytoken = kuromojiToken[j];
-			openOffset = mytoken.word_position - 1;
-
-			const wordLength = mytoken.surface_form.length;
-			let tokenActivity = false;
-			let kind = mytoken.pos;
-			if (kind == '名詞') kind = 'noun';
-			if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '固有名詞') {
-				kind = 'proper_noun';
-				tokenActivity = true;
-			}
-			if (kind == '記号') kind = 'punctuation';
-			if (kind == '動詞') kind = 'verb';
-			if (kind == '助動詞') kind = 'auailiary_verb';
-			if (kind == '助詞') {
-				kind = 'particle'
-				tokenActivity = true;
-			}
-			if (kind == '副詞') kind = 'adverb';
-			if (kind == '感動詞') kind = 'interjection';
-			if (kind == '形容詞') kind = 'adjective';
-
-			closeOffset = openOffset + wordLength;
-			const tokenData = parseTextToken(text.substring(openOffset, closeOffset));
-
-			if (tokenActivity == true) {
-				r.push({
-					line: lineNumber,
-					startCharacter: openOffset,
-					length: wordLength,
-					tokenType: kind,
-					tokenModifiers: tokenData.tokenModifiers
-				});
-			}
-			console.log(lineNumber + '/' + text.length + ':' + j + '/' + j);
-			if (j == kuromojiToken.length - 1) {
-
-				chachedToken = chachedToken.filter((lineNum) => {
-					return (lineNum.line != lineNumber);
-				})
-				r.forEach((token) => {
-					chachedToken.push(token);
-				});
-
-				console.log('cache changed!');
-
-			}
-			openOffset = closeOffset;
-		}
-	});
-}
 
 export function clearChachedToken() {
 	chachedToken = [];

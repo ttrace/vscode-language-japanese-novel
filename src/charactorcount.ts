@@ -11,7 +11,6 @@ import { totalLength, draftRoot } from './compile';
 import simpleGit, { SimpleGit } from 'simple-git';
 import { distance } from 'fastest-levenshtein';
 
-import { morphemeBuilderAll, morphemeBuilder, clearChachedToken } from './tokenize';
 import { editorText } from './editor';
 
 let projectCharacterCountNum = 0;
@@ -285,11 +284,6 @@ export class CharacterCounter {
 
         }
 
-        if (lineText != undefined && typeof lineText.text == "string" && typeof lineText?.lineNumber == "number") {
-            console.log(lineText);
-            morphemeBuilder(lineText.text, lineText.lineNumber);
-        }
-
         delete this.timeoutID;
     }
 
@@ -358,13 +352,6 @@ export class CharacterCounterController {
         this._characterCounter._setEditDistance();
         this._characterCounter._updateCountingObject();
 
-        const editor = window.activeTextEditor;
-        const doc = editor?.document;
-        const text = doc?.getText();
-        if (text != undefined) {
-            clearChachedToken();
-           // morphemeBuilderAll(text);
-        }
     }
 
     private _onSave() {
