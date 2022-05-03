@@ -132,8 +132,8 @@ function launchserver(originEditor: OriginEditor){
         
         s.on("connection", ws => {
             //console.log(previewvariables());
-            ws.on("message", (messageAsString) => {
-                const message = JSON.stringify(messageAsString);
+            ws.on("message", (data, isBinary) => {
+                const message = isBinary ? data : data.toString();
         
                 console.log("Received: " + message);
 
