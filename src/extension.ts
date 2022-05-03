@@ -19,9 +19,9 @@ const output = vscode.window.createOutputChannel("Novel");
 //リソースとなるhtmlファイル
 let html: Buffer;
 let documentRoot: vscode.Uri;
-let WebViewPanel = false;
 
 let servicePort = 8080;
+let isServerRunning = false;
 
 
 //コマンド登録
@@ -29,7 +29,7 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand('Novel.compile-draft', compileDocs));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
-    context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', previewserver));
 
     const characterCounter = new CharacterCounter();
     const controller = new CharacterCounterController(characterCounter);
@@ -70,7 +70,15 @@ export function activate(context: vscode.ExtensionContext): void {
     documentRoot = vscode.Uri.joinPath(context.extensionUri, 'htdocs');
 }
 
-function launchserver(originEditor: OriginEditor){
+function launchserver(originEditor: OriginEditor, shouldOpenWebViewPanel: boolean) {
+    if (isServerRunning) {
+        if (shouldOpenWebViewPanel) {
+            openWebViewPanel();
+        }
+        return;
+    }
+    isServerRunning = true;
+
     //Webサーバの起動。ドキュメントルートはnode_modules/novel-writer/htdocsになる。
     const viewerServer = http.createServer(function(request, response) {
         const Response = {
@@ -116,8 +124,8 @@ function launchserver(originEditor: OriginEditor){
         });
     })
 
-    //もしサーバーが動いていたらポートの番号をずらす
     viewerServer.on("error", (e: NodeJS.ErrnoException) => {
+        //もしサーバーが動いていたらポートの番号をずらす
         if (e.code === "EADDRINUSE") {
             console.log(`Server address (:${servicePort}) in use. Retrying...`);
             setTimeout(() => {
@@ -195,40 +203,40 @@ function launchserver(originEditor: OriginEditor){
 
         publishWebsocketsDelay.presskey(s);
 
-        if(WebViewPanel){
-
-            //    vscode.window.showInformationMessage('Hello, world!');
-            const panel = vscode.window.createWebviewPanel(
-                'preview', // Identifies the type of the webview. Used internally
-                '原稿プレビュー', // Title of the panel displayed to the user
-                vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
-                {
-                    enableScripts: true,
-                } // Webview options. More on these later.
-            );
-
-            panel.webview.html = `<!DOCTYPE html>
-            <html>
-                <head>
-                    <style>
-                    body{
-                        width:100vw;
-                        height:100vh;
-                        overflor:hidden;
-                    }
-                    </style>
-                </head>
-                <body>
-                    <iframe src="http://localhost:${servicePort}" frameBorder="0" style="min-width: 100%; min-height: 100%" />
-                </body>
-            </html>`;
-
-            return s;
+        if (shouldOpenWebViewPanel) {
+            openWebViewPanel();
         }
-
     });
 
     viewerServer.listen(servicePort, "0.0.0.0");    
+}
+
+function openWebViewPanel() {
+    //    vscode.window.showInformationMessage('Hello, world!');
+    const panel = vscode.window.createWebviewPanel(
+        'preview', // Identifies the type of the webview. Used internally
+        '原稿プレビュー', // Title of the panel displayed to the user
+        vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
+        {
+            enableScripts: true,
+        } // Webview options. More on these later.
+    );
+
+    panel.webview.html = `<!DOCTYPE html>
+    <html>
+        <head>
+            <style>
+            body{
+                width:100vw;
+                height:100vh;
+                overflor:hidden;
+            }
+            </style>
+        </head>
+        <body>
+            <iframe src="http://localhost:${servicePort}" frameBorder="0" style="min-width: 100%; min-height: 100%" />
+        </body>
+    </html>`;
 }
 
 function publishwebsockets(socketServer: websockets.Server){
@@ -275,10 +283,14 @@ const publishWebsocketsDelay: any = {
     }
   };
 
-function verticalpreview(){
+function previewserver() {
     const originEditor = vscode.window.activeTextEditor;
-    WebViewPanel = true;
-    launchserver(originEditor);
+    launchserver(originEditor, false);
+}
+
+function verticalpreview() {
+    const originEditor = vscode.window.activeTextEditor;
+    launchserver(originEditor, true);
 /*
 //    vscode.window.showInformationMessage('Hello, world!');
     const panel = vscode.window.createWebviewPanel(
