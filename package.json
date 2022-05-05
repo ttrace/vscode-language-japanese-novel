@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.0.9",
+  "version": "1.1.0-alpha",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -8,7 +8,7 @@
   },
   "icon": "resource/icon.png",
   "engines": {
-    "vscode": "^1.54.0"
+    "vscode": "^1.66.0"
   },
   "main": "out/extension.js",
   "dependencies": {
@@ -17,7 +17,7 @@
     "http": "^0.0.1-security",
     "http-server": "^14.1.0",
     "kuromoji": "^0.1.2",
-    "simple-git": "^3.7.0",
+    "simple-git": "^3.7.1",
     "tree-model": "^1.0.7",
     "ws": "^8.5.0"
   },
@@ -138,14 +138,14 @@
   "devDependencies": {
     "@types/glob": "^7.2.0",
     "@types/mocha": "^9.1.1",
-    "@types/node": "^17.0.25",
+    "@types/node": "^17.0.30",
     "@types/sinon": "^10.0.11",
     "@types/vscode": "^1.66.0",
     "@types/ws": "^8.5.3",
-    "@typescript-eslint/eslint-plugin": "^5.20.0",
-    "@typescript-eslint/parser": "^5.20.0",
+    "@typescript-eslint/eslint-plugin": "^5.21.0",
+    "@typescript-eslint/parser": "^5.21.0",
     "child_process": "^1.0.2",
-    "eslint": "^8.13.0",
+    "eslint": "^8.14.0",
     "fs": "^0.0.1-security",
     "glob": "^8.0.1",
     "http": "^0.0.1-security",
@@ -154,7 +154,7 @@
     "node-levenshtein": "^3.0.7",
     "path": "^0.12.7",
     "sinon": "^13.0.2",
-    "typescript": "^4.6.3",
+    "typescript": "^4.6.4",
     "utf-8-validate": "^5.0.9",
     "util": "^0.12.4",
     "vscode-test": "^1.5.2"

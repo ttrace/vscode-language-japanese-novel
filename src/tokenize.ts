@@ -36,6 +36,7 @@ export function activateTokenizer(context: vscode.ExtensionContext, kuromojiPath
 	});
 
 	context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel' }, new DocumentSemanticTokensProvider(), legend));
+
 }
 
 interface IParsedToken {
@@ -47,6 +48,7 @@ interface IParsedToken {
 }let chachedToken: IParsedToken[] = [];
 
 export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTokensProvider {
+
 	async provideDocumentSemanticTokens(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.SemanticTokens> {
 		//const allTokens = this._parseText(document.getText());
 		return new Promise((resolve, reject) => {
@@ -69,7 +71,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 				// tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
 				const kuromojiToken = tokenizer.tokenize(document.getText());
 
-				//console.dir(kuromojiToken);
+				console.dir(kuromojiToken);
 				let lineOffset = 0;
 				let openOffset = 0;
 				let closeOffset = 0;
@@ -77,15 +79,21 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 				for await (let mytoken of kuromojiToken) {
 
 					mytoken = kuromojiToken[j];
-					if (mytoken.surface_form == '\n') {
-						i++;
-						lineOffset = mytoken.word_position;
-						console.log('line-feed:' + i);
-					}
-					openOffset = mytoken.word_position - lineOffset - 1;
 
 					let wordLength = 0;
 					wordLength = mytoken.surface_form.length;
+
+					if (mytoken.surface_form.match(/\n/)) {
+						i += mytoken.surface_form.match(/\n/g).length;
+						//複数の改行が重なるとKuromojiは'\n\n'のように返す。
+						lineOffset = mytoken.word_position + mytoken.surface_form.length - 1;
+						openOffset = 0;
+						wordLength = 0;
+						console.log('line-feed:' + i + ": " + lineOffset);
+					} else {
+						openOffset = mytoken.word_position - lineOffset - 1;
+					}
+
 					let tokenActivity = false;
 					let kind = mytoken.pos;
 					//console.log(mytoken.surface_form);
@@ -99,15 +107,15 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 						tokenActivity = true;
 					}
 					if (kind == '記号') kind = 'punctuation';
-					if (kind == '動詞') kind = 'verb';
-					if (kind == '助動詞') kind = 'auailiary_verb';
+					if (kind == '動詞') kind = 'verb'; tokenActivity = true;
+					if (kind == '助動詞') kind = 'auailiary_verb'; tokenActivity = true;
 					if (kind == '助詞') {
 						kind = 'particle'
 						tokenActivity = true;
 					}
-					if (kind == '副詞') kind = 'adverb';
-					if (kind == '感動詞') kind = 'interjection';
-					if (kind == '形容詞') kind = 'adjective';
+					if (kind == '副詞') kind = 'adverb'; tokenActivity = true;
+					if (kind == '感動詞') kind = 'interjection'; tokenActivity = true;
+					if (kind == '形容詞') kind = 'adjective'; tokenActivity = true;
 
 					closeOffset = openOffset + wordLength;
 					const tokenData = parseTextToken(document.getText().substring(openOffset, closeOffset));
@@ -126,11 +134,21 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 					j++;
 				}
 			});
-
-
-
-
 		});
+	}
+
+
+	async provideDocumentSemanticTokensEdits(document: vscode.TextDocument, previousResultId: string, token: vscode.CancellationToken): Promise<vscode.SemanticTokens | vscode.SemanticTokensEdits> {
+		//return new Promise((resolve, reject) => {
+		console.log('edit');
+		console.dir("previousResultId" + previousResultId);
+		const resultTokensId = {
+			start: 0,
+			deleteCount: 1,
+			data: [3]
+		};
+		return new vscode.SemanticTokensEdits([], '0');
+		//});
 	}
 
 
