@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.1.0-alpha",
+  "version": "1.1.0-alpha-01",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -10,7 +10,7 @@
   "engines": {
     "vscode": "^1.66.0"
   },
-  "main": "out/extension.js",
+  "main": "dist/extension.js",
   "dependencies": {
     "@types/kuromoji": "^0.1.1",
     "fastest-levenshtein": "^1.0.12",
@@ -22,13 +22,16 @@
     "ws": "^8.5.0"
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
+    "vscode:prepublish": "npm run package-webpack",
     "lint": "eslint . --ext ts",
     "compile": "tsc -p ./",
     "pretest": "npm run compile",
     "vscode:pretest": "npm run compile",
     "watch": "tsc -watch -p ./",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./dist/test/runTest.js",
+    "compile-webpack": "webpack",
+    "test-webpack": "webpack --watch",
+    "package-webpack": "webpack --mode production --devtool hidden-source-map"
   },
   "activationEvents": [
     "onLanguage:novel",
@@ -64,7 +67,7 @@
         "extensions": [
           ".txt"
         ],
-      "configuration": "./novel.language-configuration.json"
+        "configuration": "./novel.language-configuration.json"
       }
     ],
     "grammars": [
@@ -133,17 +136,181 @@
         "id": "native",
         "description": "Annotates a symbol that is implemented natively"
       }
-    ]
+    ],
+    "configurationDefaults": {
+      "novel": {
+        "editor.semanticHighlighting.enabled": true
+      },
+      "editor.semanticTokenColorCustomizations": {
+        "[Default Light+]": {
+          "enabled": true,
+          "rules": {
+            "noun": {
+              "foreground": "#272727"
+            },
+            "noun.dialogue": {
+              "foreground": "#008899"
+            },
+            "proper_noun": {
+              "foreground": "#610000"
+            },
+            "proper_noun.dialogue": {
+              "foreground": "#005ea2",
+              "fontStyle": "bold"
+            },
+            "enum": {
+              "foreground": "#001c78"
+            },
+            "enum.dialogue": {
+              "foreground": "#00b4a8"
+            },
+            "suffix": {
+              "foreground": "#676767"
+            },
+            "suffix.dialogue": {
+              "foreground": "#58adc0"
+            },
+            "personal_pronoun": {
+              "foreground": "#580000"
+            },
+            "personal_pronoun.dialogue": {
+              "foreground": "#005772"
+            },
+            "pronoun": {
+              "foreground": "#9b0000",
+              "fontStyle": "bold"
+            },
+            "pronoun.dialogue": {
+              "foreground": "#0068f0",
+              "fontStyle": "bold"
+            },
+            "punctuation": {
+              "foreground": "#000000"
+            },
+            "punctuation.dialogue": {
+              "foreground": "#284080",
+              "fontStyle": "bold"
+            },
+            "bracket": {
+              "foreground": "#d43c00d3"
+            },
+            "bracket.dialogue": {
+              "foreground": "#9a0b0bd3",
+              "bold": true
+            },
+            "bracket.quote": {
+              "foreground": "#0b1e9ad3"
+            },
+            "adverb": {
+              "foreground": "#b04d02"
+            },
+            "adverb.dialogue": {
+              "foreground": "#306ebe"
+            },
+            "auailiary_verb": {
+              "foreground": "#665687"
+            },
+            "auailiary_verb.dialogue": {
+              "foreground": "#567387"
+            },
+            "verb": {
+              "foreground": "#32204d"
+            },
+            "verb.dialogue": {
+              "foreground": "#005884"
+            },
+            "particle": {
+              "foreground": "#888888"
+            },
+            "particle.dialogue": {
+              "foreground": "#829ea7"
+            },
+            "adjective": {
+              "foreground": "#0771a7"
+            },
+            "interjection": {
+              "foreground": "#ac6404",
+              "fontStyle": "bold"
+            },
+            "interjection.dialogue": {
+              "foreground": "#2283c5",
+              "fontStyle": "bold"
+            },
+            "*.quote":{
+              "italic": true,
+              "bold": true
+            },
+            "*.aozora":{
+              "foreground": "#9d9d9d"
+            },
+            "bracket.aozora":{
+              "foreground": "#c28458"
+            }
+          }
+        },
+        "[Default Dark+]": {
+          "enabled": true,
+          "rules": {
+            "noun": {
+              "foreground": "#e6e6e6"
+            },
+            "proper_noun": {
+              "foreground": "#e7b6b6"
+            },
+            "enum": {
+              "foreground": "#879ce2"
+            },
+            "suffix": {
+              "foreground": "#797e7f"
+            },
+            "pronoun": {
+              "foreground": "#cd4848",
+              "fontStyle": "bold"
+            },
+            "punctuation": {
+              "foreground": "#000000",
+              "fontWeight": "bold"
+            },
+            "adverb": {
+              "foreground": "#965ba8"
+            },
+            "auailiary_verb": {
+              "foreground": "#470fc1"
+            },
+            "verb": {
+              "foreground": "#9b7c40"
+            },
+            "particle": {
+              "foreground": "#688ab2"
+            },
+            "adjective": {
+              "foreground": "#0771a7"
+            },
+            "interjection": {
+              "foreground": "#ac6404",
+              "fontStyle": "bold"
+            },
+            "type": {
+              "foreground": "#00aa00"
+            }
+          }
+        }
+      }
+    }
   },
+
   "devDependencies": {
     "@types/glob": "^7.2.0",
     "@types/mocha": "^9.1.1",
     "@types/node": "^17.0.30",
     "@types/sinon": "^10.0.11",
     "@types/vscode": "^1.66.0",
+    "@types/webpack-env": "^1.16.4",
     "@types/ws": "^8.5.3",
     "@typescript-eslint/eslint-plugin": "^5.21.0",
     "@typescript-eslint/parser": "^5.21.0",
+    "@vscode/test-web": "^0.0.24",
+    "bufferutil": "^4.0.6",
     "child_process": "^1.0.2",
     "eslint": "^8.14.0",
     "fs": "^0.0.1-security",
@@ -154,10 +321,15 @@
     "node-levenshtein": "^3.0.7",
     "path": "^0.12.7",
     "sinon": "^13.0.2",
+    "ts-loader": "^9.2.5",
     "typescript": "^4.6.4",
     "utf-8-validate": "^5.0.9",
     "util": "^0.12.4",
-    "vscode-test": "^1.5.2"
+    "vscode-test": "^1.5.2",
+    "webpack": "^5.52.1",
+    "webpack-cli": "^4.8.0",
+    "webpack-env": "^0.8.0",
+    "xhr2": "^0.2.1"
   },
   "description": "VS Codeの小説執筆を支援する機能拡張です",
   "bugs": {

@@ -9,15 +9,14 @@ const tokenModifiers = new Map<string, number>();
 
 export const legend = (function () {
 	const tokenTypesLegend = [
-		'proper_noun', 'noun', 'keyword', 'punctuation', 'adverb', 'interjection', 'adjective',
-		'particle', 'auailiary_verb', 'verb', 'pronoun', 'enum', 'typeParameter', 'function',
+		'proper_noun', 'noun', 'keyword', 'punctuation', 'bracket', 'adverb', 'interjection', 'adjective',
+		'particle', 'auailiary_verb', 'verb', 'pronoun', 'personal_pronoun', 'enum', 'suffix', 'function',
 		'method', 'decorator', 'macro', 'variable', 'parameter', 'property', 'label'
 	];
 	tokenTypesLegend.forEach((tokenType, index) => tokenTypes.set(tokenType, index));
 
 	const tokenModifiersLegend = [
-		'declaration', 'documentation', 'readonly', 'static', 'abstract', 'deprecated',
-		'modification', 'async'
+		'dialogue', 'quote', 'aozora'
 	];
 	tokenModifiersLegend.forEach((tokenModifier, index) => tokenModifiers.set(tokenModifier, index));
 
@@ -72,11 +71,16 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 				// tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
 				const kuromojiToken = tokenizer.tokenize(document.getText());
 
-//				console.dir(kuromojiToken);
+				console.dir(kuromojiToken);
 				let lineOffset = 0;
 				let openOffset = 0;
 				let closeOffset = 0;
 				let j = 0;
+
+				let isDialogue = false;
+				let isQuote = false;
+				let isMarkedProperNoun = false;
+				let isRuby = false;
 				for await (let mytoken of kuromojiToken) {
 
 					mytoken = kuromojiToken[j];
@@ -90,7 +94,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 						lineOffset = mytoken.word_position + mytoken.surface_form.length - 1;
 						openOffset = 0;
 						wordLength = 0;
-					//	console.log('line-feed:' + i + ": " + lineOffset);
+						//	console.log('line-feed:' + i + ": " + lineOffset);
 					} else {
 						openOffset = mytoken.word_position - lineOffset - 1;
 					}
@@ -107,8 +111,20 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 						kind = 'pronoun';
 						tokenActivity = true;
 					}
-					if (kind == '記号') kind = 'punctuation';
+					if (mytoken.surface_form.match(/^(私|わたし|わたくし|我|われ|あたし|僕|ぼく|俺|おれ|貴方|あなた|あんた|お前|おまえ|君|きみ|てめえ|彼|かれ|彼女|彼女|あいつ|そいつ|こいつ|奴|やつ)$/) && mytoken.pos_detail_1 == '代名詞') {
+						kind = 'personal_pronoun';
+						tokenActivity = true;
+					}
+					if (kind == '記号') kind = 'punctuation'; tokenActivity = true;
+
+					if (mytoken.pos_detail_1.match(/括弧./) || mytoken.surface_form.match(/》/)) {
+						kind = 'bracket'; tokenActivity = true;
+					}
+
 					if (kind == '動詞') kind = 'verb'; tokenActivity = true;
+					if (mytoken.pos_detail_1 == '数') kind = 'enum'; tokenActivity = true;
+					if (mytoken.pos_detail_1 == '接尾') kind = 'suffix'; tokenActivity = true;
+
 					if (kind == '助動詞') kind = 'auailiary_verb'; tokenActivity = true;
 					if (kind == '助詞') {
 						kind = 'particle'
@@ -118,13 +134,48 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 					if (kind == '感動詞') kind = 'interjection'; tokenActivity = true;
 					if (kind == '形容詞') kind = 'adjective'; tokenActivity = true;
 
+					let tokenModifireType = '';
+
+					//会話モディファイア
+					if (mytoken.surface_form == '「') {
+						isDialogue = true;
+					}
+					if (isDialogue == true) {
+						tokenModifireType = 'dialogue';
+					}
+					if (mytoken.surface_form == '」') isDialogue = false;
+
+					//引用モディファイア
+					if (mytoken.surface_form == '『') isQuote = true;
+					if (isQuote == true) {
+						tokenModifireType = 'quote';
+					}
+					if (mytoken.surface_form == '』') isQuote = false;
+
+					//固有名詞モディファイア
+					if (mytoken.surface_form == '〈') isMarkedProperNoun = true;
+					if (isMarkedProperNoun == true) {
+						kind = 'proper_noun';
+					}
+					if (mytoken.surface_form == '〉') isMarkedProperNoun = false;
+
+					//青空モディファイア
+					if (mytoken.surface_form == '《') isMarkedProperNoun = true;
+					if (isMarkedProperNoun == true) {
+						tokenModifireType = 'aozora';
+					}
+					if (mytoken.surface_form == '》') {
+						isMarkedProperNoun = false;
+						kind = 'bracket';
+					}
+
 					closeOffset = openOffset + wordLength;
 					const tokenData = parseTextToken(document.getText().substring(openOffset, closeOffset));
-					const tokenModifierNum = encodeTokenModifiers(tokenData.tokenModifiers);
+					const tokenModifierNum = encodeTokenModifiers([tokenModifireType]);
 
 					if (tokenActivity == true) {
 						builder.push(i, openOffset, wordLength, encodeTokenType(kind), tokenModifierNum);
-					//	console.log(i + ':' + j + '/' + openOffset + ':' + mytoken.surface_form);
+						//	console.log(i + ':' + j + '/' + openOffset + ':' + mytoken.surface_form);
 					}
 					openOffset = closeOffset;
 					if (j == kuromojiToken.length - 1) {
@@ -349,7 +400,7 @@ export function morphemeBuilder(text: string) {
 			i++
 		}
 		const wordPatternRegex = new RegExp(regexString);
-		console.log('Regex'+wordPatternRegex);
+		console.log('Regex' + wordPatternRegex);
 		return regexString;
 	});
 	//});
