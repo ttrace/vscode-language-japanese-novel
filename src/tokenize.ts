@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as kuromoji from 'kuromoji';
 import { text } from 'stream/consumers';
 import { resolve } from 'path';
+import { resolvePtr } from 'dns';
 
 const tokenTypes = new Map<string, number>();
 const tokenModifiers = new Map<string, number>();
@@ -71,7 +72,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 				// tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
 				const kuromojiToken = tokenizer.tokenize(document.getText());
 
-				console.dir(kuromojiToken);
+//				console.dir(kuromojiToken);
 				let lineOffset = 0;
 				let openOffset = 0;
 				let closeOffset = 0;
@@ -89,7 +90,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 						lineOffset = mytoken.word_position + mytoken.surface_form.length - 1;
 						openOffset = 0;
 						wordLength = 0;
-						console.log('line-feed:' + i + ": " + lineOffset);
+					//	console.log('line-feed:' + i + ": " + lineOffset);
 					} else {
 						openOffset = mytoken.word_position - lineOffset - 1;
 					}
@@ -123,7 +124,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 
 					if (tokenActivity == true) {
 						builder.push(i, openOffset, wordLength, encodeTokenType(kind), tokenModifierNum);
-						console.log(i + ':' + j + '/' + openOffset + ':' + mytoken.surface_form);
+					//	console.log(i + ':' + j + '/' + openOffset + ':' + mytoken.surface_form);
 					}
 					openOffset = closeOffset;
 					if (j == kuromojiToken.length - 1) {
@@ -267,93 +268,12 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 		console.log('cache changed!');
 	}
 
-	morphemeBuilder(text: string, lineNumber: number) {
-		const r: IParsedToken[] = [];
-		kuromojiBuilder.build((err: any, tokenizer: any) => {
-			lineTokenCaching = true;
-			if (err) {
-				console.dir('Kuromoji initialize error:' + err.message);
-				throw err;
-			}
-			const kuromojiToken = tokenizer.tokenize(text);
-
-			let openOffset = 0;
-			let closeOffset = 0;
-
-			for (let j = 0; j < kuromojiToken.length; j++) {
-
-				const mytoken = kuromojiToken[j];
-				openOffset = mytoken.word_position - 1;
-
-				const wordLength = mytoken.surface_form.length;
-				let tokenActivity = false;
-				let kind = mytoken.pos;
-				if (kind == '名詞') kind = 'noun';
-				if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '固有名詞') {
-					kind = 'proper_noun';
-					tokenActivity = true;
-				}
-				if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '代名詞') {
-					kind = 'pronoun';
-					tokenActivity = true;
-				}
-				if (kind == '記号') kind = 'punctuation';
-				if (kind == '動詞') kind = 'verb';
-				if (kind == '助動詞') kind = 'auailiary_verb';
-				if (kind == '助詞') {
-					kind = 'particle'
-					tokenActivity = true;
-				}
-				if (kind == '副詞') kind = 'adverb';
-				if (kind == '感動詞') kind = 'interjection';
-				if (kind == '形容詞') kind = 'adjective';
-
-				closeOffset = openOffset + wordLength;
-				const tokenData = parseTextToken(text.substring(openOffset, closeOffset));
-				const tokenModifierNum = encodeTokenModifiers(tokenData.tokenModifiers);
-
-
-				//console.log('pushing toke to Builder' + j + '/' + kuromojiToken.length);
-
-				if (tokenActivity == true) {
-					r.push({
-						line: lineNumber,
-						startCharacter: openOffset,
-						length: wordLength,
-						tokenType: kind,
-						tokenModifiers: tokenData.tokenModifiers
-					});
-				}
-				//console.log(lineNumber + '/' + text.length + ':' + j + '/' + j);
-				if (j == kuromojiToken.length - 1) {
-
-					chachedToken = chachedToken.filter((lineNum) => {
-						return (lineNum.line != lineNumber);
-					})
-					r.forEach((token) => {
-						chachedToken.push(token);
-					});
-
-					console.log('cache changed!');
-					lineTokenCaching = false;
-
-					//const builder = new vscode.SemanticTokensBuilder();
-
-					//builder.build();
-
-				}
-				openOffset = closeOffset;
-			}
-		});
-
-	}
 
 	private _parseText(text: string) {
-
 		const lineText = vscode.window.activeTextEditor?.document.lineAt(vscode.window.activeTextEditor?.selection.active.line);
 		if (lineText != undefined && typeof lineText.text == "string" && typeof lineText?.lineNumber == "number" && lineTokenCaching == false) {
 			console.log(lineText);
-			this.morphemeBuilder(lineText.text, lineText.lineNumber);
+			morphemeBuilder(lineText.text);
 
 		}
 
@@ -410,4 +330,27 @@ let lineTokenCaching = false;
 export function clearChachedToken() {
 	chachedToken = [];
 
+}
+
+export function morphemeBuilder(text: string) {
+	//return new Promise((resolve, reject) => {
+	kuromojiBuilder.build(async (err: any, tokenizer: any) => {
+		lineTokenCaching = true;
+		if (err) {
+			console.dir('Kuromoji initialize error:' + err.message);
+			throw err;
+		}
+		const kuromojiToken = tokenizer.tokenize(text);
+		let regexString = '';
+		let i = 0;
+		for await (let mytoken of kuromojiToken) {
+			mytoken = kuromojiToken[i];
+			regexString += '(' + mytoken.surface_form + ')|';
+			i++
+		}
+		const wordPatternRegex = new RegExp(regexString);
+		console.log('Regex'+wordPatternRegex);
+		return regexString;
+	});
+	//});
 }

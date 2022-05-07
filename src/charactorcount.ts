@@ -5,11 +5,12 @@ import * as path from 'path';
 import { draftsObject } from './compile';
 import * as TreeModel from 'tree-model';
 
-import { window, Disposable, StatusBarAlignment, StatusBarItem, TextDocument, workspace, DocumentHighlight } from 'vscode';
+import { window, Disposable, StatusBarAlignment, StatusBarItem, TextDocument, workspace, languages } from 'vscode';
 
 import { totalLength, draftRoot } from './compile';
 import simpleGit, { SimpleGit } from 'simple-git';
 import { distance } from 'fastest-levenshtein';
+import { morphemeBuilder } from './tokenize';
 
 import { editorText } from './editor';
 
@@ -341,6 +342,17 @@ export class CharacterCounterController {
     private _onEvent() {
         this._characterCounter.updateCharacterCount();
         if (this._characterCounter.ifEditDistance) this._characterCounter._updateEditDistanceDelay();
+        /*
+        const lineText = window.activeTextEditor?.document.lineAt(window.activeTextEditor?.selection.active.line);
+        console.log(lineText);
+        if(typeof lineText?.text == 'string'){
+            const tokenReg = morphemeBuilder(lineText.text);
+            if(typeof tokenReg == 'string'){
+                const wordReg = new RegExp(tokenReg);
+                languages.setLanguageConfiguration('novel', {wordPattern: wordReg});
+            }
+        }
+        */
     }
 
     private _onFocusChanged() {
