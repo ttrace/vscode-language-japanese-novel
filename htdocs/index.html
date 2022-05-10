@@ -91,7 +91,12 @@
 
             if (previewsettings.vscodeTheme.kind == 2) {
                 $('body').addClass('vscode-dark');
+                $('body').removeClass('vscode-light');
+            } else if (previewsettings.vscodeTheme.kind == 1) {
+                $('body').addClass('vscode-light');
+                $('body').removeClass('vscode-dark');
             } else {
+                $('body').removeClass('vscode-light');
                 $('body').removeClass('vscode-dark');
             }
 

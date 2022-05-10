@@ -45,6 +45,12 @@ body.vscode-dark {
   background-color: rgb(37, 37, 37);
 }
 
+body.vscode-light {
+  color: black;
+  background-color: white;
+}
+
+
 h2 {
   /* フォント */
   font-weight: Demibold;
@@ -236,6 +242,15 @@ div#draft {
   background-position: right 0px;
 }
 
+.vscode-dark div#draft {
+  background-image: linear-gradient(to right, rgba(128, 128, 128, 0.5) 0.5pt, rgba(0, 0, 128, 0.05) 10em);
+}
+
+.vscode-light div#draft {
+  background-image: linear-gradient(to right, rgba(206, 206, 206, 0.5) 0.5pt, rgba(255, 255, 255, 0.05) 10em);
+}
+
+
 p {
   background-image: linear-gradient(rgba(128, 128, 128, 1) 0.5pt, transparent 1pt),
     linear-gradient(to right, rgba(128, 128, 128, 1) 0.5pt, rgba(0, 0, 50, 0.05) 1pt);
@@ -244,6 +259,17 @@ p {
   background-position: right 0px,
     right 0px;
 }
+
+.vscode-light p{
+  background-image: linear-gradient(rgb(193, 193, 193) 0.5pt, transparent 1pt),
+linear-gradient(to right, rgb(193, 193, 193) 0.5pt, transparent 1pt)
+}
+
+.vscode-dark p{
+  background-image: linear-gradient(rgb(56, 56, 56) 0.5pt, transparent 1pt),
+linear-gradient(to right, rgb(56, 56, 56) 0.5pt, transparent 1pt)
+}
+
 
 span.comment {
   display: block;
