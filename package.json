@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.1.0-alpha-01",
+  "version": "1.1.0-alpha-04",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -80,22 +80,22 @@
     "configuration": {
       "title": "縦書きプレビュー設定",
       "properties": {
-        "Novel.preview.font-family": {
+        "Novel.preview.fontFamily": {
           "type": "string",
           "default": "serif",
           "description": "プレビュー用のフォント名を入力してください。 \ne.g. \"UD Digi Kyokasho NK-R\",\"ヒラギノ明朝 ProN W3\", \"HiraMinProN-W3\", serif, sans-serif;"
         },
-        "Novel.preview.fontsize": {
+        "Novel.preview.fontSize": {
           "type": "string",
           "default": "14pt",
           "description": "文字の基本サイズを入力してください。利用できる単位は、pt、mm、em、rem、px、vh、vw、qの8種類です"
         },
-        "Novel.preview.linelength": {
+        "Novel.preview.lineLength": {
           "type": "number",
           "default": "40",
           "description": "一行の文字数を指定してください"
         },
-        "Novel.preview.linesperpage": {
+        "Novel.preview.linesPerPage": {
           "type": "number",
           "default": "10",
           "description": "1ページの行数を指定してください"
@@ -108,7 +108,7 @@
           ],
           "description": "テキストファイルを結合する際に、フォルダーの区切り文字を指定してください（実装中）"
         },
-        "Novel.preview.userregex": {
+        "Novel.preview.userRegex": {
           "type": "array",
           "default": [],
           "description": "正規表現でHTML出力を調整することができます。複数の処理を行う場合は配列を増やしてください。\n（例） [\"い\", \"<span class='small'>ゐ</span>]\",[\"<p>[^「](.+?)</p>\",\"<p>　$1</p>\"], [ RegExp , Str ]）"
@@ -146,16 +146,16 @@
           "enabled": true,
           "rules": {
             "noun": {
-              "foreground": "#272727"
+              "foreground": "#4e549a"
             },
             "noun.dialogue": {
-              "foreground": "#008899"
+              "foreground": "#20a23a"
             },
             "proper_noun": {
-              "foreground": "#610000"
+              "foreground": "#0041cc"
             },
             "proper_noun.dialogue": {
-              "foreground": "#005ea2",
+              "foreground": "#004b70",
               "fontStyle": "bold"
             },
             "enum": {
@@ -177,7 +177,7 @@
               "foreground": "#005772"
             },
             "pronoun": {
-              "foreground": "#9b0000",
+              "foreground": "#34009b",
               "fontStyle": "bold"
             },
             "pronoun.dialogue": {
@@ -205,25 +205,25 @@
               "foreground": "#b04d02"
             },
             "adverb.dialogue": {
-              "foreground": "#306ebe"
+              "foreground": "#30be91"
             },
             "auailiary_verb": {
-              "foreground": "#665687"
+              "foreground": "#da05ff"
             },
             "auailiary_verb.dialogue": {
               "foreground": "#567387"
             },
             "verb": {
-              "foreground": "#32204d"
+              "foreground": "#8800ff"
             },
             "verb.dialogue": {
-              "foreground": "#005884"
+              "foreground": "#7fad00"
             },
             "particle": {
-              "foreground": "#888888"
+              "foreground": "#0000ff"
             },
             "particle.dialogue": {
-              "foreground": "#829ea7"
+              "foreground": "#059f2e"
             },
             "adjective": {
               "foreground": "#0771a7"
@@ -233,17 +233,18 @@
               "fontStyle": "bold"
             },
             "interjection.dialogue": {
-              "foreground": "#2283c5",
+              "foreground": "#20b336",
               "fontStyle": "bold"
             },
-            "*.quote":{
+            "*.quote": {
               "italic": true,
               "bold": true
             },
-            "*.aozora":{
-              "foreground": "#9d9d9d"
+            "*.aozora": {
+              "foreground": "#9d9d9d",
+              "italic": true
             },
-            "bracket.aozora":{
+            "bracket.aozora": {
               "foreground": "#c28458"
             }
           }
@@ -252,58 +253,121 @@
           "enabled": true,
           "rules": {
             "noun": {
-              "foreground": "#e6e6e6"
+              "foreground": "#77c4fc"
+            },
+            "noun.dialogue": {
+              "foreground": "#1dfcbd"
             },
             "proper_noun": {
-              "foreground": "#e7b6b6"
+              "foreground": "#5d8ffb"
+            },
+            "proper_noun.dialogue": {
+              "foreground": "#0efd52",
+              "fontStyle": "standard"
             },
             "enum": {
-              "foreground": "#879ce2"
+              "foreground": "#8fa4e9"
+            },
+            "enum.dialogue": {
+              "foreground": "#02d4c6"
             },
             "suffix": {
-              "foreground": "#797e7f"
+              "foreground": "#9489db"
+            },
+            "suffix.dialogue": {
+              "foreground": "#4efab0"
+            },
+            "personal_pronoun": {
+              "foreground": "#83c1ff"
+            },
+            "personal_pronoun.dialogue": {
+              "foreground": "#00aade"
             },
             "pronoun": {
-              "foreground": "#cd4848",
+              "foreground": "#6767ff",
+              "fontStyle": "bold"
+            },
+            "pronoun.dialogue": {
+              "foreground": "#00c0f0",
               "fontStyle": "bold"
             },
             "punctuation": {
-              "foreground": "#000000",
-              "fontWeight": "bold"
+              "foreground": "#ffffff"
+            },
+            "punctuation.dialogue": {
+              "foreground": "#c7ffca",
+              "fontStyle": "bold"
+            },
+            "bracket": {
+              "foreground": "#d43c00d3"
+            },
+            "bracket.dialogue": {
+              "foreground": "#ff9900d3",
+              "bold": true
+            },
+            "bracket.quote": {
+              "foreground": "#5469f1d3"
             },
             "adverb": {
-              "foreground": "#965ba8"
+              "foreground": "#ff882d"
+            },
+            "adverb.dialogue": {
+              "foreground": "#30be80"
             },
             "auailiary_verb": {
-              "foreground": "#470fc1"
+              "foreground": "#fdb5ff"
+            },
+            "auailiary_verb.dialogue": {
+              "foreground": "#22ca73"
             },
             "verb": {
-              "foreground": "#9b7c40"
+              "foreground": "#fc50ff"
+            },
+            "verb.dialogue": {
+              "foreground": "#29ff9b"
             },
             "particle": {
-              "foreground": "#688ab2"
+              "foreground": "#03cccf"
+            },
+            "particle.dialogue": {
+              "foreground": "#b7f0bc"
             },
             "adjective": {
               "foreground": "#0771a7"
+            },
+            "adjective.dialogue": {
+              "foreground": "#07a74c"
             },
             "interjection": {
               "foreground": "#ac6404",
               "fontStyle": "bold"
             },
-            "type": {
-              "foreground": "#00aa00"
+            "interjection.dialogue": {
+              "foreground": "#22c54b",
+              "fontStyle": "bold"
+            },
+            "*.quote": {
+              "italic": true,
+              "bold": true
+            },
+            "*.aozora": {
+              "foreground": "#807e7e",
+              "italic": true
+            },
+            "bracket.aozora": {
+              "foreground": "#c28458"
             }
           }
         }
       }
     }
   },
-
   "devDependencies": {
     "@types/glob": "^7.2.0",
     "@types/mocha": "^9.1.1",
     "@types/node": "^17.0.30",
     "@types/sinon": "^10.0.11",
+    "@types/text-encoding": "^0.0.36",
     "@types/vscode": "^1.66.0",
     "@types/webpack-env": "^1.16.4",
     "@types/ws": "^8.5.3",
@@ -321,6 +385,7 @@
     "node-levenshtein": "^3.0.7",
     "path": "^0.12.7",
     "sinon": "^13.0.2",
+    "text-encoding": "^0.7.0",
     "ts-loader": "^9.2.5",
     "typescript": "^4.6.4",
     "utf-8-validate": "^5.0.9",

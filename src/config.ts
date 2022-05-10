@@ -40,17 +40,18 @@ export function getConfig() : NovelSettings {
     const config = vscode.workspace.getConfiguration('Novel');
 
     const lineHeightRate    = 1.75;
-    const fontFamily        = config.get<string>('preview.font-family', 'serif');
-    const fontSize          = config.get<FontSize>('preview.fontsize', '14pt' as FontSize);
+    const fontFamily        = config.get<string>('preview.fontFamily', 'serif');
+    const fontSize          = config.get<FontSize>('preview.fontSize', '14pt' as FontSize);
     const numFontSize       = parseFontSizeNum(fontSize, 14);
     const unitOfFontSize    = parseUnitOfFontSize(fontSize, 'pt');
-    const lineLength        = config.get<number>('preview.linelength', 40);
-    const linesPerPage      = config.get<number>('preview.linesperpage', 10);
-    const pageWidth         = `${linesPerPage * numFontSize * lineHeightRate * 1.003}${unitOfFontSize}`;
+    const lineLength        = config.get<number>('preview.lineLength', 40);
+    const linesPerPage      = config.get<number>('preview.linesPerPage', 10);
+    const pageWidth         = `${linesPerPage * numFontSize * lineHeightRate}${unitOfFontSize}`;
     const pageHeight        = `${lineLength * numFontSize}${unitOfFontSize}`;
     const lineHeight        = `${numFontSize * lineHeightRate}${unitOfFontSize}`;
-    const userRegex         = config.get<Array<[string, string]>>('preview.userregex', []);
+    const userRegex         = config.get<Array<[string, string]>>('preview.userRegex', []);
     const separator         = config.get<string>('compile.separator', '＊');
+    const vscodeTheme      = vscode.window.activeColorTheme;
 
     const novelSettings = {
         lineHeightRate,
@@ -64,7 +65,8 @@ export function getConfig() : NovelSettings {
         pageHeight    ,
         lineHeight    ,
         userRegex     ,
-        separator
+        separator     ,
+        vscodeTheme
     }
     return novelSettings;
 }

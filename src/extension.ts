@@ -11,8 +11,10 @@ import { draftsObject} from './compile'; // filelist オブジェクトもある
 import {CharacterCounter, CharacterCounterController} from './charactorcount';
 import { editorText, OriginEditor } from './editor'
 import { activateTokenizer } from './tokenize'
+import * as textEncoding from 'text-encoding'
 
 const output = vscode.window.createOutputChannel("Novel");
+const TextDecoder = textEncoding.TextDecoder;
 //リソースとなるhtmlファイル
 //let html: Buffer;
 let documentRoot: vscode.Uri;
@@ -134,19 +136,20 @@ function launchserver(originEditor: OriginEditor){
         
         s.on("connection", ws => {
             //console.log(previewvariables());
-            ws.on("message", (messageAsString) => {
-                const message = JSON.stringify(messageAsString);
-        
+            ws.on("message", (messageRaw, isBinary) => {
+                //const messageAsString = JSON.stringify(messageRaw);
+                const message = isBinary ? messageRaw : messageRaw.toString();
+
                 console.log("Received: " + message);
 
         
-                if (message === "hello") {
+                if (message == "hello") {
                     ws.send( JSON.stringify(getConfig()));
-                    //ws.send( editorText());
-                } else if (message === "givemedata"){
+                    ws.send( editorText(originEditor));
+                } else if (message == "givemedata"){
                     console.log("sending body");
                     ws.send( editorText(originEditor));
-                } else if (message === "giveMeObject"){
+                } else if (message == "giveMeObject"){
                     const sendingObjects = draftsObject(draftRoot());
                     console.log('send:',sendingObjects);
                     ws.send( JSON.stringify(sendingObjects));
@@ -219,7 +222,6 @@ function launchserver(originEditor: OriginEditor){
 
         return s;
     }
-    
 }
 
 

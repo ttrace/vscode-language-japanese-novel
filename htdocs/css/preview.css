@@ -1,315 +1,279 @@
 @charset "UTF-8";
+
 html {
-/* 組み方向 */
--epub-writing-mode: vertical-rl;
--ms-writing-mode: tb-rl;
-writing-mode: vertical-rl;
-orphans: 1;
-widows: 1;
+  /* 組み方向 */
+  -epub-writing-mode: vertical-rl;
+  -ms-writing-mode: tb-rl;
+  writing-mode: vertical-rl;
+  orphans: 1;
+  widows: 1;
 }
 
 * {
-margin: 0;
-padding: 0;
+  margin: 0;
+  padding: 0;
 }
-
-@page {
-size: 105mm 148mm;
-width: 88mm;
-/*  width: calc(84mm - 1q); */
-height: 110mm;
-margin-top: 20mm;
-margin-bottom: auto;
-margin-left: auto;
-margin-right: auto;
-/* 以下、マージンボックスに継承される */
-font-size: 6pt;
-font-family: "游明朝", "YuMincho", serif;
-/* 本来不要（<span class="smaller"><span class="smaller">ルート要素の指定が継承される</span></span>）だが、現時点のvivliostyle.jsの制限により必要 */
-vertical-align: top;
-}
-
-@page :left {
-margin-right: 10mm;
-@top-left {
-    content: counter(page) "  <$projecttitle>";
-    margin-left: 12q;
-    margin-top: 135mm;
-    writing-mode: horizontal-tb;
-    /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
-}
-}
-@page :right {
-margin-right: 14mm;
-/* border-bottom: 1pt solid black; */
-/* 右下ノンブル */
-@top-right {
-    content: "<$fullname>　 "counter(page);
-    margin-right: 12q;
-    margin-top: 135mm;
-    writing-mode: horizontal-tb;
-    /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
-}
-
 
 html {
-font-family: "游明朝", "YuMincho", serif;
-font-weight: Medium;
-text-align: justify;
+  font-family: "游明朝", "YuMincho", serif;
+  font-weight: Medium;
+  text-align: justify;
 }
 
-#draft{
+#draft {
   height: calc(100vh - 2em);
 }
 
 h1 {
-/* フォント */
-font-weight: Extrabold;
-/* フォントサイズ */
-font-size: 24q;
-/* 字下げ */
-text-indent: 0;
-/* 直後の改ページ・改段禁止 */
-page-break-before: always;
-page-break-after: always;
-line-height: 42q;
-letter-spacing: 0.25em;
-display: flex;
-align-items: center;
+  /* フォント */
+  font-weight: Extrabold;
+  /* フォントサイズ */
+  font-size: 24q;
+  /* 字下げ */
+  text-indent: 0;
+  /* 直後の改ページ・改段禁止 */
+  page-break-before: always;
+  page-break-after: always;
+  line-height: 42q;
+  letter-spacing: 0.25em;
+  display: flex;
+  align-items: center;
+}
+
+body.vscode-dark {
+  color: white;
+  background-color: rgb(37, 37, 37);
 }
 
 h2 {
-/* フォント */
-font-weight: Demibold;
-/* フォントサイズ */
-font-size: 16q;
-/* 字下げ */
-text-indent: 3em;
-/* 直後の改ページ・改段禁止 */
-page-break-before: always;
-page-break-after: avoid;
-line-height: 42q;
-margin-left: 2em;
+  /* フォント */
+  font-weight: Demibold;
+  /* フォントサイズ */
+  font-size: 16q;
+  /* 字下げ */
+  text-indent: 3em;
+  /* 直後の改ページ・改段禁止 */
+  page-break-before: always;
+  page-break-after: avoid;
+  line-height: 42q;
+  margin-left: 2em;
 }
 
 h2.part {
-width: 80mm;
-padding: 0mm 35mm;
-font-weight: bold;
-font-size: 16q;
-page-break-before: always;
-page-break-after: always;
-margin-left: 4em;
+  width: 80mm;
+  padding: 0mm 35mm;
+  font-weight: bold;
+  font-size: 16q;
+  page-break-before: always;
+  page-break-after: always;
+  margin-left: 4em;
 }
 
-h1 + h2 {
-margin-right: 16pt;
+h1+h2 {
+  margin-right: 16pt;
 }
 
-ruby > rt {
-font-size: 6.5q;
+ruby>rt {
+  font-size: 6.5q;
 }
 
 p {
   /* line-height: 1.65; */
   text-indent: 0em;
   hanging-punctuation: force-end;
-  line-break:strict;
+  line-break: strict;
   page-break-inside: auto;
 }
 
-  p.goth {
+p.goth {
   margin-top: 3em;
   font-family: "游ゴシック", "YuGothic", san-serif;
   margin-block-start: 1em;
   margin-block-end: 1em;
-  }
+}
 
-  p.align-rb {
+p.align-rb {
   text-align: right;
-  }
+}
 
-  p.goth + p.goth {
+p.goth+p.goth {
   margin-block-start: -1em;
-  }
+}
 
-  div.codes {
+div.codes {
   display: inline-block;
   margin: 3em 1em;
   writing-mode: horizontal-tb;
   padding: 1em;
   font-family: "Courier", monospace;
   font-size: 0.8em;
-  }
+}
 
 div.codes p {
-text-orientation: sideways;
+  text-orientation: sideways;
 }
 
 p.star {
-text-indent: 3em;
-margin-right: 16pt;
-margin-left: 16pt;
+  text-indent: 3em;
+  margin-right: 16pt;
+  margin-left: 16pt;
 }
 
 hr {
-border: none;
-border-right: 1pt solid black;
-height: 6em;
-margin: auto 8.5pt;
+  border: none;
+  border-right: 1pt solid black;
+  height: 6em;
+  margin: auto 8.5pt;
 }
 
 /* 縦中横 */
 .tcy {
--webkit-text-combine: horizontal;
-text-combine: horizontal;
--ms-text-combine-horizontal: all;
-text-combine-horizontal: digit 2;
-text-combine-upright: digit 2;
+  -webkit-text-combine: horizontal;
+  text-combine: horizontal;
+  -ms-text-combine-horizontal: all;
+  text-combine-horizontal: digit 2;
+  text-combine-upright: digit 2;
 }
 
 /* 圏点（<span class="smaller">ゴマ</span>） */
 em.sesame_dot {
-font-style: normal;
--webkit-text-emphasis-style: sesame;
-text-emphasis-style: sesame;
+  font-style: normal;
+  -webkit-text-emphasis-style: sesame;
+  text-emphasis-style: sesame;
 }
 
 /*著作者*/
 .author {
-position: absolute;
-bottom: 0;
-font-size: 8.5pt;
-margin-top: 50pt;
-letter-spacing: normal;
+  position: absolute;
+  bottom: 0;
+  font-size: 8.5pt;
+  margin-top: 50pt;
+  letter-spacing: normal;
 }
 
 /*画像＋キャプション*/
 figure {
-display: block;
-width: 236pt;
--ms-writing-mode: lr-tb;
--webkit-writing-mode: horizontal-tb;
-writing-mode: horizontal-tb;
+  display: block;
+  width: 236pt;
+  -ms-writing-mode: lr-tb;
+  -webkit-writing-mode: horizontal-tb;
+  writing-mode: horizontal-tb;
 }
 
 figure img {
-width: 100%;
-height: auto;
-vertical-align: bottom;
+  width: 100%;
+  height: auto;
+  vertical-align: bottom;
 }
 
 figcaption {
-text-align: left;
-font-size: 7pt;
+  text-align: left;
+  font-size: 7pt;
 }
 
 /*奥付*/
 .colophon {
-font-size: 7pt;
-margin-right: 48pt;
+  font-size: 7pt;
+  margin-right: 48pt;
 }
+
 /* 級さげ */
-span.smaller{
-    font-size:6.5pt
+span.smaller {
+  font-size: 6.5pt
 }
 
 div.comment {
-  display:none;
+  display: none;
 }
 
 p.blank {
-  color:transparent;
+  color: transparent;
 }
 
-@media screen{
+
 body {
-      writing-mode: vertical-rl;
-      overflow-y:hidden;
-      padding:0;
-      background-color:rgb(10,10,10);
-color:white;
+  writing-mode: vertical-rl;
+  overflow-y: hidden;
+  padding: 0;
+}
+
+#cursor {
+  background-color: rgb(197, 197, 197);
+  animation-duration: 0.5s;
+  animation-name: cursorAnimation;
+  animation-iteration-count: infinite;
+}
+
+p {
+  margin: 0 0 0 0;
+  vertical-align: middle;
+}
+
+em.side-dot {
+  font-style: normal;
+  text-emphasis: filled sesame rgb(128, 128, 128);
+  -webkit-text-emphasis: filled sesame rgb(128, 128, 128);
+}
+
+span.tcy {
+  text-combine: horizontal;
+  -webkit-text-combine: horizontal;
+}
+
+@keyframes cursorAnimation {
+  from {
+    background-color: rgba(66, 66, 66, 0);
   }
-  
-  #cursor {
-      background-color: rgb(197, 197, 197);
-      animation-duration: 0.5s;
-      animation-name: cursorAnimation;
-      animation-iteration-count: infinite;
+
+  to {
+    background-color: rgba(125, 125, 125, 0.7);
   }
+}
 
-  p {
-      margin:0 0 0 0;
-      vertical-align: middle;
-  }
-    
-  em.side-dot {
-      font-style: normal;
-      text-emphasis: filled sesame rgb(128,128,128);
-      -webkit-text-emphasis: filled sesame rgb(128,128,128);
-  }
-  
-  span.tcy {
-      text-combine: horizontal;
-      -webkit-text-combine:horizontal;
-  }
+div#draft {
+  background-image: linear-gradient(to right, rgba(128, 128, 128, 0.5) 0.5pt, rgba(0, 0, 128, 0.05) 10em);
+  background-repeat: repeat-x;
+  background-position: right 0px;
+}
 
-  @keyframes cursorAnimation {
-          from {
-              background-color: rgba(66,66,66,0);
-          }
-      
-          to {
-              background-color: rgba(125,125,125,0.7);
-          }
-      }
+p {
+  background-image: linear-gradient(rgba(128, 128, 128, 1) 0.5pt, transparent 1pt),
+    linear-gradient(to right, rgba(128, 128, 128, 1) 0.5pt, rgba(0, 0, 50, 0.05) 1pt);
+  background-repeat: repeat,
+    repeat;
+  background-position: right 0px,
+    right 0px;
+}
 
-    body{
-        background-image:   linear-gradient(to right, rgba(50, 50, 50, 0.5) 0.5pt, rgba(0, 0, 50, 0.05) 10em);
-        background-repeat:  repeat-x;
-        background-position: right 0px;
-    }
-    p{
-        background-image:   linear-gradient( rgba(50, 50, 50, 1) 0.5pt, transparent 1pt),
-                            linear-gradient(to right, rgba(50, 50, 50, 1) 0.5pt, rgba(0, 0, 50, 0.05) 1pt);
-        background-repeat:  repeat,
-                            repeat;
-        background-position: right 0px,
-                            right 0px;
-    }
+span.comment {
+  display: block;
+  border-radius: 1em;
+  border: 1.5pt solid rgba(70, 70, 00, 0.9);
+  padding: 0.25em 0.25em;
+  position: absolute;
+  margin-right: -3em;
+  margin-top: 0.5em;
+  background-color: rgba(50, 50, 00, 0.5);
+  max-width: 20em;
+}
 
-  
-    span.comment{
-      display:block;
-      border-radius:1em;
-      border:1.5pt solid rgba(70,70,00,0.9);
-      padding:0.25em 0.25em;
-      position:absolute;
-      margin-right: -3em;
-      margin-top: 0.5em;
-      background-color:rgba(50,50,00,0.5);
-      max-width: 20em;
-    }
+span.comment::before {
+  content: '';
+  position: absolute;
+  right: 1em;
+  top: -15px;
+  display: block;
+  width: 0;
+  height: 0;
+  border-right: 15px solid transparent;
+  border-bottom: 15px solid rgba(70, 70, 00, 0.9);
+  border-left: 15px solid transparent;
+}
 
-    span.comment::before{
-      content: '';
-      position: absolute;
-      right: 1em;
-      top: -15px;
-      display: block;
-      width: 0;
-      height: 0;
-      border-right: 15px solid transparent;
-      border-bottom: 15px solid rgba(70,70,00,0.9);
-      border-left: 15px solid transparent;
-    }
-
-    span.commentbody{
-        margin:0.5em 1em;
-        writing-mode:lr-tb;
-        font-family:sans-serif;
-        font-size:0.8em;
-        line-height:1;
-    }
-
+span.commentbody {
+  margin: 0.5em 1em;
+  writing-mode: lr-tb;
+  font-family: sans-serif;
+  font-size: 0.8em;
+  line-height: 1;
 }

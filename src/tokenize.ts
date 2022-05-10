@@ -82,18 +82,24 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 				let isMarkedProperNoun = false;
 				let isRuby = false;
 				for await (let mytoken of kuromojiToken) {
-
+					let nextToken = [];
 					mytoken = kuromojiToken[j];
+					if (j <= kuromojiToken.length - 1) {
+						nextToken = kuromojiToken[j + 1];
+					}
 
 					let wordLength = 0;
 					wordLength = mytoken.surface_form.length;
 
+					//改行処理
 					if (mytoken.surface_form.match(/\n/)) {
 						i += mytoken.surface_form.match(/\n/g).length;
 						//複数の改行が重なるとKuromojiは'\n\n'のように返す。
 						lineOffset = mytoken.word_position + mytoken.surface_form.length - 1;
 						openOffset = 0;
 						wordLength = 0;
+						isRuby = false;
+						isQuote = false;
 						//	console.log('line-feed:' + i + ": " + lineOffset);
 					} else {
 						openOffset = mytoken.word_position - lineOffset - 1;
@@ -117,13 +123,13 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 					}
 					if (kind == '記号') kind = 'punctuation'; tokenActivity = true;
 
-					if (mytoken.pos_detail_1.match(/括弧./) || mytoken.surface_form.match(/》/)) {
+					if (mytoken.pos_detail_1.match(/括弧./) || mytoken.surface_form.match(/(》|［＃「)/)) {
 						kind = 'bracket'; tokenActivity = true;
 					}
 
 					if (kind == '動詞') kind = 'verb'; tokenActivity = true;
 					if (mytoken.pos_detail_1 == '数') kind = 'enum'; tokenActivity = true;
-					if (mytoken.pos_detail_1 == '接尾') kind = 'suffix'; tokenActivity = true;
+					if (kind == 'noun' && mytoken.pos_detail_1 == '接尾') kind = 'suffix'; tokenActivity = true;
 
 					if (kind == '助動詞') kind = 'auailiary_verb'; tokenActivity = true;
 					if (kind == '助詞') {
@@ -133,6 +139,10 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 					if (kind == '副詞') kind = 'adverb'; tokenActivity = true;
 					if (kind == '感動詞') kind = 'interjection'; tokenActivity = true;
 					if (kind == '形容詞') kind = 'adjective'; tokenActivity = true;
+
+					if (kind == 'noun' && mytoken.pos_detail_1 == 'サ変接続' && nextToken.conjugated_type.match(/^サ変/)) {
+						kind = 'verb';
+					}
 
 					let tokenModifireType = '';
 
@@ -159,13 +169,23 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 					}
 					if (mytoken.surface_form == '〉') isMarkedProperNoun = false;
 
-					//青空モディファイア
-					if (mytoken.surface_form == '《') isMarkedProperNoun = true;
-					if (isMarkedProperNoun == true) {
+					//ルビモディファイア
+					if (mytoken.surface_form == '《') isRuby = true;
+					if (isRuby == true) {
 						tokenModifireType = 'aozora';
 					}
 					if (mytoken.surface_form == '》') {
-						isMarkedProperNoun = false;
+						isRuby = false;
+						kind = 'bracket';
+					}
+
+					//青空注記モディファイア
+					if (mytoken.surface_form == '［' || mytoken.surface_form == '［＃「') isRuby = true;
+					if (isRuby == true) {
+						tokenModifireType = 'aozora';
+					}
+					if (mytoken.surface_form == '］') {
+						isRuby = false;
 						kind = 'bracket';
 					}
 
