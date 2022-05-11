@@ -36,6 +36,7 @@
             childList: true
         })
 
+
         var port = parseInt(location.port) + 1;
         console.log("ws://" + location.hostname + ":" + port);
         const sock = new WebSocket("ws://" + location.hostname + ":" + port);
@@ -50,6 +51,17 @@
                 console.log("接続が開かれたときに呼び出されるイベント");
                 sock.send('hello');
                 sock.send('givemedata');
+
+                //const board = $('#draft');
+                //console.log(board);
+                //board.on('click', sendBackLine(e));
+            });
+
+            $('#draft').on('click', function(e){
+                
+                var message = "jump:"+e.target.id;
+                console.log(message);
+                sock.send(message);
             });
 
             sock.addEventListener("message", e => {
@@ -118,11 +130,11 @@
             const computedFontSize = getComputedStyle(document.documentElement.getElementsByTagName("p")[0]).getPropertyValue('font-size');
             console.log(getComputedStyle(document.documentElement.getElementsByTagName("p")[0]).getPropertyValue('font-size'));
 
-            const pixelFontSize    = Math.round(parseFloat(computedFontSize));
+            const pixelFontSize = Math.round(parseFloat(computedFontSize));
             const clientPageHeight = pixelFontSize * previewsettings.lineLength;
             const clientLineHeight = Math.round(pixelFontSize * previewsettings.lineHeightRate);
-            const clientPageWidth  = clientLineHeight * previewsettings.linesPerPage;
-            
+            const clientPageWidth = clientLineHeight * previewsettings.linesPerPage;
+
 
             console.log(`@media screen{
                             div#draft{
@@ -182,6 +194,7 @@
             console.log('sent giveme');
             sock.send('givemedata');
         }
+
 
         function loadGraph(message) {
             const graph = $('#graph');

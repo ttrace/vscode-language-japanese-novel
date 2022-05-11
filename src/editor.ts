@@ -3,7 +3,7 @@ import { getConfig } from './config';
 
 export type OriginEditor = vscode.TextEditor | "active" | undefined;
 
-export function editorText(originEditor: OriginEditor) : string {
+export function editorText(originEditor: OriginEditor): string {
     const myEditor = (originEditor === "active") ? vscode.window.activeTextEditor : originEditor;
     if (!myEditor) {
         return "";
@@ -14,7 +14,7 @@ export function editorText(originEditor: OriginEditor) : string {
 
     let cursorTaggedHtml = "";
     // カーソル位置
-    if ( text.slice(cursorOffset, cursorOffset + 1) == '\n'){
+    if (text.slice(cursorOffset, cursorOffset + 1) == '\n') {
         cursorTaggedHtml = text.slice(0, cursorOffset) + '<span id="cursor">　</span>' + text.slice(cursorOffset);
     } else {
         cursorTaggedHtml = text.slice(0, cursorOffset) + '<span id="cursor">' + text.slice(cursorOffset, cursorOffset + 1) + '</span>' + text.slice(cursorOffset + 1);
@@ -22,30 +22,32 @@ export function editorText(originEditor: OriginEditor) : string {
 
     const paragraphs = cursorTaggedHtml.split('\n');
     //console.log(paragraphs);
+    let lineNumber = 0;
     paragraphs.forEach(paragraph => {
         //console.log(paragraph);
         if (paragraph.match(/^\s*$/)) {
-            myHTML += '<p class="blank">_' + paragraph + '</p>';
-        } else if( paragraph.match(/^<span id="cursor">$/) || paragraph.match(/^<\/span>$/) ){
-            myHTML += '<p class="blank">_</p><span id="cursor">';
+            myHTML += `<p id="l-${lineNumber}" class="blank">_${paragraph}</p>`;
+        } else if (paragraph.match(/^<span id="cursor">$/) || paragraph.match(/^<\/span>$/)) {
+            myHTML += `<p id="l-${lineNumber}" class="blank">_</p><span id="cursor">`;
         } else {
-            myHTML += '<p>' + paragraph + '</p>';
+            myHTML += `<p id="l-${lineNumber}">${paragraph}</p>`;
         }
+        lineNumber ++;
     });
 
     return markUpHtml(myHTML);
 }
 
-export function markUpHtml( myHtml: string ){
+export function markUpHtml(myHtml: string) {
     let taggedHTML = myHtml;
     //configuration 読み込み
     const config = getConfig();
     const userRegex = config.userRegex;
-    if (userRegex.length > 0){
-        userRegex.forEach( function(element){
-                const thisMatch = new RegExp(element[0], 'gi');
-                const thisReplace = element[1];
-                taggedHTML = taggedHTML.replace(thisMatch, thisReplace);
+    if (userRegex.length > 0) {
+        userRegex.forEach(function (element) {
+            const thisMatch = new RegExp(element[0], 'gi');
+            const thisReplace = element[1];
+            taggedHTML = taggedHTML.replace(thisMatch, thisReplace);
             //}
         });
     }

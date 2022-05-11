@@ -45,6 +45,10 @@
         "title": "Novel:縦書きプレビュー"
       },
       {
+        "command": "Novel.hide-morpheme",
+        "title": "Novel:品詞ハイライト停止"
+      },
+      {
         "command": "Novel.launch-preview-server",
         "title": "Novel:プレビューサーバー起動"
       },
