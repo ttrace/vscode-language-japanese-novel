@@ -1,8 +1,6 @@
 import * as vscode from 'vscode';
 import * as kuromoji from 'kuromoji';
-import { text } from 'stream/consumers';
-import { resolve } from 'path';
-import { resolvePtr } from 'dns';
+
 
 const tokenTypes = new Map<string, number>();
 const tokenModifiers = new Map<string, number>();
@@ -54,8 +52,6 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 		return new Promise((resolve, reject) => {
 			const r: number[][] = [];
 			const builder = new vscode.SemanticTokensBuilder();
-
-
 
 			kuromojiBuilder.build(async (err: any, tokenizer: any) => {
 				tokenCaching = true;
@@ -210,7 +206,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 	}
 
 
-	async provideDocumentSemanticTokensEdits(document: vscode.TextDocument, previousResultId: string, token: vscode.CancellationToken): Promise<vscode.SemanticTokens | vscode.SemanticTokensEdits> {
+	async provideDocumentSemanticTokensEditss(document: vscode.TextDocument, previousResultId: string, token: vscode.CancellationToken): Promise<vscode.SemanticTokens | vscode.SemanticTokensEdits> {
 		//return new Promise((resolve, reject) => {
 		console.log('edit');
 		console.dir("previousResultId" + previousResultId);
@@ -247,97 +243,6 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 	}
 
 
-	morphemeBuilderAll(text: string) {
-		const r: IParsedToken[] = [];
-		//const lines = text?.split(/\r\n|\r|\n/);
-		const builder = new vscode.SemanticTokensBuilder();
-		kuromojiBuilder.build((err: any, tokenizer: any) => {
-			tokenCaching = true;
-			// 辞書がなかったりするとここでエラーになります(´・ω・｀)
-			if (err) {
-				console.dir('Kuromoji initialize error:' + err.message);
-				throw err;
-			}
-			//		for (let i = 0; i < lines.length; i++) {
-			let i = 0;
-			//const line = lines[i];
-
-			// tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
-			const kuromojiToken = tokenizer.tokenize(text);
-
-			//console.dir(kuromojiToken);
-			let lineOffset = 0;
-			let openOffset = 0;
-			let closeOffset = 0;
-
-			for (let j = 0; j < kuromojiToken.length; j++) {
-
-				const mytoken = kuromojiToken[j];
-				if (mytoken.surface_form == '\n') {
-					i++;
-					lineOffset = mytoken.word_position;
-					console.log('line-feed:' + i);
-				}
-				openOffset = mytoken.word_position - lineOffset - 1;
-
-				const wordLength = mytoken.surface_form.length;
-				let tokenActivity = false;
-				let kind = mytoken.pos;
-
-				if (kind == '名詞') kind = 'noun';
-				if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '固有名詞') {
-					kind = 'proper_noun';
-					tokenActivity = true;
-				}
-				if (mytoken.pos == '名詞' && mytoken.pos_detail_1 == '代名詞') {
-					kind = 'pronoun';
-					tokenActivity = true;
-				}
-				if (kind == '記号') kind = 'punctuation';
-				if (kind == '動詞') kind = 'verb';
-				if (kind == '助動詞') kind = 'auailiary_verb';
-				if (kind == '助詞') {
-					kind = 'particle'
-					tokenActivity = true;
-				}
-				if (kind == '副詞') kind = 'adverb';
-				if (kind == '感動詞') kind = 'interjection';
-				if (kind == '形容詞') kind = 'adjective';
-
-				closeOffset = openOffset + wordLength;
-				const tokenData = this._parseTextToken(text.substring(openOffset, closeOffset));
-				const tokenModifierNum = encodeTokenModifiers(tokenData.tokenModifiers);
-
-				if (tokenActivity == true) {
-					r.push({
-						line: i,
-						startCharacter: openOffset,
-						length: wordLength,
-						tokenType: kind,
-						tokenModifiers: tokenData.tokenModifiers
-					});
-
-					//console.log(i + ':' + j + '/' + openOffset + ':' + mytoken.surface_form);
-				}
-				openOffset = closeOffset;
-
-				if (j >= kuromojiToken.length - 1) {
-					chachedToken = [];
-					r.forEach((token) => {
-						chachedToken.push(token);
-						const tokenModifierNum = encodeTokenModifiers(tokenData.tokenModifiers);
-						builder.push(token.line, token.startCharacter, token.length, this._encodeTokenType(token.tokenType), tokenModifierNum);
-						tokenCaching = false;
-					});
-				}
-
-			}
-			builder.build();
-			console.log('builder making');
-
-		});
-		console.log('cache changed!');
-	}
 
 
 	private _parseText(text: string) {
@@ -348,9 +253,6 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 
 		}
 
-		if (tokenCaching == false) {
-			this.morphemeBuilderAll(text);
-		}
 		console.log('parse_text');
 		return chachedToken;
 	}
@@ -363,7 +265,6 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 		};
 	}
 }
-
 function parseTextToken(text: string): { tokenType: string; tokenModifiers: string[]; } {
 	const parts = text.split('.');
 	return {

@@ -78,10 +78,10 @@ export function activate(context: vscode.ExtensionContext): void {
 
 }
 
-function launchserver(originEditor: OriginEditor) {
+let latestEditor: vscode.TextEditor;
+function launchserver(originEditor: vscode.TextEditor) {
     //もしサーバーが動いていたらポートの番号をずらす
-
-    const originalEditor = vscode.window.activeTextEditor;
+    latestEditor = originEditor;
 
     //Webサーバの起動。ドキュメントルートはnode_modules/novel-writer/htdocsになる。
     const viewerServer = http.createServer(function (request, response) {
@@ -154,15 +154,15 @@ function launchserver(originEditor: OriginEditor) {
                 console.log('send:', sendingObjects);
                 ws.send(JSON.stringify(sendingObjects));
             } else if (typeof message == "string" && message.match(/^jump/)) {
-                
-                
+                //const originalEditor = vscode.window.activeTextEditor;
+
                 const targetLine = parseInt(message.split('-')[1]);
-                const range = originalEditor?.document.lineAt(targetLine).range;
+                const range = latestEditor.document.lineAt(targetLine).range;
                 
                 if (typeof range != 'undefined') {
                     console.log('go to line!');
-                    originalEditor!.selection  = new vscode.Selection(range?.start, range?.end);
-                    originalEditor!.revealRange(range, vscode.TextEditorRevealType.InCenter);
+                    latestEditor.selection  = new vscode.Selection(range?.start, range?.end);
+                    latestEditor.revealRange(range, vscode.TextEditorRevealType.InCenter);
                 }
             }
         });
@@ -172,6 +172,10 @@ function launchserver(originEditor: OriginEditor) {
         let _a;
         if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
             const editor = vscode.window.activeTextEditor;
+            if(typeof editor != 'undefined'){
+                latestEditor = editor;
+                console.log('editor changed!');
+            }
             if (editor?.document.languageId == "novel" || editor?.document.languageId == "markdown" || editor?.document.languageId == "plaintext") {
                 publishWebsocketsDelay.presskey(s);
             }
@@ -182,6 +186,10 @@ function launchserver(originEditor: OriginEditor) {
     vscode.window.onDidChangeTextEditorSelection((e) => {
         if (e.textEditor == vscode.window.activeTextEditor) {
             const editor = vscode.window.activeTextEditor;
+            if(typeof editor != 'undefined'){
+                latestEditor = editor;
+                console.log('editor changed!');
+            }
             if (editor?.document.languageId == "novel" || editor?.document.languageId == "markdown" || editor?.document.languageId == "plaintext") {
                 publishWebsocketsDelay.presskey(s);
             }
@@ -315,7 +323,9 @@ const publishWebsocketsDelay: any = {
 function verticalpreview() {
     const originEditor = vscode.window.activeTextEditor;
     WebViewPanel = true;
-    launchserver(originEditor);
+    if(typeof originEditor != 'undefined'){
+        launchserver(originEditor);
+    }
     /*
     //    vscode.window.showInformationMessage('Hello, world!');
         const panel = vscode.window.createWebviewPanel(
