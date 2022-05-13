@@ -5,7 +5,7 @@
 小説を書く際に用いる言語モードです。会話や各種括弧、青空文庫の注記などをハイライトしたテキストをリアルタイム更新する縦書きのプレビューで確かめながら執筆を進められます。
 作業中のフォルダー（または「原稿」「Draft」フォルダー）に置いてあるテキストファイルを結合し、縦書きのPDFを出力することも可能です。
 
-![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/highlight-and-vertical.png)
+![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/highlight-and-vertical.png)
 
 ## 実装しているハイライト
 - 鉤括弧（「」）で挟まれた会話
@@ -31,13 +31,13 @@ Gitでファイルの履歴を管理している場合には、前日の状態�
 
 なお、git mvを使わずにファイル名を変更するとファイルの継続性がなくなり、編集距離を表示できなくなります。
 
-![編集距離](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/edit-distance.png)
+![編集距離](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/edit-distance.png)
 
 ### 制限事項
 
 現在のバージョン（0.9.1）では、締切フォルダーを保存できませんので、起動するたびに指定してください。
 
-![特定フォルダーの文字数カウント](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/counting-custom-folder.png)
+![特定フォルダーの文字数カウント](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/counting-custom-folder.png)
 
 ## 縦書きプレビュー
 
@@ -51,7 +51,7 @@ Gitでファイルの履歴を管理している場合には、前日の状態�
 
 Extension Settings で、文字サイズと一行あたりの文字数、ページあたりの行数を設定してお使いください。正規表現による検索置換も実装しましたので、オリジナルのタグを挿入することも可能です。
 
-![プレビュー画像](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/preview-settings.png)
+![プレビュー画像](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/preview-settings.png)
 
 #### プレビューフォントの設定
 プレビューフォントの設定が可能です。
