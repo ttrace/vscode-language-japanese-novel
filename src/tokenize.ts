@@ -4,6 +4,7 @@ import * as kuromoji from 'kuromoji';
 
 const tokenTypes = new Map<string, number>();
 const tokenModifiers = new Map<string, number>();
+let tokenizeFlag = false;
 
 export const legend = (function () {
 	const tokenTypesLegend = [
@@ -34,7 +35,11 @@ export function activateTokenizer(context: vscode.ExtensionContext, kuromojiPath
 	});
 
 	context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel' }, new DocumentSemanticTokensProvider(), legend));
+	tokenizeFlag = true;
+}
 
+export function desableTokenizer(){
+	tokenizeFlag = false;
 }
 
 interface IParsedToken {
@@ -205,8 +210,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 		});
 	}
 
-
-	async provideDocumentSemanticTokensEditss(document: vscode.TextDocument, previousResultId: string, token: vscode.CancellationToken): Promise<vscode.SemanticTokens | vscode.SemanticTokensEdits> {
+	async provideDocumentSemanticTokensEdits(document: vscode.TextDocument, previousResultId: string, token: vscode.CancellationToken): Promise<vscode.SemanticTokens | vscode.SemanticTokensEdits> {
 		//return new Promise((resolve, reject) => {
 		console.log('edit');
 		console.dir("previousResultId" + previousResultId);

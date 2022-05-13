@@ -10,7 +10,7 @@ import compileDocs, { draftRoot } from './compile';
 import { draftsObject } from './compile'; // filelist オブジェクトもある
 import { CharacterCounter, CharacterCounterController } from './charactorcount';
 import { editorText, OriginEditor } from './editor'
-import { activateTokenizer } from './tokenize'
+import { activateTokenizer, desableTokenizer } from './tokenize'
 import * as textEncoding from 'text-encoding'
 
 const output = vscode.window.createOutputChannel("Novel");
@@ -34,8 +34,11 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
 
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.hide-morpheme', desableTokenizer));
+
     const kuromojiPath = context.extensionPath + '/node_modules/kuromoji/dict';
     activateTokenizer(context, kuromojiPath);
+
     //context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel'}, new DocumentSemanticTokensProvider(), legend));
 
     const characterCounter = new CharacterCounter();
@@ -229,13 +232,14 @@ function launchserver(originEditor: vscode.TextEditor) {
                 body{
                     width:100vw;
                     height:100vh;
-                    overflor:hidden;
+                    overflow:hidden;
+                    padding:0;
                 }
                 </style>
             </head>
             <body>
                 <p>ポート番号：${servicePort}</p>
-                <iframe src="http://localhost:${servicePort}" frameBorder="0" style="min-width: 100%; min-height: 100%" />
+                <iframe src="http://localhost:${servicePort}" frameBorder="0" style="width: 100%; height: calc(100% - 1.5em); min-width: 100%; min-height: calc(100% - 1.5em)" />
             </body>
         </html>`;
 
