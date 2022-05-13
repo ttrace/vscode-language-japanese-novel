@@ -2,10 +2,33 @@
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=2 depthTo=6 orderedList=false} -->
 
-小説を書く際に用いる言語モードです。会話や各種括弧、青空文庫の注記などをハイライトしたテキストをリアルタイム更新する縦書きのプレビューで確かめながら執筆を進められます。
+<!-- code_chunk_output -->
+
+- [実装しているハイライト](#実装しているハイライト)
+  - [品詞ハイライト](#品詞ハイライト)
+- [文字数のカウント](#文字数のカウント)
+  - [締め切りフォルダーの設定](#締め切りフォルダーの設定)
+  - [編集距離の表示](#編集距離の表示)
+  - [制限事項](#制限事項)
+- [縦書きプレビュー](#縦書きプレビュー)
+  - [プレビュー画面との画面連動](#プレビュー画面との画面連動)
+  - [プレビュー設定](#プレビュー設定)
+    - [プレビューフォントの設定](#プレビューフォントの設定)
+    - [版面指定](#版面指定)
+    - [正規表現検索置換](#正規表現検索置換)
+- [PDF出力](#pdf出力)
+- [テキスト結合](#テキスト結合)
+- [参考にした文献](#参考にした文献)
+- [copyright](#copyright)
+- [付録](#付録)
+  - [ハイライト設定](#ハイライト設定)
+
+<!-- /code_chunk_output -->
+
+小説用の言語モード機能拡張です。会話や各種の括弧類、青空文庫の注記、そして名詞や動詞、助詞などの品詞がハイライトされるテキストエディタで執筆を行うことが可能です。またリアルタイム更新する原稿用紙風の縦書きのプレビューで確かめながら執筆を進められます。
 作業中のフォルダー（または「原稿」「Draft」フォルダー）に置いてあるテキストファイルを結合し、縦書きのPDFを出力することも可能です。
 
-![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/highlight-and-vertical.png)
+![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/highlight-and-vertical.png)
 
 ## 実装しているハイライト
 - 鉤括弧（「」）で挟まれた会話
@@ -14,6 +37,20 @@
     - ［＃「」に傍点］
     - そのほか、［＃……］で記される記法
 - 数字と単位
+- 各種の品詞  
+v.1.1.2では名詞、固有名詞、代名詞、助詞、形容詞、形容動詞、動詞、接尾語、数詞をハイライトします。
+
+### 品詞ハイライト
+品詞のハイライトはVisual Studio CodeのSemantic Hilightで行っています。
+品詞ハイライトが不要な場合は、SettingsのEditor › Semantic HighlightingをDisabledにできます。
+
+![設定](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/setting-highlight.png "Settings > Editor > Semantic Highlighting")
+
+![品詞ハイライト](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/semantig-highlight.png "品詞ハイライト")
+
+![標準ハイライト](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/standard-highlight.png "標準ハイライト")
+
+品詞ハイライトにはJavascriptの形態素解析ライブラリ [Kuromoji.js](https://www.npmjs.com/package/kuromoji) を利用しています。素晴らしいライブラリです。この場を借りてお礼申し上げます。
 
 ## 文字数のカウント
 
@@ -31,13 +68,13 @@ Gitでファイルの履歴を管理している場合には、前日の状態�
 
 なお、git mvを使わずにファイル名を変更するとファイルの継続性がなくなり、編集距離を表示できなくなります。
 
-![編集距離](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/edit-distance.png)
+![編集距離](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/edit-distance.png)
 
 ### 制限事項
 
 現在のバージョン（0.9.1）では、締切フォルダーを保存できませんので、起動するたびに指定してください。
 
-![特定フォルダーの文字数カウント](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/counting-custom-folder.png)
+![特定フォルダーの文字数カウント](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/counting-custom-folder.png)
 
 ## 縦書きプレビュー
 
@@ -47,11 +84,14 @@ Gitでファイルの履歴を管理している場合には、前日の状態�
 
 縦書きプレビューでは、二桁のASCII数字を縦中横に組んで表示します。
 
+### プレビュー画面との画面連動
+縦書きプレビューでクリック（あるいはタップ）した行を、エディタで表示することができます。長いテキストを推敲するときにご利用ください。
+
 ### プレビュー設定
 
 Extension Settings で、文字サイズと一行あたりの文字数、ページあたりの行数を設定してお使いください。正規表現による検索置換も実装しましたので、オリジナルのタグを挿入することも可能です。
 
-![プレビュー画像](https://github.com/ttrace/vscode-language-japanese-novel/raw/master/resource/preview-settings.png)
+![プレビュー画像](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/preview-settings.png)
 
 #### プレビューフォントの設定
 プレビューフォントの設定が可能です。
@@ -102,3 +142,231 @@ MIT
 
 文字数を計算する部分、ステータスバーでの文字数表記は、MITライセンスで公開されている8amjp/vsce-charactercountの成果を使わせていただいています。
 [8amjp/vsce-charactercount](https://github.com/8amjp/vsce-charactercount)
+
+## 付録
+
+### ハイライト設定
+機能拡張に内蔵しているデフォルトのハイライト設定です。  
+色を変更したい場合にはこの設定を編集して、SettingsのEditor > Semantic Token Color Customizationsを書き換えてください。
+
+```json
+"editor.semanticTokenColorCustomizations": {
+"[Default Light+]": {
+    "enabled": true,
+    "rules": {
+    "noun": {
+        "foreground": "#4e549a"
+    },
+    "noun.dialogue": {
+        "foreground": "#20a23a"
+    },
+    "proper_noun": {
+        "foreground": "#0041cc"
+    },
+    "proper_noun.dialogue": {
+        "foreground": "#004b70",
+        "fontStyle": "bold"
+    },
+    "enum": {
+        "foreground": "#001c78"
+    },
+    "enum.dialogue": {
+        "foreground": "#00b4a8"
+    },
+    "suffix": {
+        "foreground": "#676767"
+    },
+    "suffix.dialogue": {
+        "foreground": "#58adc0"
+    },
+    "personal_pronoun": {
+        "foreground": "#580000"
+    },
+    "personal_pronoun.dialogue": {
+        "foreground": "#005772"
+    },
+    "pronoun": {
+        "foreground": "#34009b",
+        "fontStyle": "bold"
+    },
+    "pronoun.dialogue": {
+        "foreground": "#0068f0",
+        "fontStyle": "bold"
+    },
+    "punctuation": {
+        "foreground": "#000000"
+    },
+    "punctuation.dialogue": {
+        "foreground": "#284080",
+        "fontStyle": "bold"
+    },
+    "bracket": {
+        "foreground": "#d43c00d3"
+    },
+    "bracket.dialogue": {
+        "foreground": "#9a0b0bd3",
+        "bold": true
+    },
+    "bracket.quote": {
+        "foreground": "#0b1e9ad3"
+    },
+    "adverb": {
+        "foreground": "#b04d02"
+    },
+    "adverb.dialogue": {
+        "foreground": "#30be91"
+    },
+    "auailiary_verb": {
+        "foreground": "#da05ff"
+    },
+    "auailiary_verb.dialogue": {
+        "foreground": "#567387"
+    },
+    "verb": {
+        "foreground": "#8800ff"
+    },
+    "verb.dialogue": {
+        "foreground": "#7fad00"
+    },
+    "particle": {
+        "foreground": "#0000ff"
+    },
+    "particle.dialogue": {
+        "foreground": "#059f2e"
+    },
+    "adjective": {
+        "foreground": "#0771a7"
+    },
+    "interjection": {
+        "foreground": "#ac6404",
+        "fontStyle": "bold"
+    },
+    "interjection.dialogue": {
+        "foreground": "#20b336",
+        "fontStyle": "bold"
+    },
+    "*.quote": {
+        "italic": true,
+        "bold": true
+    },
+    "*.aozora": {
+        "foreground": "#9d9d9d",
+        "italic": true
+    },
+    "bracket.aozora": {
+        "foreground": "#c28458"
+    }
+    }
+},
+"[Default Dark+]": {
+    "enabled": true,
+    "rules": {
+    "noun": {
+        "foreground": "#77c4fc"
+    },
+    "noun.dialogue": {
+        "foreground": "#1dfcbd"
+    },
+    "proper_noun": {
+        "foreground": "#5d8ffb"
+    },
+    "proper_noun.dialogue": {
+        "foreground": "#0efd52",
+        "fontStyle": "standard"
+    },
+    "enum": {
+        "foreground": "#8fa4e9"
+    },
+    "enum.dialogue": {
+        "foreground": "#02d4c6"
+    },
+    "suffix": {
+        "foreground": "#9489db"
+    },
+    "suffix.dialogue": {
+        "foreground": "#4efab0"
+    },
+    "personal_pronoun": {
+        "foreground": "#83c1ff"
+    },
+    "personal_pronoun.dialogue": {
+        "foreground": "#00aade"
+    },
+    "pronoun": {
+        "foreground": "#6767ff",
+        "fontStyle": "bold"
+    },
+    "pronoun.dialogue": {
+        "foreground": "#00c0f0",
+        "fontStyle": "bold"
+    },
+    "punctuation": {
+        "foreground": "#ffffff"
+    },
+    "punctuation.dialogue": {
+        "foreground": "#c7ffca",
+        "fontStyle": "bold"
+    },
+    "bracket": {
+        "foreground": "#d43c00d3"
+    },
+    "bracket.dialogue": {
+        "foreground": "#ff9900d3",
+        "bold": true
+    },
+    "bracket.quote": {
+        "foreground": "#5469f1d3"
+    },
+    "adverb": {
+        "foreground": "#ff882d"
+    },
+    "adverb.dialogue": {
+        "foreground": "#30be80"
+    },
+    "auailiary_verb": {
+        "foreground": "#fdb5ff"
+    },
+    "auailiary_verb.dialogue": {
+        "foreground": "#22ca73"
+    },
+    "verb": {
+        "foreground": "#fc50ff"
+    },
+    "verb.dialogue": {
+        "foreground": "#29ff9b"
+    },
+    "particle": {
+        "foreground": "#03cccf"
+    },
+    "particle.dialogue": {
+        "foreground": "#b7f0bc"
+    },
+    "adjective": {
+        "foreground": "#0771a7"
+    },
+    "adjective.dialogue": {
+        "foreground": "#07a74c"
+    },
+    "interjection": {
+        "foreground": "#ac6404",
+        "fontStyle": "bold"
+    },
+    "interjection.dialogue": {
+        "foreground": "#22c54b",
+        "fontStyle": "bold"
+    },
+    "*.quote": {
+        "italic": true,
+        "bold": true
+    },
+    "*.aozora": {
+        "foreground": "#807e7e",
+        "italic": true
+    },
+    "bracket.aozora": {
+        "foreground": "#c28458"
+    }
+    }
+}
+}
+  ```
