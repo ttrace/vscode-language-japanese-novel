@@ -19,20 +19,17 @@ const output = vscode.window.createOutputChannel("Novel");
 //リソースとなるhtmlファイル
 let html: Buffer;
 let documentRoot: vscode.Uri;
-let WebViewPanel = false;
 
 let servicePort = 8080;
-emptyPort(function(port:number) {
-    servicePort = port;
-    console.log('真の空きポート',port);
-});
+let isServerRunning = false;
+
 
 //コマンド登録
 export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand('Novel.compile-draft', compileDocs));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.vertical-preview', verticalpreview));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.export-pdf', exportpdf));
-    context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', launchserver));
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.launch-preview-server', previewserver));
 
     const characterCounter = new CharacterCounter();
     const controller = new CharacterCounterController(characterCounter);
@@ -73,71 +70,91 @@ export function activate(context: vscode.ExtensionContext): void {
     documentRoot = vscode.Uri.joinPath(context.extensionUri, 'htdocs');
 }
 
-function launchserver(originEditor: OriginEditor){
-    //もしサーバーが動いていたらポートの番号をずらす
-    
+function launchserver(originEditor: OriginEditor, shouldOpenWebViewPanel: boolean) {
+    if (isServerRunning) {
+        if (shouldOpenWebViewPanel) {
+            openWebViewPanel();
+        }
+        return;
+    }
+    isServerRunning = true;
 
-
-    
-        //Webサーバの起動。ドキュメントルートはnode_modules/novel-writer/htdocsになる。
-        const viewerServer = http.createServer(function(request, response) {
-            const Response = {
-                "200":function(file: Buffer, filename:string){
-                    //const extname = path.extname(filename);
-                    const header = {
-                        "Access-Control-Allow-Origin":"*",
-                        "Pragma": "no-cache",
-                        "Cache-Control" : "no-cache"       
-                    }
-        
-                    response.writeHead(200, header);
-                    response.write(file, "binary");
-                    response.end();
-                },
-                "404":function(){
-                    response.writeHead(404, {"Content-Type": "text/plain"});
-                    response.write("404 Not Found\n");
-                    response.end();
-        
-                },
-                "500":function(err:unknown){
-                    response.writeHead(500, {"Content-Type": "text/plain"});
-                    response.write(err + "\n");
-                    response.end();
-        
+    //Webサーバの起動。ドキュメントルートはnode_modules/novel-writer/htdocsになる。
+    const viewerServer = http.createServer(function(request, response) {
+        const Response = {
+            "200":function(file: Buffer, filename:string){
+                //const extname = path.extname(filename);
+                const header = {
+                    "Access-Control-Allow-Origin":"*",
+                    "Pragma": "no-cache",
+                    "Cache-Control" : "no-cache"       
                 }
+        
+                response.writeHead(200, header);
+                response.write(file, "binary");
+                response.end();
+            },
+            "404":function(){
+                response.writeHead(404, {"Content-Type": "text/plain"});
+                response.write("404 Not Found\n");
+                response.end();
+        
+            },
+            "500":function(err:unknown){
+                response.writeHead(500, {"Content-Type": "text/plain"});
+                response.write(err + "\n");
+                response.end();
+        
             }
+        }
         
-            const uri = request.url;
-            let filename = path.join(documentRoot.fsPath, uri!);
+        const uri = request.url;
+        let filename = path.join(documentRoot.fsPath, uri!);
         
-            fs.stat(filename, (err, stats) => {
+        fs.stat(filename, (err, stats) => {
 
-                console.log(filename+" "+stats);
-                if (err) { Response["404"](); return ; }
-                if (fs.statSync(filename).isDirectory()) { filename += '/index.html'; }
+            console.log(filename+" "+stats);
+            if (err) { Response["404"](); return ; }
+            if (fs.statSync(filename).isDirectory()) { filename += '/index.html'; }
 
-                fs.readFile(filename, function(err, file){
-                if (err) { Response["500"](err); return ; }
-                    Response["200"](file, filename);   
-                }); 
-            });
-        })
+            fs.readFile(filename, function(err, file){
+            if (err) { Response["500"](err); return ; }
+                Response["200"](file, filename);   
+            }); 
+        });
+    })
+
+    viewerServer.on("error", (e: NodeJS.ErrnoException) => {
+        //もしサーバーが動いていたらポートの番号をずらす
+        if (e.code === "EADDRINUSE") {
+            console.log(`Server address (:${servicePort}) in use. Retrying...`);
+            setTimeout(() => {
+                servicePort += 2;
+                if (servicePort >= 20000) {
+                    throw new Error('empty port not found');
+                }
+                viewerServer.close();
+                viewerServer.listen(servicePort, "0.0.0.0");
+            }, 500);
+        }
+    });
     
-        viewerServer.listen( servicePort );
-        
+    viewerServer.on("listening", () => {
+        console.log('真の空きポート', servicePort);
+
         // Node Websockets Serverを起動する
         const wsServer = websockets.Server;
+        // TODO: Should not assume servicePort + 1 is always available
         const s = new wsServer({ port: servicePort + 1 });
-        
+
         s.on("connection", ws => {
             //console.log(previewvariables());
             ws.on("message", (messageAsString) => {
                 const message = JSON.stringify(messageAsString);
-        
+            
                 console.log("Received: " + message);
 
-        
+            
                 if (message === "hello") {
                     ws.send( JSON.stringify(getConfig()));
                     //ws.send( editorText());
@@ -151,7 +168,7 @@ function launchserver(originEditor: OriginEditor){
                 }
             });
         });
-        
+
         vscode.workspace.onDidChangeTextDocument((e) => {
             let _a;
             if (e.document == ((_a = vscode.window.activeTextEditor) === null || _a === void 0 ? void 0 : _a.document)) {
@@ -162,7 +179,7 @@ function launchserver(originEditor: OriginEditor){
 
             }
         });
-        
+
         vscode.window.onDidChangeTextEditorSelection((e) => {
             if (e.textEditor == vscode.window.activeTextEditor) {
                 const editor = vscode.window.activeTextEditor;
@@ -186,70 +203,40 @@ function launchserver(originEditor: OriginEditor){
 
         publishWebsocketsDelay.presskey(s);
 
-        if(WebViewPanel){
-
-        //    vscode.window.showInformationMessage('Hello, world!');
-        const panel = vscode.window.createWebviewPanel(
-            'preview', // Identifies the type of the webview. Used internally
-            '原稿プレビュー', // Title of the panel displayed to the user
-            vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
-            {
-                enableScripts: true,
-            } // Webview options. More on these later.
-        );
-
-        panel.webview.html = `<!DOCTYPE html>
-        <html>
-            <head>
-                <style>
-                body{
-                    width:100vw;
-                    height:100vh;
-                    overflor:hidden;
-                }
-                </style>
-            </head>
-            <body>
-                <iframe src="http://localhost:${servicePort}" frameBorder="0" style="min-width: 100%; min-height: 100%" />
-            </body>
-        </html>`;
-
-        return s;
-    }
-    
-}
-
-
-function emptyPort(callback: any) {
-    let port = 8080;
-
-    const socket = new net.Socket();
-    const server = new net.Server();
-
-    socket.on('error', function(e) {
-        try {
-            console.log('try:', port);
-            server.listen(port, '127.0.0.1');
-            server.close();
-            callback(port);
-        } catch(e) {
-            loop();
+        if (shouldOpenWebViewPanel) {
+            openWebViewPanel();
         }
     });
 
-    function loop() {
-        port = port + 2;
-        if (port >= 20000) {
-            callback(new Error('empty port not found'));
-            return;
-        }
+    viewerServer.listen(servicePort, "0.0.0.0");    
+}
 
-        socket.connect(port, '127.0.0.1', function() {
-            socket.destroy();
-            loop();
-        });
-    }
-    loop();
+function openWebViewPanel() {
+    //    vscode.window.showInformationMessage('Hello, world!');
+    const panel = vscode.window.createWebviewPanel(
+        'preview', // Identifies the type of the webview. Used internally
+        '原稿プレビュー', // Title of the panel displayed to the user
+        vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
+        {
+            enableScripts: true,
+        } // Webview options. More on these later.
+    );
+
+    panel.webview.html = `<!DOCTYPE html>
+    <html>
+        <head>
+            <style>
+            body{
+                width:100vw;
+                height:100vh;
+                overflor:hidden;
+            }
+            </style>
+        </head>
+        <body>
+            <iframe src="http://localhost:${servicePort}" frameBorder="0" style="min-width: 100%; min-height: 100%" />
+        </body>
+    </html>`;
 }
 
 function publishwebsockets(socketServer: websockets.Server){
@@ -296,10 +283,14 @@ const publishWebsocketsDelay: any = {
     }
   };
 
-function verticalpreview(){
+function previewserver() {
     const originEditor = vscode.window.activeTextEditor;
-    WebViewPanel = true;
-    launchserver(originEditor);
+    launchserver(originEditor, false);
+}
+
+function verticalpreview() {
+    const originEditor = vscode.window.activeTextEditor;
+    launchserver(originEditor, true);
 /*
 //    vscode.window.showInformationMessage('Hello, world!');
     const panel = vscode.window.createWebviewPanel(
