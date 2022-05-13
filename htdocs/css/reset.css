@@ -72,3 +72,41 @@ select {
     scroll-behavior: auto !important;
   }
 }
+
+body{
+  font-family: serif;
+  height: 100%;
+}
+
+p{
+  font-family: serif;
+}
+
+span.comment{
+  top: 0;
+}
+
+@media screen{
+  div.indent-1 p{
+    padding: 1em;
+  }
+
+  div.indent-2 p{
+    padding: 2em;
+
+  }
+
+  div.indent-3 p{
+    padding: 3em;
+  }
+}
+
+@media screen{
+  div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
+      padding-block-start: 1em;
+  }
+
+  div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
+      padding-block-end: 0em;
+  }
+}
