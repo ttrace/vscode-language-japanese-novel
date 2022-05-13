@@ -41,12 +41,12 @@
 v.1.1.2では名詞、固有名詞、代名詞、助詞、形容詞、形容動詞、動詞、接尾語、数詞をハイライトします。
 
 ### 品詞ハイライト
-品詞のハイライトはVisual Studio CodeのSemantic Hilightで行っています。
+品詞のハイライトはVisual Studio CodeのSemantic Highlighting（文脈依存ハイライト）で行っています。
 品詞ハイライトが不要な場合は、SettingsのEditor › Semantic HighlightingをDisabledにできます。
 
 ![設定](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/setting-highlight.png "Settings > Editor > Semantic Highlighting")
 
-![品詞ハイライト](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/semantig-highlight.png "品詞ハイライト")
+![品詞ハイライト](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/semantic-highlight.png "品詞ハイライト")
 
 ![標準ハイライト](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/standard-highlight.png "標準ハイライト")
 
