@@ -21,7 +21,8 @@ html {
 }
 
 #draft {
-  height: calc(100vh - 2em);
+  height: calc(100vh - 2rem);
+  margin-top: 1rem;
 }
 
 h1 {
@@ -237,17 +238,15 @@ span.tcy {
 }
 
 div#draft {
-  background-image: linear-gradient(to right, rgba(128, 128, 128, 0.5) 0.5pt, rgba(0, 0, 128, 0.05) 10em);
-  background-repeat: repeat-x;
-  background-position: right 0px;
+  background-image: linear-gradient(to down, rgba(128, 128, 128, 0.5) 0.5pt, rgba(0, 0, 128, 0.05) 10em);
 }
 
 .vscode-dark div#draft {
-  background-image: linear-gradient(to right, rgba(128, 128, 128, 0.5) 0.5pt, rgba(0, 0, 128, 0.05) 10em);
+  background-image: linear-gradient(to down, rgba(70, 69, 69, 0.5) 0.5pt, rgba(0, 0, 128, 0.05) 10em);
 }
 
 .vscode-light div#draft {
-  background-image: linear-gradient(to right, rgba(206, 206, 206, 0.5) 0.5pt, rgba(255, 255, 255, 0.05) 10em);
+  background-image: linear-gradient(to down, rgba(227, 227, 227, 0.5) 0.5pt, rgba(255, 255, 255, 0.05) 10em);
 }
 
 
@@ -260,14 +259,14 @@ p {
     right 0px;
 }
 
-.vscode-light p{
-  background-image: linear-gradient(rgb(193, 193, 193) 0.5pt, transparent 1pt),
-linear-gradient(to right, rgb(193, 193, 193) 0.5pt, transparent 1pt)
+.vscode-light p {
+  background-image: linear-gradient(rgb(214, 214, 214) 0.5pt, transparent 1pt),
+    linear-gradient(to right, rgb(217, 217, 217) 0.5pt, transparent 1pt)
 }
 
-.vscode-dark p{
+.vscode-dark p {
   background-image: linear-gradient(rgb(56, 56, 56) 0.5pt, transparent 1pt),
-linear-gradient(to right, rgb(56, 56, 56) 0.5pt, transparent 1pt)
+    linear-gradient(to right, rgb(56, 56, 56) 0.5pt, transparent 1pt)
 }
 
 
@@ -302,4 +301,17 @@ span.commentbody {
   font-family: sans-serif;
   font-size: 0.8em;
   line-height: 1;
+}
+
+.line-numbers {
+  display: block;
+  position: absolute;
+  top:0px;
+}
+
+.line-numbers span {
+  display: block;
+  font-size: 0.75em;
+  text-combine-upright: all;
+  font-family: serif;
 }

@@ -218,7 +218,7 @@ function launchserver(originEditor: vscode.TextEditor) {
         //    vscode.window.showInformationMessage('Hello, world!');
         const panel = vscode.window.createWebviewPanel(
             'preview', // Identifies the type of the webview. Used internally
-            '原稿プレビュー', // Title of the panel displayed to the user
+            '原稿プレビュー http://localhost:'+servicePort, // Title of the panel displayed to the user
             vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
             {
                 enableScripts: true,
@@ -238,8 +238,7 @@ function launchserver(originEditor: vscode.TextEditor) {
                 </style>
             </head>
             <body>
-                <p>ポート番号：${servicePort}</p>
-                <iframe src="http://localhost:${servicePort}" frameBorder="0" style="width: 100%; height: calc(100% - 1.5em); min-width: 100%; min-height: calc(100% - 1.5em)" />
+                <iframe src="http://localhost:${servicePort}" frameBorder="0" style="width: 100%; height: 100%; min-width: 100%; min-height: calc(100%)" />
             </body>
         </html>`;
 
@@ -330,38 +329,6 @@ function verticalpreview() {
     if(typeof originEditor != 'undefined'){
         launchserver(originEditor);
     }
-    /*
-    //    vscode.window.showInformationMessage('Hello, world!');
-        const panel = vscode.window.createWebviewPanel(
-            'preview', // Identifies the type of the webview. Used internally
-            '原稿プレビュー', // Title of the panel displayed to the user
-            vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
-            {
-                enableScripts: true,
-            } // Webview options. More on these later.
-        );
-    
-        panel.webview.html = `<!DOCTYPE html>
-        <html>
-            <head>
-                <style>
-                body{
-                    width:100vw;
-                    height:100vh;
-                    overflor:hidden;
-                }
-                </style>
-            </head>
-            <body>
-                <iframe src="http://localhost:8080" frameBorder="0" style="min-width: 100%; min-height: 100%" />
-            </body>
-        </html>`;
-    
-        panel.onDidDispose(() =>{
-            console.log('closed');
-        });
-    
-        */
 }
 
 function exportpdf(): void {

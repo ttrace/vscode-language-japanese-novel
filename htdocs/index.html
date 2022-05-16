@@ -28,6 +28,7 @@
             var cursor = document.getElementById('cursor');
             var panelWidth = window.innerWidth;
             var scrollEnd = cursor.offsetLeft - width + (panelWidth / 2);
+            lineNumber();
             window.scrollTo(scrollEnd, scrollEnd);
         })
 
@@ -36,6 +37,27 @@
             childList: true
         })
 
+        function lineNumber() {
+            let linenumber = 0;
+            const paragraphs = $("#draft p");
+            const computedLineHeight = getComputedStyle(paragraphs[0]).getPropertyValue('line-height');
+            const paragraphWidth = getComputedStyle(paragraphs[0]).getPropertyValue('width');
+            console.log(computedLineHeight + "/" + paragraphWidth);
+
+            for (let p = 0; p < paragraphs.length; p++) {
+                const paragraph = paragraphs[p];
+                $(paragraph).prepend('<div class="line-numbers"></div>');
+                const lineNumberBlock = $(paragraph).find('.line-numbers');
+                const paragraphWidth = getComputedStyle(paragraph).getPropertyValue('width');
+                const numbersOfLines = Math.round(parseInt(paragraphWidth) / parseInt(computedLineHeight));
+                
+                console.log(p + ": width" + paragraphWidth + "/" + numbersOfLines);
+                for (let i = 0; i < numbersOfLines; i++) {
+                    linenumber ++;
+                    $(lineNumberBlock).append(`<span>${linenumber}</span>`);
+                }
+            }
+        }
 
         var port = parseInt(location.port) + 1;
         console.log("ws://" + location.hostname + ":" + port);
@@ -52,14 +74,10 @@
                 sock.send('hello');
                 sock.send('givemedata');
 
-                //const board = $('#draft');
-                //console.log(board);
-                //board.on('click', sendBackLine(e));
             });
 
-            $('#draft').on('click', function(e){
-                
-                var message = "jump:"+e.target.id;
+            $('#draft').on('click', function (e) {
+                var message = "jump:" + e.target.id;
                 console.log(message);
                 sock.send(message);
             });
@@ -69,7 +87,7 @@
                 //console.log(e.data);
                 if (e.data[0] === '<') {
                     draftwrapper.textContent = '';
-                    draftwrapper.insertAdjacentHTML('afterbegin', e.data)
+                    draftwrapper.insertAdjacentHTML('afterbegin', e.data);
                 } else {
 
                     const message = JSON.parse(e.data);
@@ -128,7 +146,7 @@
                                     `);
 
             const computedFontSize = getComputedStyle(document.documentElement.getElementsByTagName("p")[0]).getPropertyValue('font-size');
-            console.log(getComputedStyle(document.documentElement.getElementsByTagName("p")[0]).getPropertyValue('font-size'));
+            //console.log(getComputedStyle(document.documentElement.getElementsByTagName("p")[0]).getPropertyValue('font-size'));
 
             const pixelFontSize = Math.round(parseFloat(computedFontSize));
             const clientPageHeight = pixelFontSize * previewsettings.lineLength;
@@ -191,6 +209,7 @@
                                 padding-block-end: calc( ${previewsettings.fontSize} * ${previewsettings.lineHeightRate});
                             }
                         }`);
+
             console.log('sent giveme');
             sock.send('givemedata');
         }
