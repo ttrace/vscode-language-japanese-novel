@@ -53,6 +53,7 @@ export function markUpHtml(myHtml: string) {
     }
 
     taggedHTML = taggedHTML.replace(/(?<![0-9\sa-zA-Z"'():])([0-9][0-9])(?![0-9\sa-zA-Z"'():])/g, '<span class="tcy">$1</span>');
+    taggedHTML = taggedHTML.replace(/(.+?)［＃「\1」は縦中横］/g, '<div class="tcy">');
     taggedHTML = taggedHTML.replace(/<p>［＃ここから[１1一]文字下げ］<\/p>/g, '<div class="indent-1">');
     taggedHTML = taggedHTML.replace(/<p>［＃ここから[２2二]文字下げ］<\/p>/g, '<div class="indent-2">');
     taggedHTML = taggedHTML.replace(/<p>［＃ここから[３3三]文字下げ］<\/p>/g, '<div class="indent-3">');

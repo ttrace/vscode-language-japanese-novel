@@ -35,6 +35,8 @@ export function activateTokenizer(context: vscode.ExtensionContext, kuromojiPath
 	});
 
 	context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel' }, new DocumentSemanticTokensProvider(), legend));
+
+	context.subscriptions.push(vscode.languages.registerDocumentRangeSemanticTokensProvider({ language: 'novel' }, new DocumentRangeSemanticTokensProvider(), legend));
 	tokenizeFlag = true;
 }
 
@@ -269,6 +271,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 		};
 	}
 }
+
 function parseTextToken(text: string): { tokenType: string; tokenModifiers: string[]; } {
 	const parts = text.split('.');
 	return {
