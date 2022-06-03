@@ -272,6 +272,13 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 	}
 }
 
+export class DocumentRangeSemanticTokensProvider implements vscode.DocumentRangeSemanticTokensProvider {
+	provideDocumentRangeSemanticTokens(document: vscode.TextDocument, range: vscode.Range, token: vscode.CancellationToken): vscode.ProviderResult<vscode.SemanticTokens> {
+		throw new Error('Method not implemented.');
+	}
+	
+}
+
 function parseTextToken(text: string): { tokenType: string; tokenModifiers: string[]; } {
 	const parts = text.split('.');
 	return {
