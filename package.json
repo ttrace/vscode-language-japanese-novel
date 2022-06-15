@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -47,6 +47,10 @@
       {
         "command": "Novel.hide-morpheme",
         "title": "Novel:品詞ハイライト停止"
+      },
+      {
+        "command": "Novel.show-morpheme",
+        "title": "Novel:品詞ハイライト開始"
       },
       {
         "command": "Novel.launch-preview-server",
