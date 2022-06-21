@@ -4,6 +4,7 @@ import * as http from 'http';
 import * as net from 'net';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as websockets from 'ws';
 import { getConfig } from './config';
 import compileDocs, { draftRoot } from './compile';
@@ -217,9 +218,10 @@ function launchserver(originEditor: vscode.TextEditor) {
     if (WebViewPanel) {
 
         //    vscode.window.showInformationMessage('Hello, world!');
+        const serversHostname = os.hostname();
         const panel = vscode.window.createWebviewPanel(
             'preview', // Identifies the type of the webview. Used internally
-            '原稿プレビュー http://localhost:'+servicePort, // Title of the panel displayed to the user
+            '原稿プレビュー http://'+ serversHostname + ':'+servicePort, // Title of the panel displayed to the user
             vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
             {
                 enableScripts: true,
@@ -244,6 +246,8 @@ function launchserver(originEditor: vscode.TextEditor) {
         </html>`;
 
         return s;
+    } else {
+        vscode.window.showInformationMessage('http://' + os.hostname() + ':/' + servicePort + 'で縦書きプレビューを起動しました');
     }
 }
 
