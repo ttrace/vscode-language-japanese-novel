@@ -10,9 +10,9 @@ import { getConfig } from './config';
 import compileDocs, { draftRoot } from './compile';
 import { draftsObject } from './compile'; // filelist オブジェクトもある
 import { CharacterCounter, CharacterCounterController } from './charactorcount';
-import { editorText, OriginEditor } from './editor'
-import { activateTokenizer, desableTokenizer, enableTokenizer } from './tokenize'
-import * as textEncoding from 'text-encoding'
+import { editorText, OriginEditor } from './editor';
+import { activateTokenizer, changeTenseAspect, desableTokenizer, enableTokenizer } from './tokenize';
+import * as textEncoding from 'text-encoding';
 
 const output = vscode.window.createOutputChannel("Novel");
 const TextDecoder = textEncoding.TextDecoder;
@@ -37,6 +37,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
     context.subscriptions.push(vscode.commands.registerCommand('Novel.hide-morpheme', desableTokenizer));
     context.subscriptions.push(vscode.commands.registerCommand('Novel.show-morpheme', enableTokenizer));
+
+    context.subscriptions.push(vscode.commands.registerCommand('Novel.change-tenseAspect', changeTenseAspect));
 
     const kuromojiPath = context.extensionPath + '/node_modules/kuromoji/dict';
     activateTokenizer(context, kuromojiPath);

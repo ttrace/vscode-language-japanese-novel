@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
+import { Position, Range } from 'vscode';
 import * as kuromoji from 'kuromoji';
-
+import { prependListener } from 'process';
 
 const tokenTypes = new Map<string, number>();
 const tokenModifiers = new Map<string, number>();
@@ -26,10 +27,11 @@ export const legend = (function () {
 //let kuromojiDictPath = '';
 let kuromojiBuilder: any;
 let tokenCaching = false;
+export let kuromojiDictPath = '';
 
 export function activateTokenizer(context: vscode.ExtensionContext, kuromojiPath: string) {
 
-	//kuromojiDictPath = kuromojiPath;
+	kuromojiDictPath = kuromojiPath;
 	kuromojiBuilder = kuromoji.builder({
 		dicPath: kuromojiPath
 	});
@@ -81,7 +83,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 					// tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
 					const kuromojiToken = tokenizer.tokenize(document.getText());
 
-					console.dir(kuromojiToken);
+					// console.dir(kuromojiToken);
 					let lineOffset = 0;
 					let openOffset = 0;
 					let closeOffset = 0;
@@ -218,7 +220,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 				});
 			} else {
 				const builder = new vscode.SemanticTokensBuilder();
-				builder.push(0,0,0,0,0);
+				builder.push(0, 0, 0, 0, 0);
 				resolve(builder.build());
 			}
 		});
@@ -350,5 +352,161 @@ export function morphemeBuilder(text: string) {
 		console.log('Regex' + wordPatternRegex);
 		return regexString;
 	});
-	//});
+}
+
+// 以下、たる変換
+export function changeTenseAspect() {
+	const editor = vscode.window.activeTextEditor;
+	const document = vscode.window.activeTextEditor?.document;
+	const lineString = document?.lineAt(editor!.selection.active.line).text;
+	const cursorPosition = editor!.selection.start;
+
+	kuromojiBuilder.build(async (err: any, tokenizer: any) => {
+		// 辞書がなかったりするとここでエラーになります(´・ω・｀)
+		if (err) {
+			console.dir('Kuromoji initialize error:' + err.message);
+			throw err;
+		}
+		const kuromojiToken = tokenizer.tokenize(lineString);
+		console.log(lineString, cursorPosition, kuromojiToken);
+		const punctuationList = kuromojiToken.filter((t: { surface_form: string; }) => t.surface_form === '。');
+		let targetSentence = 0;
+		let processingSentence = 0;
+		for (let sentenceIndex = 0; sentenceIndex < punctuationList.length; sentenceIndex++) {
+			const punctuation = punctuationList[sentenceIndex];
+			if (cursorPosition.character < punctuation.word_position) {
+				targetSentence = sentenceIndex;
+				break;
+			}
+		}
+		console.log('目標の文:', targetSentence);
+
+		for (let i = 0; i < kuromojiToken.length; i++) {
+			const token = kuromojiToken[i];
+			const nextToken = kuromojiToken[i + 1];
+			const secondNextToken = kuromojiToken[i + 2];
+			if (token.surface_form === '。') {
+				processingSentence++;
+				if (processingSentence > punctuationList.length - 1) processingSentence = punctuationList.length - 1;
+			}
+
+			// 対象の文だけ処理する
+			if (processingSentence === targetSentence) {
+				// 自立「〜る」の変換
+				if (token.conjugated_form === '基本形'
+					&& token.conjugated_type.match(/.+ガ行$/)
+					&& nextToken.pos_detail_1 === '句点'
+					&& nextToken.surface_form === '。') {
+					const attributedVerbeForm = token.surface_form.replace(/(.+)[ぐ]/, '$1いだ');
+					// range作成。元のトークンを置き換える場合
+					const verbPositionStart = new Position(cursorPosition.line, token.word_position - 1);
+					const verbPositionEnd = new Position(cursorPosition.line, token.word_position + token.surface_form.length - 1);
+					const verbRange = new Range(verbPositionStart, verbPositionEnd);
+					changeText(verbRange, attributedVerbeForm);
+				} else if (token.conjugated_form === '基本形'
+					&& token.conjugated_type.match(/.+サ行$/)
+					&& nextToken.pos_detail_1 === '句点'
+					&& nextToken.surface_form === '。') {
+					const attributedVerbeForm = token.surface_form.replace(/(.+)[す]/, '$1した');
+					// range作成。元のトークンを置き換える場合
+					const verbPositionStart = new Position(cursorPosition.line, token.word_position - 1);
+					const verbPositionEnd = new Position(cursorPosition.line, token.word_position + token.surface_form.length - 1);
+					const verbRange = new Range(verbPositionStart, verbPositionEnd);
+					changeText(verbRange, attributedVerbeForm);
+				} else if (token.conjugated_form === '基本形'
+					&& token.conjugated_type.match(/.+[タラ]行$/)
+					&& nextToken.pos_detail_1 === '句点'
+					&& nextToken.surface_form === '。') {
+					const attributedVerbeForm = token.surface_form.replace(/(.+)[くる]/, '$1った');
+					// range作成。元のトークンを置き換える場合
+					const verbPositionStart = new Position(cursorPosition.line, token.word_position - 1);
+					const verbPositionEnd = new Position(cursorPosition.line, token.word_position + token.surface_form.length - 1);
+					const verbRange = new Range(verbPositionStart, verbPositionEnd);
+					changeText(verbRange, attributedVerbeForm);
+				} else if (token.conjugated_form === '基本形'
+					&& token.conjugated_type.match(/.+[ナマバ]行$/)
+					&& nextToken.pos_detail_1 === '句点'
+					&& nextToken.surface_form === '。') {
+					const attributedVerbeForm = token.surface_form.replace(/(.+)[ぬむぶ]/, '$1んだ');
+					// range作成。元のトークンを置き換える場合
+					const verbPositionStart = new Position(cursorPosition.line, token.word_position - 1);
+					const verbPositionEnd = new Position(cursorPosition.line, token.word_position + token.surface_form.length - 1);
+					const verbRange = new Range(verbPositionStart, verbPositionEnd);
+					changeText(verbRange, attributedVerbeForm);
+				} else if (token.conjugated_form === '基本形'
+					&& token.basic_form.match(/笑う|厭う|請う/) //ワ行の例外
+					&& nextToken.pos_detail_1 === '句点'
+					&& nextToken.surface_form === '。') {
+					const attributedVerbeForm = token.surface_form.replace(/(.+)う/, '$1うた');
+					// range作成。元のトークンを置き換える場合
+					const verbPositionStart = new Position(cursorPosition.line, token.word_position - 1);
+					const verbPositionEnd = new Position(cursorPosition.line, token.word_position + token.surface_form.length - 1);
+					const verbRange = new Range(verbPositionStart, verbPositionEnd);
+					changeText(verbRange, attributedVerbeForm);
+				} else if (token.conjugated_form === '基本形'
+					&& token.conjugated_type === 'カ変・クル' //例外：来る, くる
+					&& nextToken.pos_detail_1 === '句点'
+					&& nextToken.surface_form === '。') {
+					let attributedVerbeForm = '';
+					if (token.surface_form === 'くる') {
+						attributedVerbeForm = 'きた';
+					} else {
+						attributedVerbeForm = token.surface_form.replace(/(.+)る/, '$1た')
+					}
+					// range作成。元のトークンを置き換える場合
+					const verbPositionStart = new Position(cursorPosition.line, token.word_position - 1);
+					const verbPositionEnd = new Position(cursorPosition.line, token.word_position + token.surface_form.length - 1);
+					const verbRange = new Range(verbPositionStart, verbPositionEnd);
+					changeText(verbRange, attributedVerbeForm);
+				} else if (token.conjugated_form === '基本形'
+					&& token.conjugated_type.match(/.+促音便$/)
+					&& nextToken.pos_detail_1 === '句点'
+					&& nextToken.surface_form === '。') {
+					const attributedVerbeForm = token.surface_form.replace(/(.+)[くつう]/, '$1った');
+					// range作成。元のトークンを置き換える場合
+					const verbPositionStart = new Position(cursorPosition.line, token.word_position - 1);
+					const verbPositionEnd = new Position(cursorPosition.line, token.word_position + token.surface_form.length - 1);
+					const verbRange = new Range(verbPositionStart, verbPositionEnd);
+					changeText(verbRange, attributedVerbeForm);
+				} else if (token.conjugated_form === '基本形'
+					&& token.conjugated_type.match(/.+イ音便$/)
+					&& nextToken.pos_detail_1 === '句点'
+					&& nextToken.surface_form === '。') {
+					const attributedVerbeForm = token.surface_form.replace(/(.+)[く]/, '$1いた');
+					// range作成。元のトークンを置き換える場合
+					const verbPositionStart = new Position(cursorPosition.line, token.word_position - 1);
+					const verbPositionEnd = new Position(cursorPosition.line, token.word_position + token.surface_form.length - 1);
+					const verbRange = new Range(verbPositionStart, verbPositionEnd);
+					changeText(verbRange, attributedVerbeForm);
+				} else if (token.pos === '動詞'
+					&& token.surface_form.match(/.+る$/)
+					&& nextToken.pos_detail_1 === '句点'
+					&& nextToken.surface_form === '。') {
+					const attributedVerbeForm = token.surface_form.replace(/(.+)る/g, '$1た');
+					// range作成。元のトークンを置き換える場合
+					const verbPositionStart = new Position(cursorPosition.line, token.word_position - 1);
+					const verbPositionEnd = new Position(cursorPosition.line, token.word_position + token.surface_form.length - 1);
+					const verbRange = new Range(verbPositionStart, verbPositionEnd);
+					changeText(verbRange, attributedVerbeForm);
+				} else if (token.pos === '動詞'
+					&& nextToken.conjugated_type === '特殊・タ'
+					&& secondNextToken.pos_detail_1 === '句点') {
+					const attributedVerbeForm = token.basic_form;
+					const verbPositionStart = new Position(cursorPosition.line, token.word_position - 1);
+					const verbPositionEnd = new Position(cursorPosition.line, nextToken.word_position + nextToken.surface_form.length - 1);
+					const verbRange = new Range(verbPositionStart, verbPositionEnd);
+					//console.log(cursorPosition.character, processingSentence, attributedVerbeForm);
+					changeText(verbRange, attributedVerbeForm);
+				}
+			}
+		}
+	});
+}
+
+//文字の挿入
+function changeText(range: vscode.Range, text: string) {
+	const editor = vscode.window.activeTextEditor;
+	editor?.edit(TextEditorEdit => {
+		TextEditorEdit.replace(range, text);
+	});
 }
