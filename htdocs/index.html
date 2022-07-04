@@ -178,8 +178,8 @@
                                 background-size:    ${clientLineHeight}px ${pixelFontSize}px,
                                                     ${clientLineHeight}px ${pixelFontSize}px}}`);
             styleSheet.insertRule(`@media screen{
-                            span.comment{
-                                top: ${previewsettings.pageHeight};
+                            div.comment{
+                                top: calc( ${clientPageHeight}px + 1.5em);
                             }
                         }`);
 

@@ -270,19 +270,24 @@ p {
 }
 
 
-span.comment {
+div.comment {
   display: block;
   border-radius: 1em;
-  border: 1.5pt solid rgba(70, 70, 00, 0.9);
+  border: 1.5pt solid rgb(241, 189, 0);
   padding: 0.25em 0.25em;
   position: absolute;
   margin-right: -3em;
   margin-top: 0.5em;
-  background-color: rgba(50, 50, 00, 0.5);
+  background-color: rgb(255, 123, 0);
   max-width: 20em;
+  writing-mode: lr-tb;
+  font-family: sans-serif;
+  font-size: 0.8em;
+  line-height: 1;
+  padding: 0.5em 1em;
 }
 
-span.comment::before {
+div.comment::before {
   content: '';
   position: absolute;
   right: 1em;
@@ -291,17 +296,10 @@ span.comment::before {
   width: 0;
   height: 0;
   border-right: 15px solid transparent;
-  border-bottom: 15px solid rgba(70, 70, 00, 0.9);
+  border-bottom: 15px solid rgb(241, 189, 0);
   border-left: 15px solid transparent;
 }
 
-span.commentbody {
-  margin: 0.5em 1em;
-  writing-mode: lr-tb;
-  font-family: sans-serif;
-  font-size: 0.8em;
-  line-height: 1;
-}
 
 .line-numbers {
   display: block;
