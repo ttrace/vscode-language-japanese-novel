@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -242,15 +242,17 @@
               "foreground": "#20b336"
             },
             "*.quote": {
-              "italic": true,
-              "bold": true
+              "italic": true
             },
             "*.aozora": {
-              "foreground": "#9d9d9d",
-              "italic": true
+              "foreground": "#9d9d9d"
+              
             },
             "bracket.aozora": {
               "foreground": "#c28458"
+            },
+            "*.comment": {
+              "foreground": "#4b4b4b"
             }
           }
         },
@@ -346,15 +348,19 @@
               "foreground": "#22c54b"
             },
             "*.quote": {
-              "italic": true,
-              "bold": true
+              "italic": true
             },
             "*.aozora": {
-              "foreground": "#807e7e",
-              "italic": true
+              "foreground": "#807e7e"
             },
             "bracket.aozora": {
               "foreground": "#c28458"
+            },
+            "*.comment": {
+              "foreground": "#8b8b8b"
+            },
+            "bracket.comment": {
+              "foreground": "#8b8b8b"
             }
           }
         }
