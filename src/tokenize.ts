@@ -16,7 +16,7 @@ export const legend = (function () {
 	tokenTypesLegend.forEach((tokenType, index) => tokenTypes.set(tokenType, index));
 
 	const tokenModifiersLegend = [
-		'dialogue', 'quote', 'aozora'
+		'dialogue', 'quote', 'aozora','comment'
 	];
 	tokenModifiersLegend.forEach((tokenModifier, index) => tokenModifiers.set(tokenModifier, index));
 
@@ -93,6 +93,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 					let isQuote = false;
 					let isMarkedProperNoun = false;
 					let isRuby = false;
+					let isComment = false;
 					for await (let mytoken of kuromojiToken) {
 						let nextToken = [];
 						mytoken = kuromojiToken[j];
@@ -112,6 +113,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 							wordLength = 0;
 							isRuby = false;
 							isQuote = false;
+							isComment = false;
 							//	console.log('line-feed:' + i + ": " + lineOffset);
 						} else {
 							openOffset = mytoken.word_position - lineOffset - 1;
@@ -165,7 +167,10 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 						if (isDialogue == true) {
 							tokenModifireType = 'dialogue';
 						}
-						if (mytoken.surface_form == '」') isDialogue = false;
+						if (mytoken.surface_form == '」' || mytoken.surface_form.match(/」$/)) {
+							isDialogue = false;
+							kind = 'bracket';
+						}
 
 						//引用モディファイア
 						if (mytoken.surface_form == '『') isQuote = true;
@@ -198,6 +203,19 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 						}
 						if (mytoken.surface_form == '］') {
 							isRuby = false;
+							kind = 'bracket';
+						}
+
+						//コメントアウト
+						if (mytoken.surface_form === '<!--') {
+							isComment = true;
+							kind = 'bracket';
+						}
+						if (isComment === true) {
+							tokenModifireType = 'comment';
+						}
+						if (mytoken.surface_form === '-->') {
+							isComment = false;
 							kind = 'bracket';
 						}
 
