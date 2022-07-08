@@ -29,7 +29,7 @@
             var panelWidth = window.innerWidth;
             var scrollEnd = cursor.offsetLeft - width + (panelWidth / 2);
             lineNumber();
-            window.scrollTo(scrollEnd, scrollEnd);
+            $("html,body").animate({scrollLeft:scrollEnd},250);
         })
 
         // 監視の開始
