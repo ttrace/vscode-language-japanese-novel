@@ -1,5 +1,23 @@
 # Changelog
 
+# 1.3.9
+
+- 編集距離を表示する際に出していたgit関係のアラートを抑止しました
+- npmのモジュールを更新しています
+  - fastest-levenshtein                ^1.0.12  →   ^1.0.14     
+  - simple-git                          ^3.7.1  →   ^3.10.0     
+  - ws                                  ^8.8.0  →    ^8.8.1     
+  - @types/node                       ^17.0.41  →   ^18.0.6     
+  - @types/sinon                      ^10.0.11  →  ^10.0.13     
+  - @types/vscode                      ^1.68.0  →   ^1.69.0     
+  - @typescript-eslint/eslint-plugin   ^5.27.1  →   ^5.30.7     
+  - @typescript-eslint/parser          ^5.27.1  →   ^5.30.7     
+  - @vscode/test-web                   ^0.0.24  →   ^0.0.27     
+  - eslint                             ^8.17.0  →   ^8.20.0     
+  - ts-loader                           ^9.3.0  →    ^9.3.1     
+  - typescript                          ^4.7.3  →    ^4.7.4     
+  - webpack-cli                         ^4.9.2  →   ^4.10.0  
+
 # 1.3.8
 
 - 縦書きプレビューの左右スクロールをアニメーションするように変更しました

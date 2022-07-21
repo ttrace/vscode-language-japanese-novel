@@ -254,7 +254,7 @@ export class CharacterCounter {
                     })
                     .catch((err) => {
                         console.error('failed:', err);
-                        window.showInformationMessage(`Gitのレポジトリを確かめてください`);
+                        // window.showInformationMessage(`Gitのレポジトリを確かめてください`);
                         this.ifEditDistance = false;
                         this.latestText = '';
                         this.updateCharacterCount();
