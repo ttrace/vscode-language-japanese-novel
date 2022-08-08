@@ -61,7 +61,7 @@ novel-writerは形態素解析を用いて分割した品詞をハイライト�
 
 ![標準ハイライト](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/standard-highlight.png "標準ハイライト")
 
-品詞ハイライトにはJavascriptの形態素解析ライブラリ [Kuromoji.js](https://www.npmjs.com/package/kuromoji) を利用しています。素晴らしいライブラリです。この場を借りてお礼申し上げます。
+品詞ハイライトにはJavaScriptの形態素解析ライブラリ [Kuromoji.js](https://www.npmjs.com/package/kuromoji) を利用しています。素晴らしいライブラリです。この場を借りてお礼申し上げます。
 
 ## 文末辞の切り替え
 
@@ -151,7 +151,7 @@ https://qiita.com/takl/items/ba2f63db515f66585d1f
 Language Grammars
 https://macromates.com/manual/en/language_grammars
 
-## copyright
+## Copyright
 MIT
 
 縦書き表示を行う方法については、MITライセンスで公開されているn-fukiju/縦書きプレビューのコードを大いに参考にさせていただきました。
