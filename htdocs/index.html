@@ -20,16 +20,21 @@
     <script>
 
         // 監視ターゲットの取得
-        const target = document.getElementById('draft')
+        const target = document.getElementById('draft');
 
         // オブザーバーの作成
         const observer = new MutationObserver(records => {
+            const scrollPrevious = $("#draft p").scrollLeft();
             var width = $('#draft')[0].clientWidth;
-            var cursor = document.getElementById('cursor');
-            var panelWidth = window.innerWidth;
-            var scrollEnd = cursor.offsetLeft - width + (panelWidth / 2);
+            const cursor = document.getElementById('cursor');
+            const panelWidth = window.innerWidth;
+            const scrollEnd = cursor.offsetLeft - width + (panelWidth / 2);
             lineNumber();
-            $("html,body").animate({scrollLeft:scrollEnd},250);
+            const lineHeight = getComputedStyle($("#draft p")[0]).getPropertyValue('line-height');
+            console.log(scrollPrevious, scrollEnd, lineHeight);
+            if (Math.abs(scrollPrevious - scrollEnd) * 2 > parseInt(lineHeight)) {
+                $("html,body").animate({ scrollLeft: scrollEnd }, 250);
+            }
         })
 
         // 監視の開始
@@ -50,10 +55,10 @@
                 const lineNumberBlock = $(paragraph).find('.line-numbers');
                 const paragraphWidth = getComputedStyle(paragraph).getPropertyValue('width');
                 const numbersOfLines = Math.round(parseInt(paragraphWidth) / parseInt(computedLineHeight));
-                
+
                 console.log(p + ": width" + paragraphWidth + "/" + numbersOfLines);
                 for (let i = 0; i < numbersOfLines; i++) {
-                    linenumber ++;
+                    linenumber++;
                     $(lineNumberBlock).append(`<span>${linenumber}</span>`);
                 }
             }
