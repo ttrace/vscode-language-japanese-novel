@@ -231,7 +231,7 @@ function launchserver(originEditor: vscode.TextEditor) {
         );
 
         panel.webview.html = `<!DOCTYPE html>
-        <html>
+        <html lang="ja">
             <head>
                 <style>
                 body{

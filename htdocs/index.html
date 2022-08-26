@@ -21,6 +21,7 @@
 
         // 監視ターゲットの取得
         const target = document.getElementById('draft');
+        var scrolling = false;
 
         // オブザーバーの作成
         const observer = new MutationObserver(records => {
@@ -32,8 +33,11 @@
             lineNumber();
             const lineHeight = getComputedStyle($("#draft p")[0]).getPropertyValue('line-height');
             console.log(scrollPrevious, scrollEnd, lineHeight);
-            if (Math.abs(scrollPrevious - scrollEnd) * 2 > parseInt(lineHeight)) {
-                $("html,body").animate({ scrollLeft: scrollEnd }, 250);
+            if (Math.abs(scrollPrevious - scrollEnd) * 2 > parseInt(lineHeight) && !scrolling) {
+                scrolling = true;
+                $("html,body").animate({ scrollLeft: scrollEnd }, 250, function(){
+                    scrolling = false;
+                });
             }
         })
 
@@ -56,7 +60,7 @@
                 const paragraphWidth = getComputedStyle(paragraph).getPropertyValue('width');
                 const numbersOfLines = Math.round(parseInt(paragraphWidth) / parseInt(computedLineHeight));
 
-                console.log(p + ": width" + paragraphWidth + "/" + numbersOfLines);
+                // console.log(p + ": width" + paragraphWidth + "/" + numbersOfLines);
                 for (let i = 0; i < numbersOfLines; i++) {
                     linenumber++;
                     $(lineNumberBlock).append(`<span>${linenumber}</span>`);

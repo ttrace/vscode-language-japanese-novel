@@ -209,6 +209,7 @@ body {
   animation-duration: 0.5s;
   animation-name: cursorAnimation;
   animation-iteration-count: infinite;
+  display: inline-block;
 }
 
 p {
