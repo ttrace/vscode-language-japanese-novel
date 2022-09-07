@@ -1,5 +1,23 @@
 # Changelog
 
+# 1.3.13
+
+- 青空文庫注記法の文字下げが動作していなかった問題に対処
+- 大きなディスプレイを使っているときに行番号の枠が消えてしまう問題に対処
+- npmモジュールの更新
+    fastest-levenshtein               ^1.0.14  →   ^1.0.16
+    simple-git                        ^3.10.0  →   ^3.14.0
+    @types/glob                        ^7.2.0  →    ^8.0.0
+    @types/node                       ^18.0.6  →  ^18.7.15
+    @types/vscode                     ^1.69.0  →   ^1.71.0
+    @types/webpack-env                ^1.17.0  →   ^1.18.0
+    @typescript-eslint/eslint-plugin  ^5.30.7  →   ^5.36.2
+    @typescript-eslint/parser         ^5.30.7  →   ^5.36.2
+    @vscode/test-web                  ^0.0.27  →   ^0.0.30
+    eslint                            ^8.20.0  →   ^8.23.0
+    typescript                         ^4.7.4  →    ^4.8.2
+    webpack                           ^5.73.0  →   ^5.74.0
+
 # 1.3.12
 
 - カーソルの視認性を向上

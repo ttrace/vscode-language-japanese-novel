@@ -194,18 +194,15 @@
 
             styleSheet.insertRule(`@media screen{
                             div.indent-1 p{
-                            height: calc( ${previewsettings.pageHeight} - ${previewsettings.fontSize});
                             padding-top: ${previewsettings.fontSize};
                             }
                         
                             div.indent-2 p{
-                            height: calc( ${previewsettings.pageHeight} - (${previewsettings.fontSize} * 2));
-                            padding-top:calc(${previewsettings.fontSize} * 2);
+                            padding-top:calc(${pixelFontSize}px * 2);
                             }
                         
                             div.indent-3 p{
-                            height: calc( ${previewsettings.pageHeight} - (${previewsettings.fontSize} * 3));
-                            padding-top: calc(${previewsettings.fontSize} * 3);
+                            padding-top: calc(${pixelFontSize}px * 3);
                             }
                         }`);
 
