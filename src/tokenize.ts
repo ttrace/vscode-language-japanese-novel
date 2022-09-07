@@ -197,7 +197,7 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 						}
 
 						//青空注記モディファイア
-						if (mytoken.surface_form == '［' || mytoken.surface_form == '［＃「') isRuby = true;
+						if ( (mytoken.surface_form == '［' && nextToken.surface_form.match(/^＃/)) || mytoken.surface_form.match(/^［＃/)) isRuby = true;
 						if (isRuby == true) {
 							tokenModifireType = 'aozora';
 						}

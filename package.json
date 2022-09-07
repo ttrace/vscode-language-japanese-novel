@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.3.13",
+  "version": "1.3.14",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -249,7 +249,7 @@
               
             },
             "bracket.aozora": {
-              "foreground": "#c28458"
+              "foreground": "#4b4b4b"
             },
             "*.comment": {
               "foreground": "#4b4b4b"
@@ -354,7 +354,7 @@
               "foreground": "#807e7e"
             },
             "bracket.aozora": {
-              "foreground": "#c28458"
+              "foreground": "#8b8b8b"
             },
             "*.comment": {
               "foreground": "#8b8b8b"
