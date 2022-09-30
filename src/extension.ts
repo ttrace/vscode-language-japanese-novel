@@ -261,14 +261,15 @@ function emptyPort(callback: any) {
     const server = new net.Server();
 
     socket.on('error', function (e) {
-        try {
-            console.log('try:', port);
-            server.listen(port, '127.0.0.1');
+        console.log('try:', port);
+        server.on('listening', () => {
             server.close();
+            console.log('ok:', port);
             callback(port);
-        } catch (e) {
+        }).on('error', () => {
+            console.log('ng:', port);
             loop();
-        }
+        }).listen(port, '127.0.0.1');
     });
 
     function loop() {
