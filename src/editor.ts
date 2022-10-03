@@ -22,7 +22,7 @@ export function editorText(originEditor: OriginEditor): string {
       text.slice(0, cursorOffset) +
       '<span id="cursor">　</span>' +
       text.slice(cursorOffset);
-  } else {Ï
+  } else {
     cursorTaggedHtml =
       text.slice(0, cursorOffset) +
       '<span id="cursor">' +
