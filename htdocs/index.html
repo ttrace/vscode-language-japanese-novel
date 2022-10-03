@@ -39,6 +39,8 @@
                     scrolling = false;
                 });
             }
+            // 描画終了
+            sock.send('redrawFinished');
         })
 
         // 監視の開始
@@ -69,7 +71,7 @@
         }
 
         var port = parseInt(location.port) + 1;
-        console.log("ws://" + location.hostname + ":" + port);
+        //console.log("ws://" + location.hostname + ":" + port);
         const sock = new WebSocket("ws://" + location.hostname + ":" + port);
 
         let previewsettings = {};
@@ -120,6 +122,7 @@
         }
 
         function loadSettings(message) {
+            // 設定の読み込み
             const styleSheetList = document.styleSheets;
             let styleSheet = styleSheetList[1];
 
