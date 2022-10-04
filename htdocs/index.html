@@ -39,10 +39,13 @@
           scrolling = true;
           $("html,body").animate({ scrollLeft: scrollEnd }, 250, function () {
             scrolling = false;
+            // 描画終了
+            sock.send("redrawFinished");
           });
+        } else {
+          // 描画終了
+          sock.send("redrawFinished");
         }
-        // 描画終了
-        sock.send("redrawFinished");
       });
 
       // 監視の開始
@@ -161,13 +164,12 @@
         styleSheet.insertRule(`@media screen{
                             div#draft{
                                     font-family:   ${previewsettings.fontFamily};
-                                    font-size:      ${previewsettings.fontSize};
+                                    font-size: calc((100vh - 15px) / (${previewsettings.lineLength} + 2));
                                     `);
 
         const computedFontSize = getComputedStyle(
           document.documentElement.getElementsByTagName("p")[0]
         ).getPropertyValue("font-size");
-        //console.log(getComputedStyle(document.documentElement.getElementsByTagName("p")[0]).getPropertyValue('font-size'));
 
         const pixelFontSize = Math.round(parseFloat(computedFontSize));
         const clientPageHeight = pixelFontSize * previewsettings.lineLength;

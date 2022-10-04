@@ -394,20 +394,6 @@ function getWebviewContent() {
 
     //configuration 読み込み
     const previewSettings = getConfig();
-    /*     const config = vscode.workspace.getConfiguration('Novel');
-            let lineheightrate = 1.75;
-            let fontfamily = config.get('preview.font-family');
-            let fontsize = config.get('preview.fontsize');
-            let numfontsize = parseInt(/(\d+)(\D+)/.exec(fontsize)[1]);
-            let unitoffontsize = /(\d+)(\D+)/.exec(fontsize)[2];
-    
-            let linelength = config.get('preview.linelength');
-            let linesperpage = config.get('preview.linesperpage');
-    
-            let pagewidth = ( linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize;
-            let pageheight = (linelength * numfontsize) + unitoffontsize;
-            let lineheight = ( numfontsize * lineheightrate) + unitoffontsize;
-      */       //console.log(lineheight);
 
     const myText = editorText("active");
     return `<!DOCTYPE html>
@@ -540,27 +526,27 @@ function getWebviewContent() {
     }
  
       div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
-        padding-block-start: calc( ${previewSettings.fontSize} * ${previewSettings.lineHeightRate});
+        padding-block-start: calc( 100vh * ${previewSettings.fontSize} * ${previewSettings.lineHeightRate});
         }
 
         div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
-        padding-block-end: calc( ${previewSettings.fontSize} * ${previewSettings.lineHeightRate});
+        padding-block-end: calc( 100vh * ${previewSettings.fontSize} * ${previewSettings.lineHeightRate});
         }
 
     
     div.indent-1 p{
-    height: calc( 110mm - (${previewSettings.fontSize}));
-    padding-top: ${previewSettings.fontSize};
+    height: calc( 110mm - (100vh * ${previewSettings.fontSize}));
+    padding-top: calc( 100vh * ${previewSettings.fontSize});
     }
 
     div.indent-2 p{
-    height: calc( 110mm - (${previewSettings.fontSize} * 2));
-    padding-top: calc(${previewSettings.fontSize} * 2);
+    height: calc( 110mm - (100vh * ${previewSettings.fontSize} * 2));
+    padding-top: calc(100vh * ${previewSettings.fontSize} * 2);
     }
 
     div.indent-3 p{
-    height: calc( 110mm - (${previewSettings.fontSize} * 3));
-    padding-top: calc(${previewSettings.fontSize} * 3);
+    height: calc( 110mm - (100vh * ${previewSettings.fontSize} * 3));
+    padding-top: calc(100vh * ${previewSettings.fontSize} * 3);
     }
 
         p.goth {
@@ -671,7 +657,6 @@ function getWebviewContent() {
       body {
             writing-mode: vertical-rl;
             font-family: ${previewSettings.fontFamily};
-            height: ${previewSettings.pageHeight};
             overflow-y:hidden;
             padding:0;
         }
@@ -684,9 +669,8 @@ function getWebviewContent() {
         }
   
         p {
-            height: ${previewSettings.pageHeight};
             font-family: ${previewSettings.fontFamily};
-            font-size: ${previewSettings.fontSize};
+            font-size: calc(100vh * ${previewSettings.fontSize});
             margin:0 0 0 0;
             vertical-align: middle;
         }
@@ -714,15 +698,14 @@ function getWebviewContent() {
   
           body{
               background-image:   linear-gradient(to right, rgba(50, 50, 50, 0.5) 0.5pt, rgba(0, 0, 50, 0.05) 10em);
-              background-size:    ${previewSettings.pageWidth} ${previewSettings.pageHeight};
               background-repeat:  repeat-x;
               background-position: right 0px;
           }
           p{
               background-image:   linear-gradient( rgba(50, 50, 50, 1) 0.5pt, transparent 1pt),
                                   linear-gradient(to right, rgba(50, 50, 50, 1) 0.5pt, rgba(0, 0, 50, 0.05) 1pt);
-              background-size:    ${previewSettings.lineHeight} ${previewSettings.fontSize},
-                                  ${previewSettings.lineHeight} ${previewSettings.fontSize};
+              background-size:    calc( 100vh * calc( 100vh * ${previewSettings.fontSize}) * ${previewSettings.lineHeight}) calc( 100vh * ${previewSettings.fontSize}),
+              calc( 100vh * calc( 100vh * ${previewSettings.fontSize}) * ${previewSettings.lineHeight}) calc( 100vh * ${previewSettings.fontSize});
               background-repeat:  repeat,
                                   repeat;
               background-position: right 0px,
@@ -730,18 +713,18 @@ function getWebviewContent() {
           }
 
           div.indent-1 p{
-            height: calc( ${previewSettings.pageHeight} - (${previewSettings.fontSize}));
-            padding-top: ${previewSettings.fontSize};
+            height: calc( 100vh - (100vh * ${previewSettings.fontSize}));
+            padding-top: (100vh * ${previewSettings.fontSize});
             }
         
             div.indent-2 p{
-            height: calc( ${previewSettings.pageHeight} - (${previewSettings.fontSize} * 2));
-            padding-top: calc(${previewSettings.fontSize} * 2);
+            height: calc( 100vh - (100vh * ${previewSettings.fontSize} * 2));
+            padding-top: calc((100vh * ${previewSettings.fontSize}) * 2);
             }
         
             div.indent-3 p{
-            height: calc( ${previewSettings.pageHeight} - (${previewSettings.fontSize} * 3));
-            padding-top: calc(${previewSettings.fontSize} * 3);
+            height: calc( 100vh - (100vh * ${previewSettings.fontSize} * 3));
+            padding-top: calc((100vh * ${previewSettings.fontSize}) * 3);
             }
 
         
@@ -753,7 +736,7 @@ function getWebviewContent() {
             position:absolute;
             margin-right: -3em;
             margin-top: 0.5em;
-            top: ${previewSettings.pageHeight};
+            top: 100vh;
             background-color:rgba(50,50,00,0.5);
             max-width: 20em;
           }

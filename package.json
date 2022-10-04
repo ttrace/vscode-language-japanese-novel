@@ -97,11 +97,6 @@
           "default": "serif",
           "description": "プレビュー用のフォント名を入力してください。 \ne.g. \"UD Digi Kyokasho NK-R\",\"ヒラギノ明朝 ProN W3\", \"HiraMinProN-W3\", serif, sans-serif;"
         },
-        "Novel.preview.fontSize": {
-          "type": "string",
-          "default": "14pt",
-          "description": "文字の基本サイズを入力してください。利用できる単位は、pt、mm、em、rem、px、vh、vw、qの8種類です"
-        },
         "Novel.preview.lineLength": {
           "type": "number",
           "default": "40",
