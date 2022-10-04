@@ -39,10 +39,13 @@
           scrolling = true;
           $("html,body").animate({ scrollLeft: scrollEnd }, 250, function () {
             scrolling = false;
+            // 描画終了
+            sock.send("redrawFinished");
           });
+        } else {
+          // 描画終了
+          sock.send("redrawFinished");
         }
-        // 描画終了
-        sock.send("redrawFinished");
       });
 
       // 監視の開始
