@@ -151,11 +151,10 @@
             styleSheet.insertRule(`@media screen{
                             div#draft{
                                     font-family:   ${previewsettings.fontFamily};
-                                    font-size:      ${previewsettings.fontSize};
+                                    font-size: calc(100vh / (${previewsettings.lineLength} + 2));
                                     `);
 
             const computedFontSize = getComputedStyle(document.documentElement.getElementsByTagName("p")[0]).getPropertyValue('font-size');
-            //console.log(getComputedStyle(document.documentElement.getElementsByTagName("p")[0]).getPropertyValue('font-size'));
 
             const pixelFontSize = Math.round(parseFloat(computedFontSize));
             const clientPageHeight = pixelFontSize * previewsettings.lineLength;
