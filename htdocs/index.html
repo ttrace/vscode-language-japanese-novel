@@ -1,198 +1,210 @@
 <!DOCTYPE html>
 <html lang="ja">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>プレビュー</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/preview.css">
-    <link rel="stylesheet" href="css/graph.css">
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/preview.css" />
+    <link rel="stylesheet" href="css/graph.css" />
+  </head>
 
-</head>
-
-<body id="preview">
-    <div id='draft'>
-        <p></p>
+  <body id="preview">
+    <div id="draft">
+      <p></p>
     </div>
     <script>
+      // 監視ターゲットの取得
+      const target = document.getElementById("draft");
+      var scrolling = false;
 
-        // 監視ターゲットの取得
-        const target = document.getElementById('draft');
-        var scrolling = false;
-
-        // オブザーバーの作成
-        const observer = new MutationObserver(records => {
-            const scrollPrevious = $("#draft p").scrollLeft();
-            var width = $('#draft')[0].clientWidth;
-            const cursor = document.getElementById('cursor');
-            const panelWidth = window.innerWidth;
-            const scrollEnd = cursor.offsetLeft - width + (panelWidth / 2);
-            lineNumber();
-            const lineHeight = getComputedStyle($("#draft p")[0]).getPropertyValue('line-height');
-            console.log(scrollPrevious, scrollEnd, lineHeight);
-            if (Math.abs(scrollPrevious - scrollEnd) * 2 > parseInt(lineHeight) && !scrolling) {
-                scrolling = true;
-                $("html,body").animate({ scrollLeft: scrollEnd }, 250, function(){
-                    scrolling = false;
-                });
-            }
-        })
-
-        // 監視の開始
-        observer.observe(target, {
-            childList: true
-        })
-
-        function lineNumber() {
-            let linenumber = 0;
-            const paragraphs = $("#draft p");
-            const computedLineHeight = getComputedStyle(paragraphs[0]).getPropertyValue('line-height');
-            const paragraphWidth = getComputedStyle(paragraphs[0]).getPropertyValue('width');
-            console.log(computedLineHeight + "/" + paragraphWidth);
-
-            for (let p = 0; p < paragraphs.length; p++) {
-                const paragraph = paragraphs[p];
-                $(paragraph).prepend('<div class="line-numbers"></div>');
-                const lineNumberBlock = $(paragraph).find('.line-numbers');
-                const paragraphWidth = getComputedStyle(paragraph).getPropertyValue('width');
-                const numbersOfLines = Math.round(parseInt(paragraphWidth) / parseInt(computedLineHeight));
-
-                // console.log(p + ": width" + paragraphWidth + "/" + numbersOfLines);
-                for (let i = 0; i < numbersOfLines; i++) {
-                    linenumber++;
-                    $(lineNumberBlock).append(`<span>${linenumber}</span>`);
-                }
-            }
+      // オブザーバーの作成
+      const observer = new MutationObserver((records) => {
+        const scrollPrevious = $("#draft p").scrollLeft();
+        var width = $("#draft")[0].clientWidth;
+        const cursor = document.getElementById("cursor");
+        const panelWidth = window.innerWidth;
+        const scrollEnd = cursor.offsetLeft - width + panelWidth / 2;
+        lineNumber();
+        const lineHeight = getComputedStyle($("#draft p")[0]).getPropertyValue(
+          "line-height"
+        );
+        console.log(scrollPrevious, scrollEnd, lineHeight);
+        if (
+          Math.abs(scrollPrevious - scrollEnd) * 2 > parseInt(lineHeight) &&
+          !scrolling
+        ) {
+          scrolling = true;
+          $("html,body").animate({ scrollLeft: scrollEnd }, 250, function () {
+            scrolling = false;
+          });
         }
+        // 描画終了
+        sock.send("redrawFinished");
+      });
 
-        var port = parseInt(location.port) + 1;
-        console.log("ws://" + location.hostname + ":" + port);
-        const sock = new WebSocket("ws://" + location.hostname + ":" + port);
+      // 監視の開始
+      observer.observe(target, {
+        childList: true,
+      });
 
-        let previewsettings = {};
+      function lineNumber() {
+        let linenumber = 0;
+        const paragraphs = $("#draft p");
+        const computedLineHeight = getComputedStyle(
+          paragraphs[0]
+        ).getPropertyValue("line-height");
+        const paragraphWidth = getComputedStyle(paragraphs[0]).getPropertyValue(
+          "width"
+        );
+        console.log(computedLineHeight + "/" + paragraphWidth);
 
-        window.onload = function () {
+        for (let p = 0; p < paragraphs.length; p++) {
+          const paragraph = paragraphs[p];
+          $(paragraph).prepend('<div class="line-numbers"></div>');
+          const lineNumberBlock = $(paragraph).find(".line-numbers");
+          const paragraphWidth =
+            getComputedStyle(paragraph).getPropertyValue("width");
+          const numbersOfLines = Math.round(
+            parseInt(paragraphWidth) / parseInt(computedLineHeight)
+          );
 
-            var draftwrapper = document.getElementById("draft");
-
-            sock.addEventListener("open", e => {
-                console.log("接続が開かれたときに呼び出されるイベント");
-                sock.send('hello');
-                sock.send('givemedata');
-
-            });
-
-            $('#draft').on('click', function (e) {
-                var message = "jump:" + e.target.id;
-                console.log(message);
-                sock.send(message);
-            });
-
-            sock.addEventListener("message", e => {
-                console.log("サーバーからメッセージを受信したときに呼び出されるイベント");
-                //console.log(e.data);
-                if (e.data[0] === '<') {
-                    draftwrapper.textContent = '';
-                    draftwrapper.insertAdjacentHTML('afterbegin', e.data);
-                } else {
-
-                    const message = JSON.parse(e.data);
-
-                    if (message.files) {
-                        //    loadGraph(message);
-                    } else {
-                        loadSettings(message);
-                    }
-
-                }
-            });
-
-            sock.addEventListener("close", e => {
-                console.log("接続が閉じられたときに呼び出されるイベント");
-            });
-
-            sock.addEventListener("error", e => {
-                console.log("エラーが発生したときに呼び出されるイベント");
-            });
+          // console.log(p + ": width" + paragraphWidth + "/" + numbersOfLines);
+          for (let i = 0; i < numbersOfLines; i++) {
+            linenumber++;
+            $(lineNumberBlock).append(`<span>${linenumber}</span>`);
+          }
         }
+      }
 
-        function loadSettings(message) {
-            const styleSheetList = document.styleSheets;
-            let styleSheet = styleSheetList[1];
+      var port = parseInt(location.port) + 1;
+      //console.log("ws://" + location.hostname + ":" + port);
+      const sock = new WebSocket("ws://" + location.hostname + ":" + port);
 
-            //console.log(styleSheet.cssRules);
+      let previewsettings = {};
 
-            previewsettings = message;
-            console.log(previewsettings);
+      window.onload = function () {
+        var draftwrapper = document.getElementById("draft");
 
-            if (previewsettings.vscodeTheme.kind == 2) {
-                $('body').addClass('vscode-dark');
-                $('body').removeClass('vscode-light');
-            } else if (previewsettings.vscodeTheme.kind == 1) {
-                $('body').addClass('vscode-light');
-                $('body').removeClass('vscode-dark');
+        sock.addEventListener("open", (e) => {
+          console.log("接続が開かれたときに呼び出されるイベント");
+          sock.send("hello");
+          sock.send("givemedata");
+        });
+
+        $("#draft").on("click", function (e) {
+          var message = "jump:" + e.target.id;
+          console.log(message);
+          sock.send(message);
+        });
+
+        sock.addEventListener("message", (e) => {
+          console.log(
+            "サーバーからメッセージを受信したときに呼び出されるイベント"
+          );
+          //console.log(e.data);
+          if (e.data[0] === "<") {
+            draftwrapper.textContent = "";
+            draftwrapper.insertAdjacentHTML("afterbegin", e.data);
+          } else {
+            const message = JSON.parse(e.data);
+
+            if (message.files) {
+              //    loadGraph(message);
             } else {
-                $('body').removeClass('vscode-light');
-                $('body').removeClass('vscode-dark');
+              loadSettings(message);
             }
+          }
+        });
 
-            //CSS settings
+        sock.addEventListener("close", (e) => {
+          console.log("接続が閉じられたときに呼び出されるイベント");
+        });
 
-            // styleSheet.insertRule( "p{font-size: calc(110mm / " + previewsettings.lineLength + ") ; }" ) ;
-            const numberOfRules = styleSheet.rules.length;
-            for (i = 0; i < numberOfRules; i++) {
-                console.log('deleting rules:' + i + '/' + numberOfRules)
-                styleSheet.deleteRule(0);
-            }
+        sock.addEventListener("error", (e) => {
+          console.log("エラーが発生したときに呼び出されるイベント");
+        });
+      };
 
-            styleSheet.insertRule(`@media screen{
+      function loadSettings(message) {
+        // 設定の読み込み
+        const styleSheetList = document.styleSheets;
+        let styleSheet = styleSheetList[1];
+
+        //console.log(styleSheet.cssRules);
+
+        previewsettings = message;
+        console.log(previewsettings);
+
+        if (previewsettings.vscodeTheme.kind == 2) {
+          $("body").addClass("vscode-dark");
+          $("body").removeClass("vscode-light");
+        } else if (previewsettings.vscodeTheme.kind == 1) {
+          $("body").addClass("vscode-light");
+          $("body").removeClass("vscode-dark");
+        } else {
+          $("body").removeClass("vscode-light");
+          $("body").removeClass("vscode-dark");
+        }
+
+        //CSS settings
+
+        // styleSheet.insertRule( "p{font-size: calc(110mm / " + previewsettings.lineLength + ") ; }" ) ;
+        const numberOfRules = styleSheet.rules.length;
+        for (i = 0; i < numberOfRules; i++) {
+          console.log("deleting rules:" + i + "/" + numberOfRules);
+          styleSheet.deleteRule(0);
+        }
+
+        styleSheet.insertRule(`@media screen{
                             div#draft{
                                     font-family:   ${previewsettings.fontFamily};
                                     font-size:      ${previewsettings.fontSize};
                                     `);
 
-            const computedFontSize = getComputedStyle(document.documentElement.getElementsByTagName("p")[0]).getPropertyValue('font-size');
-            //console.log(getComputedStyle(document.documentElement.getElementsByTagName("p")[0]).getPropertyValue('font-size'));
+        const computedFontSize = getComputedStyle(
+          document.documentElement.getElementsByTagName("p")[0]
+        ).getPropertyValue("font-size");
+        //console.log(getComputedStyle(document.documentElement.getElementsByTagName("p")[0]).getPropertyValue('font-size'));
 
-            const pixelFontSize = Math.round(parseFloat(computedFontSize));
-            const clientPageHeight = pixelFontSize * previewsettings.lineLength;
-            const clientLineHeight = Math.round(pixelFontSize * previewsettings.lineHeightRate);
-            const clientPageWidth = clientLineHeight * previewsettings.linesPerPage;
+        const pixelFontSize = Math.round(parseFloat(computedFontSize));
+        const clientPageHeight = pixelFontSize * previewsettings.lineLength;
+        const clientLineHeight = Math.round(
+          pixelFontSize * previewsettings.lineHeightRate
+        );
+        const clientPageWidth = clientLineHeight * previewsettings.linesPerPage;
 
+        styleSheet.deleteRule(0);
 
-            console.log(`@media screen{
+        styleSheet.insertRule(`@media screen{
                             div#draft{
                                     font-family:   ${previewsettings.fontFamily};
                                     font-size:      ${pixelFontSize}px;
                                     height:        ${clientPageHeight}px;
+                                    background-image: linear-gradient(
+                                        225deg,
+                                        rgba(70, 69, 69, 0.0) calc( ${clientPageWidth}px - 2em),
+                                        rgba(70, 69, 69, 0.3)
+                                    );
                                     background-size:    ${clientPageWidth}px ${clientPageHeight}px;}}`);
 
-            styleSheet.deleteRule(0);
-
-            styleSheet.insertRule(`@media screen{
-                            div#draft{
-                                    font-family:   ${previewsettings.fontFamily};
-                                    font-size:      ${pixelFontSize}px;
-                                    height:        ${clientPageHeight}px;
-                                    background-size:    ${clientPageWidth}px ${clientPageHeight}px;}}`);
-
-            styleSheet.insertRule(`@media screen{
+        styleSheet.insertRule(`@media screen{
                             p{  height:         ${clientPageHeight}px;
                                 font-family:    ${previewsettings.fontFamily};
                                 font-size:      ${pixelFontSize}px;
                                 line-height:    ${clientLineHeight}px;
+                                line-height-step:    ${clientLineHeight}px;
                                 background-size:    ${clientLineHeight}px ${pixelFontSize}px,
                                                     ${clientLineHeight}px ${pixelFontSize}px}}`);
-            styleSheet.insertRule(`@media screen{
+        styleSheet.insertRule(`@media screen{
                             div.comment{
                                 top: calc( ${clientPageHeight}px + 1.5em);
                             }
                         }`);
 
-            styleSheet.insertRule(`@media screen{
+        styleSheet.insertRule(`@media screen{
                             div.indent-1 p{
                             padding-top: ${previewsettings.fontSize};
                             }
@@ -206,7 +218,7 @@
                             }
                         }`);
 
-            styleSheet.insertRule(`@media screen{
+        styleSheet.insertRule(`@media screen{
                             div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
                                 padding-block-start: calc( ${previewsettings.fontSize} * ${previewsettings.lineHeightRate});
                             }
@@ -216,41 +228,38 @@
                             }
                         }`);
 
-            console.log('sent giveme');
-            sock.send('givemedata');
-        }
+        console.log("sent giveme");
+        sock.send("givemedata");
+      }
 
+      function loadGraph(message) {
+        const graph = $("#graph");
 
-        function loadGraph(message) {
-            const graph = $('#graph');
+        sock.addEventListener("message", (e) => {
+          const novelObject = message;
+          const draftFiles = novelObject.files;
+          const amountLength = novelObject.length;
 
-            sock.addEventListener("message", e => {
-                const novelObject = message;
-                const draftFiles = novelObject.files;
-                const amountLength = novelObject.length;
+          console.log("メッセージ受信", novelObject);
 
-                console.log("メッセージ受信", novelObject);
+          graph.append('<ul id="graphWrapper"></ul>');
+          const graphWrapper = $("#graphWrapper");
 
-                graph.append('<ul id="graphWrapper"></ul>');
-                const graphWrapper = $('#graphWrapper');
+          let cyclicColor = 1;
+          draftFiles.forEach((element) => {
+            const listItem = $("<li>");
+            const currentColor = cyclicColor % 4;
+            const widhOfItem = element.length / amountLength;
 
-                let cyclicColor = 1;
-                draftFiles.forEach(element => {
-                    const listItem = $('<li>');
-                    const currentColor = cyclicColor % 4;
-                    const widhOfItem = element.length / amountLength;
+            listItem.html(`${element.name}, ${element.length}`);
+            listItem.css("width", widhOfItem * 100 + "%");
+            listItem.addClass(`color${currentColor}`);
+            graphWrapper.append(listItem);
 
-                    listItem.html(`${element.name}, ${element.length}`);
-                    listItem.css('width', widhOfItem * 100 + '%');
-                    listItem.addClass(`color${currentColor}`);
-                    graphWrapper.append(listItem);
-
-                    cyclicColor++;
-                });
-            });
-        }
+            cyclicColor++;
+          });
+        });
+      }
     </script>
-</body>
-
-
+  </body>
 </html>

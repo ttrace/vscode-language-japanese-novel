@@ -29,13 +29,13 @@ h1 {
   /* フォント */
   font-weight: Extrabold;
   /* フォントサイズ */
-  font-size: 24q;
+  font-size: 24Q;
   /* 字下げ */
   text-indent: 0;
   /* 直後の改ページ・改段禁止 */
   page-break-before: always;
   page-break-after: always;
-  line-height: 42q;
+  line-height: 42Q;
   letter-spacing: 0.25em;
   display: flex;
   align-items: center;
@@ -51,18 +51,17 @@ body.vscode-light {
   background-color: white;
 }
 
-
 h2 {
   /* フォント */
   font-weight: Demibold;
   /* フォントサイズ */
-  font-size: 16q;
+  font-size: 16Q;
   /* 字下げ */
   text-indent: 3em;
   /* 直後の改ページ・改段禁止 */
   page-break-before: always;
   page-break-after: avoid;
-  line-height: 42q;
+  line-height: 42Q;
   margin-left: 2em;
 }
 
@@ -70,17 +69,17 @@ h2.part {
   width: 80mm;
   padding: 0mm 35mm;
   font-weight: bold;
-  font-size: 16q;
+  font-size: 16Q;
   page-break-before: always;
   page-break-after: always;
   margin-left: 4em;
 }
 
-h1+h2 {
+h1 + h2 {
   margin-right: 16pt;
 }
 
-ruby>rt {
+ruby > rt {
   font-size: 0.5em;
 }
 
@@ -103,7 +102,7 @@ p.align-rb {
   text-align: right;
 }
 
-p.goth+p.goth {
+p.goth + p.goth {
   margin-block-start: -1em;
 }
 
@@ -136,9 +135,8 @@ hr {
 /* 縦中横 */
 .tcy {
   -webkit-text-combine: horizontal;
-  text-combine: horizontal;
+  text-combine-upright: horizontal;
   -ms-text-combine-horizontal: all;
-  text-combine-horizontal: digit 2;
   text-combine-upright: digit 2;
 }
 
@@ -186,7 +184,7 @@ figcaption {
 
 /* 級さげ */
 span.smaller {
-  font-size: 6.5pt
+  font-size: 6.5pt;
 }
 
 div.comment {
@@ -196,7 +194,6 @@ div.comment {
 p.blank {
   color: transparent;
 }
-
 
 body {
   writing-mode: vertical-rl;
@@ -224,7 +221,7 @@ em.side-dot {
 }
 
 span.tcy {
-  text-combine: horizontal;
+  text-combine-upright: horizontal;
   -webkit-text-combine: horizontal;
 }
 
@@ -238,38 +235,50 @@ span.tcy {
   }
 }
 
-div#draft {
-  background-image: linear-gradient(to down, rgba(128, 128, 128, 0.5) 0.5pt, rgba(0, 0, 128, 0.05) 10em);
+body div#draft {
+  background-position: right;
 }
 
 .vscode-dark div#draft {
-  background-image: linear-gradient(to down, rgba(70, 69, 69, 0.5) 0.5pt, rgba(0, 0, 128, 0.05) 10em);
+  background-image: linear-gradient(
+      to down,
+      rgba(70, 69, 69, 0.5) 0.5pt,
+      rgba(0, 0, 128, 0.05) 10em
+    ),
+    linear-gradient(to right, rgba(70, 69, 69, 0.5) 0.5pt, red);
 }
 
 .vscode-light div#draft {
-  background-image: linear-gradient(to down, rgba(227, 227, 227, 0.5) 0.5pt, rgba(255, 255, 255, 0.05) 10em);
+  background-image: linear-gradient(
+    to down,
+    rgba(227, 227, 227, 0.5) 0.5pt,
+    rgba(255, 255, 255, 0.05) 10em
+  );
 }
 
-
 p {
-  background-image: linear-gradient(rgba(128, 128, 128, 1) 0.5pt, transparent 1pt),
-    linear-gradient(to right, rgba(128, 128, 128, 1) 0.5pt, rgba(0, 0, 50, 0.05) 1pt);
-  background-repeat: repeat,
-    repeat;
-  background-position: right 0px,
-    right 0px;
+  background-image: linear-gradient(
+      rgba(128, 128, 128, 1) 0.5pt,
+      transparent 1pt
+    ),
+    linear-gradient(
+      to right,
+      rgba(128, 128, 128, 1) 0.5pt,
+      rgba(0, 0, 50, 0.05) 1pt
+    );
+  background-repeat: repeat, repeat;
+  background-position: right 0px, right 0px;
 }
 
 .vscode-light p {
   background-image: linear-gradient(rgb(214, 214, 214) 0.5pt, transparent 1pt),
-    linear-gradient(to right, rgb(217, 217, 217) 0.5pt, transparent 1pt)
+    linear-gradient(to right, rgb(217, 217, 217) 0.5pt, transparent 1pt);
 }
 
 .vscode-dark p {
   background-image: linear-gradient(rgb(56, 56, 56) 0.5pt, transparent 1pt),
-    linear-gradient(to right, rgb(56, 56, 56) 0.5pt, transparent 1pt)
+    linear-gradient(to right, rgb(56, 56, 56) 0.5pt, transparent 1pt);
 }
-
 
 div.comment {
   display: block;
@@ -289,7 +298,7 @@ div.comment {
 }
 
 div.comment::before {
-  content: '';
+  content: "";
   position: absolute;
   right: 1em;
   top: -15px;
@@ -301,11 +310,10 @@ div.comment::before {
   border-left: 15px solid transparent;
 }
 
-
 .line-numbers {
   display: block;
   position: absolute;
-  top:0px;
+  top: 0px;
 }
 
 .line-numbers span {

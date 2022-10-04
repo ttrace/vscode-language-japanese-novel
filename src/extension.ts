@@ -20,8 +20,9 @@ const TextDecoder = textEncoding.TextDecoder;
 //let html: Buffer;
 let documentRoot: vscode.Uri;
 let WebViewPanel = false;
-
 let servicePort = 8080;
+let previewRedrawing = false;
+
 emptyPort(function (port: number) {
     servicePort = port;
     // console.log('真の空きポート',port);
@@ -149,18 +150,24 @@ function launchserver(originEditor: vscode.TextEditor) {
 
             console.log("Received: " + message);
 
-
             if (message == "hello") {
+                //通信確立
                 ws.send(JSON.stringify(getConfig()));
                 ws.send(editorText(originEditor));
             } else if (message == "givemedata") {
+                // データ送信要求を受け取った時
                 console.log("sending body");
                 ws.send(editorText(originEditor));
+            } else if (message == "redrawFinished"){
+                // 再描画終了を受け取った時
+                previewRedrawing = false;
             } else if (message == "giveMeObject") {
+                // メタデータ送信要求を受け取った時
                 const sendingObjects = draftsObject(draftRoot());
                 console.log('send:', sendingObjects);
                 ws.send(JSON.stringify(sendingObjects));
             } else if (typeof message == "string" && message.match(/^jump/)) {
+                //行のタップを検知した時
                 //const originalEditor = vscode.window.activeTextEditor;
 
                 const targetLine = parseInt(message.split('-')[1]);
@@ -307,27 +314,30 @@ const publishWebsocketsDelay: any = {
         delete this.timeoutID;
     },
     presskey: function (s: websockets.Server) {
+        if(previewRedrawing) return;
+        previewRedrawing = true;
+        this.publish(s);
         //this.cancel();
-        if (!keyPressFlag) {
-            const currentEditor = vscode.window.activeTextEditor;
-            if (currentEditor) {
-                const updateCounter = Math.min(
-                    Math.ceil(currentEditor.document.getText().length / 50),
-                    1500
-                );
-                this.timeoutID = setTimeout(socketServer => {
-                    this.publish(socketServer);
-                }, updateCounter, s);
-                keyPressFlag = true;
-            }
-        }
+        // if (!keyPressFlag) {
+        //     const currentEditor = vscode.window.activeTextEditor;
+        //     if (currentEditor) {
+        //         const updateCounter = Math.min(
+        //             Math.ceil(currentEditor.document.getText().length / 50),
+        //             1500
+        //         );
+        //         this.timeoutID = setTimeout(socketServer => {
+        //             this.publish(socketServer);
+        //         }, updateCounter, s);
+        //         keyPressFlag = true;
+        //     }
+        // }
     },
-    cancel: function () {
-        if (typeof this.timeoutID == "number") {
-            this.clearTimeout(this.timeoutID);
-            delete this.timeoutID;
-        }
-    }
+    // cancel: function () {
+    //     if (typeof this.timeoutID == "number") {
+    //         this.clearTimeout(this.timeoutID);
+    //         delete this.timeoutID;
+    //     }
+    // }
 };
 
 function verticalpreview() {
