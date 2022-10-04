@@ -54,10 +54,10 @@ export function markUpHtml(myHtml: string) {
 
     taggedHTML = taggedHTML.replace(/(?<![0-9\sa-zA-Z"'():])([0-9][0-9])(?![0-9\sa-zA-Z"'():])/g, '<span class="tcy">$1</span>');
     taggedHTML = taggedHTML.replace(/(.+?)［＃「\1」は縦中横］/g, '<span class="tcy">$1</span>');
-    taggedHTML = taggedHTML.replace(/<p id=\"l-[0-9]+\">［＃ここから[１1一]文字下げ］<\/p>/g, '<div class="indent-1">');
-    taggedHTML = taggedHTML.replace(/<p id=\"l-[0-9]+\">［＃ここから[２2二]文字下げ］<\/p>/g, '<div class="indent-2">');
-    taggedHTML = taggedHTML.replace(/<p id=\"l-[0-9]+\">［＃ここから[３3三]文字下げ］<\/p>/g, '<div class="indent-3">');
-    taggedHTML = taggedHTML.replace(/<p id=\"l-[0-9]+\">［＃ここで字下げ終わり］<\/p>/g, '</div>');
+    taggedHTML = taggedHTML.replace(/<p id="l-[0-9]+">［＃ここから[１1一]文字下げ］<\/p>/g, '<div class="indent-1">');
+    taggedHTML = taggedHTML.replace(/<p id="l-[0-9]+">［＃ここから[２2二]文字下げ］<\/p>/g, '<div class="indent-2">');
+    taggedHTML = taggedHTML.replace(/<p id="l-[0-9]+">［＃ここから[３3三]文字下げ］<\/p>/g, '<div class="indent-3">');
+    taggedHTML = taggedHTML.replace(/<p id="l-[0-9]+">［＃ここで字下げ終わり］<\/p>/g, '</div>');
     taggedHTML = taggedHTML.replace(/<!-- (.+?) -->/g, '<div class="comment">$1</div>');
     taggedHTML = taggedHTML.replace(/｜([^｜\n]+?)《([^《]+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
     taggedHTML = taggedHTML.replace(/([一-鿏々-〇]+?)《(.+?)》/g, '<ruby>$1<rt>$2</rt></ruby>');
