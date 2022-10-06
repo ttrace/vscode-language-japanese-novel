@@ -245,8 +245,7 @@ body div#draft {
       rgba(70, 69, 69, 0.5) 0.5pt,
       rgba(0, 0, 128, 0.05) 10em
     ),
-    linear-gradient(to right, rgba(70, 69, 69, 0.5) 0.5pt, red);
-}
+    linear-gradient(to right, rgba(70, 69, 69, 0.5) 0.5pt, red);}
 
 .vscode-light div#draft {
   background-image: linear-gradient(

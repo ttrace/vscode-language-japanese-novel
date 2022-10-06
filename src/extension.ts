@@ -370,8 +370,8 @@ function exportpdf(): void {
             output.appendLine(`saving pdf to ${vivlioCommand}`);
             cp.execFile(vivlioCommand, vivlioParams, (err, stdout, stderr) => {
                 if (err) {
-                    console.log(`stderr: ${stderr}`);
-                    output.appendLine(`stderr: ${stderr}`);
+                    console.log(`stderr: ${err.message}`);
+                    output.appendLine(`stderr: ${err.message}`);
                     return
                 }
                 output.appendLine(`stdout: ${stdout}`);
