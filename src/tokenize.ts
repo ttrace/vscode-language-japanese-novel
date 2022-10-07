@@ -38,7 +38,7 @@ export function activateTokenizer(context: vscode.ExtensionContext, kuromojiPath
 
 	context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel' }, new DocumentSemanticTokensProvider(), legend));
 
-	context.subscriptions.push(vscode.languages.registerDocumentRangeSemanticTokensProvider({ language: 'novel' }, new DocumentRangeSemanticTokensProvider(), legend));
+	// context.subscriptions.push(vscode.languages.registerDocumentRangeSemanticTokensProvider({ language: 'novel' }, new DocumentRangeSemanticTokensProvider(), legend));
 	tokenizeFlag = true;
 }
 
@@ -304,12 +304,12 @@ export class DocumentSemanticTokensProvider implements vscode.DocumentSemanticTo
 	}
 }
 
-export class DocumentRangeSemanticTokensProvider implements vscode.DocumentRangeSemanticTokensProvider {
-	provideDocumentRangeSemanticTokens(document: vscode.TextDocument, range: vscode.Range, token: vscode.CancellationToken): vscode.ProviderResult<vscode.SemanticTokens> {
-		throw new Error('Method not implemented.');
-	}
+// export class DocumentRangeSemanticTokensProvider implements vscode.DocumentRangeSemanticTokensProvider {
+// 	provideDocumentRangeSemanticTokens(document: vscode.TextDocument, range: vscode.Range, token: vscode.CancellationToken): vscode.ProviderResult<vscode.SemanticTokens> {
+// 		throw new Error('Method not implemented.');
+// 	}
 
-}
+// }
 
 function parseTextToken(text: string): { tokenType: string; tokenModifiers: string[]; } {
 	const parts = text.split('.');

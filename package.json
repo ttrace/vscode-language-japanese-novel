@@ -100,12 +100,17 @@
         "Novel.preview.lineLength": {
           "type": "number",
           "default": "40",
-          "description": "一行の文字数を指定してください"
+          "description": "一行の文字数を指定してください\n行数はプレビュー、印刷どちらも有効です"
         },
         "Novel.preview.linesPerPage": {
           "type": "number",
           "default": "10",
-          "description": "1ページの行数を指定してください"
+          "description": "PDF作成時の印刷時の1ページの行数を指定してください"
+        },
+        "Novel.preview.draftPaper": {
+          "type": "bool",
+          "default": false,
+          "description": "PDFを作成するときに原稿用紙スタイルにするかどうかを決定してください"
         },
         "Novel.compile.separator": {
           "type": "string",
