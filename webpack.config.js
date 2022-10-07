@@ -27,8 +27,12 @@ const webExtensionConfig = {
 		filename: '[name].js',
 		// eslint-disable-next-line no-undef
 		path: path.join(__dirname, './dist'),
-		libraryTarget: 'commonjs',
-		devtoolModuleFilenameTemplate: '../../[resource-path]'
+		libraryTarget: 'commonjs2',
+		devtoolModuleFilenameTemplate: '../[resource-path]'
+	},
+	devtool: 'source-map', // create a source map that points to the original source file
+	externals: {
+		'vscode': 'commonjs vscode', // ignored because it doesn't exist
 	},
 	resolve: {
 		mainFields: ['browser', 'module', 'main'], // look for `browser` entry point in imported node modules
@@ -41,7 +45,7 @@ const webExtensionConfig = {
 			// see https://webpack.js.org/configuration/resolve/#resolvefallback
 			// for the list of Node.js core module polyfills.
 			// eslint-disable-next-line no-undef
-			'assert': require.resolve('assert')
+			//'assert': require.resolve('assert')
 		}
 	},
 	module: {
@@ -58,13 +62,9 @@ const webExtensionConfig = {
 			process: 'process/browser', // provide a shim for the global `process` variable
 		}),
 	],
-	externals: {
-		'vscode': 'commonjs vscode', // ignored because it doesn't exist
-	},
 	performance: {
 		hints: false
 	},
-	devtool: 'nosources-source-map', // create a source map that points to the original source file
 	infrastructureLogging: {
 		level: "log", // enables logging required for problem matchers
 	},

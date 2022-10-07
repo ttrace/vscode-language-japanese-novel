@@ -3,3 +3,6 @@
 !file.ts
 .vscode-test/
 outer-resource/**
+test/*
+node_modules
+*.zip
