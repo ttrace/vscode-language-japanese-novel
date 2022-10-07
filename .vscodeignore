@@ -5,4 +5,5 @@
 outer-resource/**
 test/*
 node_modules
+!node_modules/kuromoji/dict/*
 *.zip
