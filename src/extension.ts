@@ -821,14 +821,14 @@ function getPrintContent() {
   ${myText}
   </div>
   <script lang="js">
-    var buildingLineNumber = false;
-    const paragraphs = document.querySelectorAll("#draft p");
-    let linenumber = 0;
-    lineNumber();
-    
-    function lineNumber() {
-    if (buildingLineNumber) return;
-    buildingLineNumber = true;
+  var buildingLineNumber = false;
+  const paragraphs = document.querySelectorAll("#draft p");
+  let linenumber = 0;
+  lineNumber();
+
+  function lineNumber() {
+  if (buildingLineNumber) return;
+  buildingLineNumber = true;
     const computedLineHeight = getComputedStyle(
     paragraphs[0]
     ).getPropertyValue("line-height");
@@ -837,7 +837,18 @@ function getPrintContent() {
     "width"
     );
     
-    console.log(paragraphs[0].prepend);
+  const lineNumWrapper = document.getElementById("lineNumbers");
+
+  for(i = 0; i < 20; i++){
+    const numSpan = document.createElement("span");
+    numSpan.setAttribute("class", "line-index");
+    numSpan.setAttribute("style",
+       \`display:block;
+       width: calc(2.857142857142857mm * 1.75);
+       font-size: 4px;
+       text-align: center;
+       writing-mode: horizontal-tb;
+       transform:scale(0.8, 0.6)\`);
 
     for (let p = 0; p < paragraphs.length; p++) {
     const paragraph = paragraphs[p];
@@ -851,18 +862,13 @@ function getPrintContent() {
         parseInt(paragraphWidth) / parseInt(computedLineHeight)
     );
 
-    console.log(p + ": width" + paragraphWidth + "/" + numbersOfLines);
-    for (let i = 0; i < numbersOfLines; i++) {
-        linenumber++;
-        const lnspan = document.createElement("span");
-        lnspan.innerText = linenumber;
-        lineNumberBlock.append(lnspan);
-    }
-    }
-    buildingLineNumber = false;
+    numSpan.innerText = i + 1;
+    lineNumWrapper.append(numSpan);
+  }
+  buildingLineNumber = false;
 }
   
-  </script>
+</script>
   </body>
   </html>`;
 }
