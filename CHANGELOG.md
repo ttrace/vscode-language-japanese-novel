@@ -1,5 +1,10 @@
 # Changelog
 
+# 1.3.17
+
+- [縦書プレビュー時にポートがすでに使用されている #32](https://github.com/ttrace/vscode-language-japanese-novel/issues/32)に対応
+    - [prokosna](https://github.com/prokosna)様からいただいていたPR[Improve how to find available port for server #38](https://github.com/ttrace/vscode-language-japanese-novel/pull/38)をマージしました。
+
 # 1.3.16
 
 - プレビューのコールバックを調整
