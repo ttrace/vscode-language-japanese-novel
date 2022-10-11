@@ -69,6 +69,14 @@ export function activate(context: vscode.ExtensionContext): void {
   const controller = new CharacterCounterController(characterCounter);
   context.subscriptions.push(controller);
   context.subscriptions.push(characterCounter);
+
+  const deadLineFolderPath = context.workspaceState.get("deadlineFolderPath");
+  const deadLineTextCount = context.workspaceState.get("deadlineTextCount");
+  console.log("memento", deadLineFolderPath,deadLineTextCount)
+  if(typeof deadLineFolderPath == "string" && typeof deadLineTextCount == "string"){
+    characterCounter._setCounterToFolder(deadLineFolderPath, parseInt(deadLineTextCount));
+  }
+
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.set-counter", async (e) => {
       const path = e.fsPath;
@@ -80,7 +88,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       // InputBoxを呼び出す。awaitで完了を待つ。
       let result = await vscode.window.showInputBox({
-        prompt: "目標となる文字数を入力してください",
+        prompt: "文字数を入力してください　数字を入力せずにEnterを押すと現在の設定を解除します",
         placeHolder: `現在の文字数：${currentLength}`,
       });
       // ここで入力を処理する
@@ -88,6 +96,11 @@ export function activate(context: vscode.ExtensionContext): void {
         try {
           parseInt(result);
           // 入力が正常に行われている
+          context.workspaceState.update("deadlineFolderPath", path);
+          context.workspaceState.update("deadlineTextCount", result);
+          console.log("saving memento",path, result);
+          characterCounter._setCounterToFolder(path, parseInt(result));
+
           vscode.window.showInformationMessage(
             `目標の文字数を: ${result}文字に設定しました`
           );
@@ -98,9 +111,13 @@ export function activate(context: vscode.ExtensionContext): void {
       } else {
         // 入力がキャンセルされた
         vscode.window.showWarningMessage(`目標文字数は設定しません`);
+        characterCounter._setCounterToFolder("", 0);
+        context.workspaceState.update("deadlineFolderPath", null);
+        context.workspaceState.update("deadlineTextCount", null);
+
         result = "0";
       }
-      characterCounter._setCounterToFolder(path, parseInt(result!));
+
     })
   );
 

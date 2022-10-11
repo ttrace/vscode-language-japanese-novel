@@ -2,22 +2,15 @@
 
 "use strict";
 import * as path from "path";
+import * as fs from "fs";
 import { draftsObject } from "./compile";
 import * as TreeModel from "tree-model";
 
-import {
-  window,
-  Disposable,
-  StatusBarAlignment,
-  StatusBarItem,
-  TextDocument,
-  workspace,
-} from "vscode";
+import { window, Disposable, StatusBarAlignment, StatusBarItem, TextDocument, workspace } from "vscode";
 
 import { totalLength, draftRoot } from "./compile";
 import simpleGit, { SimpleGit } from "simple-git";
 import { distance } from "fastest-levenshtein";
-
 
 let projectCharacterCountNum = 0;
 
@@ -67,18 +60,13 @@ export class CharacterCounter {
 
     if (draftRoot() == "") {
       //テキストファイルを直接開いているとき
-      this._statusBarItem.text = `$(note) ${Intl.NumberFormat().format(
-        this._getCharacterCount(doc)
-      )} 文字`;
+      this._statusBarItem.text = `$(note) ${Intl.NumberFormat().format(this._getCharacterCount(doc))} 文字`;
     } else {
       savedCharacterCountNum = this._lengthByPath(docPath);
     }
 
-    const totalCharacterCountNum =
-      projectCharacterCountNum - savedCharacterCountNum + characterCountNum;
-    const totalCharacterCount = Intl.NumberFormat().format(
-      totalCharacterCountNum
-    );
+    const totalCharacterCountNum = projectCharacterCountNum - savedCharacterCountNum + characterCountNum;
+    const totalCharacterCount = Intl.NumberFormat().format(totalCharacterCountNum);
 
     let editDistance = "";
     if (this.ifEditDistance) {
@@ -86,13 +74,9 @@ export class CharacterCounter {
         editDistance = `／$(compare-changes)$(sync)文字`;
         this._updateEditDistanceDelay();
       } else if (this.keyPressFlag) {
-        editDistance = `／$(compare-changes)${Intl.NumberFormat().format(
-          this.editDistance
-        )}$(sync)文字`;
+        editDistance = `／$(compare-changes)${Intl.NumberFormat().format(this.editDistance)}$(sync)文字`;
       } else {
-        editDistance = `／$(compare-changes)${Intl.NumberFormat().format(
-          this.editDistance
-        )}文字`;
+        editDistance = `／$(compare-changes)${Intl.NumberFormat().format(this.editDistance)}文字`;
       }
     }
 
@@ -101,8 +85,7 @@ export class CharacterCounter {
       let targetNumberTextNum = this._folderCount.amountLengthNum;
       let targetNumberText = Intl.NumberFormat().format(targetNumberTextNum);
       if (this._isEditorChildOfTargetFolder) {
-        targetNumberTextNum =
-          targetNumberTextNum - savedCharacterCountNum + characterCountNum;
+        targetNumberTextNum = targetNumberTextNum - savedCharacterCountNum + characterCountNum;
         targetNumberText = Intl.NumberFormat().format(targetNumberTextNum);
       }
       if (this._countingTargetNum != 0) {
@@ -142,10 +125,14 @@ export class CharacterCounter {
     this.updateCharacterCount();
   }
 
-  public _setCounterToFolder(
-    pathToFolder: string,
-    targetCharacter: number
-  ): void {
+  public _setCounterToFolder(pathToFolder: string, targetCharacter: number): void {
+    if(!fs.existsSync(pathToFolder)){
+        this._countingFolder = "";
+        this._countingTargetNum = 0;
+        this._updateProjectCharacterCount();
+        this._setIfChildOfTarget();
+        return
+    }
     this._countingFolder = pathToFolder;
     this._countingTargetNum = targetCharacter;
     this._updateProjectCharacterCount();
@@ -164,9 +151,7 @@ export class CharacterCounter {
       const draftNode = tree.parse(element);
       draftTree.addChild(draftNode);
     });
-    const targetFileNode = draftTree.first(
-      (node) => node.model.dir === dirPath
-    );
+    const targetFileNode = draftTree.first((node) => node.model.dir === dirPath);
     if (targetFileNode) {
       return targetFileNode.model.length;
     } else {
@@ -186,17 +171,13 @@ export class CharacterCounter {
       const draftNode = tree.parse(element);
       draftTree.addChild(draftNode);
     });
-    const deadLineFolderNode = draftTree.first(
-      (node) => node.model.dir === this._countingFolder
-    );
+    const deadLineFolderNode = draftTree.first((node) => node.model.dir === this._countingFolder);
 
     if (deadLineFolderNode?.hasChildren) {
       const treeForTarget = new TreeModel();
       const targetTree = treeForTarget.parse(deadLineFolderNode.model);
 
-      const ifEditorIsChild = targetTree.first(
-        (node) => node.model.dir === activeDocumentPath
-      );
+      const ifEditorIsChild = targetTree.first((node) => node.model.dir === activeDocumentPath);
       if (ifEditorIsChild) {
         this._isEditorChildOfTargetFolder = true;
         return true;
@@ -254,9 +235,7 @@ export class CharacterCounter {
                 .log(logOptionLatest)
                 .then((logsLatest) => {
                   if (logsLatest?.total === 0) {
-                    window.showInformationMessage(
-                      `比較対象になるファイルがGitにコミットされていないようです`
-                    );
+                    window.showInformationMessage(`比較対象になるファイルがGitにコミットされていないようです`);
                     this.ifEditDistance = false;
                     this.latestText = "";
                     this.updateCharacterCount();
@@ -267,11 +246,7 @@ export class CharacterCounter {
                     git
                       .show(showString)
                       .then((showLog) => {
-                        console.log(
-                          "最終更新テキスト: ",
-                          typeof showLog,
-                          showLog
-                        );
+                        console.log("最終更新テキスト: ", typeof showLog, showLog);
                         if (typeof showLog === "string") {
                           if (showLog == "") showLog = " ";
                           this.latestText = showLog;
@@ -279,9 +254,7 @@ export class CharacterCounter {
                           this.updateCharacterCount();
                         }
                       })
-                      .catch((err) =>
-                        console.error("failed to git show:", err)
-                      );
+                      .catch((err) => console.error("failed to git show:", err));
                   }
                 })
                 .catch((err) => console.error("failed to git show:", err));
@@ -337,10 +310,7 @@ export class CharacterCounter {
   public _updateEditDistanceDelay(): void {
     if (!this.keyPressFlag && window.activeTextEditor) {
       this.keyPressFlag = true;
-      const updateCounter = Math.min(
-        Math.ceil(window.activeTextEditor.document.getText().length / 100),
-        500
-      );
+      const updateCounter = Math.min(Math.ceil(window.activeTextEditor.document.getText().length / 100), 500);
       //console.log('timeoutID', this.timeoutID, updateCounter);
       this.timeoutID = setTimeout(() => {
         this._updateEditDistanceActual();
@@ -376,19 +346,14 @@ export class CharacterCounterController {
     const subscriptions: Disposable[] = [];
     window.onDidChangeTextEditorSelection(this._onEvent, this, subscriptions);
     workspace.onDidSaveTextDocument(this._onSave, this, subscriptions);
-    window.onDidChangeActiveTextEditor(
-      this._onFocusChanged,
-      this,
-      subscriptions
-    );
+    window.onDidChangeActiveTextEditor(this._onFocusChanged, this, subscriptions);
 
     this._disposable = Disposable.from(...subscriptions);
   }
 
   private _onEvent() {
     this._characterCounter.updateCharacterCount();
-    if (this._characterCounter.ifEditDistance)
-      this._characterCounter._updateEditDistanceDelay();
+    if (this._characterCounter.ifEditDistance) this._characterCounter._updateEditDistanceDelay();
   }
 
   private _onFocusChanged() {
