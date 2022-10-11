@@ -12,15 +12,12 @@ import {
   StatusBarItem,
   TextDocument,
   workspace,
-  languages,
 } from "vscode";
 
 import { totalLength, draftRoot } from "./compile";
 import simpleGit, { SimpleGit } from "simple-git";
 import { distance } from "fastest-levenshtein";
-import { morphemeBuilder } from "./tokenize";
 
-import { editorText } from "./editor";
 
 let projectCharacterCountNum = 0;
 
@@ -327,9 +324,6 @@ export class CharacterCounter {
 
   public _updateEditDistanceActual(): void {
     const currentText = window.activeTextEditor?.document.getText();
-    const lineText = window.activeTextEditor?.document.lineAt(
-      window.activeTextEditor?.selection.active.line
-    );
 
     if (this.latestText != "" && typeof currentText == "string") {
       this.editDistance = distance(this.latestText, currentText);
@@ -395,17 +389,6 @@ export class CharacterCounterController {
     this._characterCounter.updateCharacterCount();
     if (this._characterCounter.ifEditDistance)
       this._characterCounter._updateEditDistanceDelay();
-    /*
-        const lineText = window.activeTextEditor?.document.lineAt(window.activeTextEditor?.selection.active.line);
-        console.log(lineText);
-        if(typeof lineText?.text == 'string'){
-            const tokenReg = morphemeBuilder(lineText.text);
-            if(typeof tokenReg == 'string'){
-                const wordReg = new RegExp(tokenReg);
-                languages.setLanguageConfiguration('novel', {wordPattern: wordReg});
-            }
-        }
-        */
   }
 
   private _onFocusChanged() {
