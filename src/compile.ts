@@ -28,15 +28,17 @@ export default function compileDocs(): void {
 
   //  テキストを書き込む
   const filelist = fileList(draftRootPath).files;
-  filelist.forEach((listItem: { dir: number | fs.PathLike; depthIndicator: number }) => {
-    let appendingContext = "";
-    if (listItem.dir) {
-      appendingContext = fs.readFileSync(listItem.dir, "utf8");
-    } else if (listItem.depthIndicator) {
-      appendingContext = separatorString;
+  filelist.forEach(
+    (listItem: { dir: number | fs.PathLike; depthIndicator: number }) => {
+      let appendingContext = "";
+      if (listItem.dir) {
+        appendingContext = fs.readFileSync(listItem.dir, "utf8");
+      } else if (listItem.depthIndicator) {
+        appendingContext = separatorString;
+      }
+      fs.appendFileSync(compiledTextFilePath, appendingContext);
     }
-    fs.appendFileSync(compiledTextFilePath, appendingContext);
-  });
+  );
   //console.log(fileList(draftRootPath, 0).files);
 }
 
@@ -44,13 +46,20 @@ export function draftRoot(): string {
   if (vscode.workspace.name == undefined) {
     return "";
   } else {
-    const projectPath: string = vscode.workspace.workspaceFolders![0].uri.fsPath;
+    const projectPath: string =
+      vscode.workspace.workspaceFolders![0].uri.fsPath;
     let draftRootPath: string = projectPath;
     const projectFiles = fs.readdirSync(projectPath);
     //「原稿」あるいは「Draft」フォルダーを原稿フォルダのルートにする。
-    if (projectFiles.includes("Draft") && fs.statSync(projectPath + "/Draft").isDirectory()) {
+    if (
+      projectFiles.includes("Draft") &&
+      fs.statSync(projectPath + "/Draft").isDirectory()
+    ) {
       draftRootPath = draftRootPath + "/Draft";
-    } else if (projectFiles.includes("原稿") && fs.statSync(projectPath + "/原稿").isDirectory()) {
+    } else if (
+      projectFiles.includes("原稿") &&
+      fs.statSync(projectPath + "/原稿").isDirectory()
+    ) {
       draftRootPath = draftRootPath + "/原稿";
     }
 
@@ -86,9 +95,15 @@ export function fileList(dirPath: string): any {
 
       characterCount += containerFiles.length;
       files.push(containerFiles.files);
-    } else if (dirent.isFile() && [".txt"].includes(path.extname(dirent.name))) {
+    } else if (
+      dirent.isFile() &&
+      [".txt"].includes(path.extname(dirent.name))
+    ) {
       //文字数カウントテスト
-      let readingFile = fs.readFileSync(path.join(dirPath, dirent.name), "utf-8");
+      let readingFile = fs.readFileSync(
+        path.join(dirPath, dirent.name),
+        "utf-8"
+      );
       //カウントしない文字を除外 from https://github.com/8amjp/vsce-charactercount by MIT license
       readingFile = readingFile
         .replace(/\s/g, "") // すべての空白文字
@@ -113,8 +128,10 @@ export function fileList(dirPath: string): any {
 
 function getFiles(dirPath: string) {
   //console.log("getFiles",dirPath);
-  const filesInFolder = fs.existsSync(dirPath)? fs.readdirSync(dirPath, { withFileTypes: true }) : [];
-  if(filesInFolder) console.log(`${dirPath}が見つかりませんでした`);
+  const filesInFolder = fs.existsSync(dirPath)
+    ? fs.readdirSync(dirPath, { withFileTypes: true })
+    : [];
+  if (filesInFolder) console.log(`${dirPath}が見つかりませんでした`);
   return filesInFolder;
 }
 
@@ -153,9 +170,15 @@ export function draftsObject(dirPath: string): {
       };
 
       results.push(directory);
-    } else if (dirent.isFile() && [".txt"].includes(path.extname(dirent.name))) {
+    } else if (
+      dirent.isFile() &&
+      [".txt"].includes(path.extname(dirent.name))
+    ) {
       //文字数カウントテスト
-      let readingFile = fs.readFileSync(path.join(dirPath, dirent.name), "utf-8");
+      let readingFile = fs.readFileSync(
+        path.join(dirPath, dirent.name),
+        "utf-8"
+      );
       //カウントしない文字を除外 from https://github.com/8amjp/vsce-charactercount by MIT license
       readingFile = readingFile
         .replace(/\s/g, "") // すべての空白文字

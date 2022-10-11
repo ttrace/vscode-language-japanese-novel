@@ -69,9 +69,15 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const deadLineFolderPath = context.workspaceState.get("deadlineFolderPath");
   const deadLineTextCount = context.workspaceState.get("deadlineTextCount");
-  console.log("memento", deadLineFolderPath,deadLineTextCount)
-  if(typeof deadLineFolderPath == "string" && typeof deadLineTextCount == "string"){
-    characterCounter._setCounterToFolder(deadLineFolderPath, parseInt(deadLineTextCount));
+  console.log("memento", deadLineFolderPath, deadLineTextCount);
+  if (
+    typeof deadLineFolderPath == "string" &&
+    typeof deadLineTextCount == "string"
+  ) {
+    characterCounter._setCounterToFolder(
+      deadLineFolderPath,
+      parseInt(deadLineTextCount)
+    );
   }
 
   context.subscriptions.push(
@@ -85,7 +91,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
       // InputBoxを呼び出す。awaitで完了を待つ。
       let result = await vscode.window.showInputBox({
-        prompt: "文字数を入力してください　数字を入力せずにEnterを押すと現在の設定を解除します",
+        prompt:
+          "文字数を入力してください　数字を入力せずにEnterを押すと現在の設定を解除します",
         placeHolder: `現在の文字数：${currentLength}`,
       });
       // ここで入力を処理する
@@ -95,7 +102,7 @@ export function activate(context: vscode.ExtensionContext): void {
           // 入力が正常に行われている
           context.workspaceState.update("deadlineFolderPath", path);
           context.workspaceState.update("deadlineTextCount", result);
-          console.log("saving memento",path, result);
+          console.log("saving memento", path, result);
           characterCounter._setCounterToFolder(path, parseInt(result));
 
           vscode.window.showInformationMessage(
@@ -114,7 +121,6 @@ export function activate(context: vscode.ExtensionContext): void {
 
         result = "0";
       }
-
     })
   );
 
@@ -290,11 +296,11 @@ function launchserver(
       console.log("WindowState Changed:", e);
     });
 
-  vscode.window.onDidChangeVisibleTextEditors((e) => {
-    //ウインドウの状態変更
-    //プレビューが閉じたかどうか
-    console.log("WindowState Changed:", e);
-  });
+    vscode.window.onDidChangeVisibleTextEditors((e) => {
+      //ウインドウの状態変更
+      //プレビューが閉じたかどうか
+      console.log("WindowState Changed:", e);
+    });
 
     if (shouldOpenWebViewPanel) {
       openWebViewPanel();
@@ -308,7 +314,7 @@ function openWebViewPanel() {
   const serversHostname = os.hostname();
   const panel = vscode.window.createWebviewPanel(
     "preview", // Identifies the type of the webview. Used internally
-    '原稿プレビュー http://'+ serversHostname + ':'+servicePort, // Title of the panel displayed to the user
+    "原稿プレビュー http://" + serversHostname + ":" + servicePort, // Title of the panel displayed to the user
     vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
     {
       enableScripts: true,
@@ -343,7 +349,6 @@ function sendsettingwebsockets(socketServer: websockets.Server) {
     client.send(JSON.stringify(getConfig()));
   });
 }
-
 
 //let keyPressFlag = false;
 const publishWebsocketsDelay: any = {
@@ -417,19 +422,22 @@ module.exports = { activate, deactivate };
 
 function getPrintContent() {
   //configuration 読み込み
-  
+
   const myText = editorText("active");
   const previewSettings = getConfig();
   const printBoxHeight = 140;
   const printBoxWidth = 100;
-  const fontSize = (previewSettings.lineLength > (previewSettings.linesPerPage * 1.75)) ? (printBoxHeight / previewSettings.lineLength) : (printBoxWidth / (previewSettings.linesPerPage * 1.75));
+  const fontSize =
+    previewSettings.lineLength > previewSettings.linesPerPage * 1.75
+      ? printBoxHeight / previewSettings.lineLength
+      : printBoxWidth / (previewSettings.linesPerPage * 1.75);
   // フォントサイズ in mm
   const fontSizeWithUnit = fontSize + "mm";
   const lineHeightWithUnit = fontSize * 1.75 + "mm";
   const projectTitle = vscode.workspace.workspaceFolders![0].name;
-  const typeSettingHeight = fontSize * previewSettings.lineLength
+  const typeSettingHeight = fontSize * previewSettings.lineLength;
   const typeSettingHeightUnit = typeSettingHeight + "mm";
-  const typeSettingWidth = fontSize * 1.75 * previewSettings.linesPerPage
+  const typeSettingWidth = fontSize * 1.75 * previewSettings.linesPerPage;
   const typeSettingWidthUnit = typeSettingWidth + "mm";
   const columnCount = Math.floor(printBoxHeight / typeSettingHeight);
 
