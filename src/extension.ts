@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import * as cp from "child_process";
 import * as http from "http";
-import * as net from "net";
 import * as path from "path";
 import * as fs from "fs";
 import * as os from "os";
@@ -10,6 +9,7 @@ import { getConfig } from "./config";
 import compileDocs, { draftRoot } from "./compile";
 import { draftsObject } from "./compile"; // filelist オブジェクトもある
 import { CharacterCounter, CharacterCounterController } from "./charactorcount";
+export * from "./charactorcount";
 import { editorText, OriginEditor } from "./editor";
 import {
   activateTokenizer,
@@ -17,14 +17,12 @@ import {
   desableTokenizer,
   enableTokenizer,
 } from "./tokenize";
-import * as textEncoding from "text-encoding";
 
 const output = vscode.window.createOutputChannel("Novel");
-const TextDecoder = textEncoding.TextDecoder;
 //リソースとなるhtmlファイル
 //let html: Buffer;
 let documentRoot: vscode.Uri;
-let servicePort = 8080;
+const servicePort = 8080;
 let isServerRunning = false;
 let previewRedrawing = false;
 
@@ -69,6 +67,20 @@ export function activate(context: vscode.ExtensionContext): void {
   const controller = new CharacterCounterController(characterCounter);
   context.subscriptions.push(controller);
   context.subscriptions.push(characterCounter);
+
+  const deadLineFolderPath = context.workspaceState.get("deadlineFolderPath");
+  const deadLineTextCount = context.workspaceState.get("deadlineTextCount");
+  console.log("memento", deadLineFolderPath, deadLineTextCount);
+  if (
+    typeof deadLineFolderPath == "string" &&
+    typeof deadLineTextCount == "string"
+  ) {
+    characterCounter._setCounterToFolder(
+      deadLineFolderPath,
+      parseInt(deadLineTextCount)
+    );
+  }
+
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.set-counter", async (e) => {
       const path = e.fsPath;
@@ -80,7 +92,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
       // InputBoxを呼び出す。awaitで完了を待つ。
       let result = await vscode.window.showInputBox({
-        prompt: "目標となる文字数を入力してください",
+        prompt:
+          "文字数を入力してください　数字を入力せずにEnterを押すと現在の設定を解除します",
         placeHolder: `現在の文字数：${currentLength}`,
       });
       // ここで入力を処理する
@@ -88,6 +101,11 @@ export function activate(context: vscode.ExtensionContext): void {
         try {
           parseInt(result);
           // 入力が正常に行われている
+          context.workspaceState.update("deadlineFolderPath", path);
+          context.workspaceState.update("deadlineTextCount", result);
+          console.log("saving memento", path, result);
+          characterCounter._setCounterToFolder(path, parseInt(result));
+
           vscode.window.showInformationMessage(
             `目標の文字数を: ${result}文字に設定しました`
           );
@@ -98,9 +116,12 @@ export function activate(context: vscode.ExtensionContext): void {
       } else {
         // 入力がキャンセルされた
         vscode.window.showWarningMessage(`目標文字数は設定しません`);
+        characterCounter._setCounterToFolder("", 0);
+        context.workspaceState.update("deadlineFolderPath", null);
+        context.workspaceState.update("deadlineTextCount", null);
+
         result = "0";
       }
-      characterCounter._setCounterToFolder(path, parseInt(result!));
     })
   );
 
@@ -168,21 +189,6 @@ function launchserver(
         Response["200"](file, filename);
       });
     });
-  });
-
-  viewerServer.on("error", (e: NodeJS.ErrnoException) => {
-    //もしサーバーが動いていたらポートの番号をずらす
-    if (e.code === "EADDRINUSE") {
-      console.log(`Server address (:${servicePort}) in use. Retrying...`);
-      setTimeout(() => {
-        servicePort += 2;
-        if (servicePort >= 20000) {
-          throw new Error("empty port not found");
-        }
-        viewerServer.close();
-        viewerServer.listen(servicePort, "0.0.0.0");
-      }, 500);
-    }
   });
 
   viewerServer.on("listening", () => {
@@ -291,7 +297,11 @@ function launchserver(
       console.log("WindowState Changed:", e);
     });
 
-    publishWebsocketsDelay.presskey(s);
+    vscode.window.onDidChangeVisibleTextEditors((e) => {
+      //ウインドウの状態変更
+      //プレビューが閉じたかどうか
+      console.log("WindowState Changed:", e);
+    });
 
     if (shouldOpenWebViewPanel) {
       openWebViewPanel();
@@ -302,11 +312,10 @@ function launchserver(
 }
 
 function openWebViewPanel() {
-  //    vscode.window.showInformationMessage('Hello, world!');
   const serversHostname = os.hostname();
   const panel = vscode.window.createWebviewPanel(
     "preview", // Identifies the type of the webview. Used internally
-    '原稿プレビュー http://'+ serversHostname + ':'+servicePort, // Title of the panel displayed to the user
+    "原稿プレビュー http://" + serversHostname + ":" + servicePort, // Title of the panel displayed to the user
     vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
     {
       enableScripts: true,
@@ -342,39 +351,18 @@ function sendsettingwebsockets(socketServer: websockets.Server) {
   });
 }
 
-let keyPressFlag = false;
-
+//let keyPressFlag = false;
 const publishWebsocketsDelay: any = {
   publish: function (socketServer: websockets.Server) {
     publishwebsockets(socketServer);
-    keyPressFlag = false;
-    delete this.timeoutID;
+    //keyPressFlag = false;
+    //delete this.timeoutID;
   },
   presskey: function (s: websockets.Server) {
     if (previewRedrawing) return;
     previewRedrawing = true;
     this.publish(s);
-    //this.cancel();
-    // if (!keyPressFlag) {
-    //     const currentEditor = vscode.window.activeTextEditor;
-    //     if (currentEditor) {
-    //         const updateCounter = Math.min(
-    //             Math.ceil(currentEditor.document.getText().length / 50),
-    //             1500
-    //         );
-    //         this.timeoutID = setTimeout(socketServer => {
-    //             this.publish(socketServer);
-    //         }, updateCounter, s);
-    //         keyPressFlag = true;
-    //     }
-    // }
   },
-  // cancel: function () {
-  //     if (typeof this.timeoutID == "number") {
-  //         this.clearTimeout(this.timeoutID);
-  //         delete this.timeoutID;
-  //     }
-  // }
 };
 
 function previewserver() {
@@ -388,7 +376,7 @@ function verticalpreview() {
 }
 
 function exportpdf(): void {
-  const myHtml = getWebviewContent();
+  const myHtml = getPrintContent();
   if (!vscode.workspace.workspaceFolders) {
     output.appendLine(`not found workspace folders to publish.`);
     return;
@@ -412,16 +400,19 @@ function exportpdf(): void {
 
     vscode.workspace.fs.writeFile(myPath, myHtmlBinary).then(() => {
       output.appendLine(`saving pdf to ${vivlioCommand}`);
+      vscode.window.showInformationMessage(`PDF出力開始……`);
+
       cp.execFile(vivlioCommand, vivlioParams, (err, stdout, stderr) => {
         if (err) {
-          console.log(`stderr: ${stderr}`);
-          output.appendLine(`stderr: ${stderr}`);
+          console.log(`エラー: ${err.message}`);
+          output.appendLine(`エラー: ${err.message}`);
           return;
         }
-        output.appendLine(`stdout: ${stdout}`);
+        output.appendLine(`ファイル名: ${stdout}`);
         output.appendLine("PDFの保存が終わりました");
+        vscode.window.showInformationMessage(`PDFの保存が終わりました`);
       });
-      output.appendLine("HTMLの書き込みが完了しました");
+      output.appendLine("HTML");
     });
   }
 }
@@ -432,25 +423,27 @@ function deactivate() {
 
 module.exports = { activate, deactivate };
 
-function getWebviewContent() {
+function getPrintContent() {
   //configuration 読み込み
-  const previewSettings = getConfig();
-  /*     const config = vscode.workspace.getConfiguration('Novel');
-            let lineheightrate = 1.75;
-            let fontfamily = config.get('preview.font-family');
-            let fontsize = config.get('preview.fontsize');
-            let numfontsize = parseInt(/(\d+)(\D+)/.exec(fontsize)[1]);
-            let unitoffontsize = /(\d+)(\D+)/.exec(fontsize)[2];
-    
-            let linelength = config.get('preview.linelength');
-            let linesperpage = config.get('preview.linesperpage');
-    
-            let pagewidth = ( linesperpage * numfontsize * lineheightrate * 1.003) + unitoffontsize;
-            let pageheight = (linelength * numfontsize) + unitoffontsize;
-            let lineheight = ( numfontsize * lineheightrate) + unitoffontsize;
-      */ //console.log(lineheight);
 
   const myText = editorText("active");
+  const previewSettings = getConfig();
+  const printBoxHeight = 140;
+  const printBoxWidth = 100;
+  const fontSize =
+    previewSettings.lineLength > previewSettings.linesPerPage * 1.75
+      ? printBoxHeight / previewSettings.lineLength
+      : printBoxWidth / (previewSettings.linesPerPage * 1.75);
+  // フォントサイズ in mm
+  const fontSizeWithUnit = fontSize + "mm";
+  const lineHeightWithUnit = fontSize * 1.75 + "mm";
+  const projectTitle = vscode.workspace.workspaceFolders![0].name;
+  const typeSettingHeight = fontSize * previewSettings.lineLength;
+  const typeSettingHeightUnit = typeSettingHeight + "mm";
+  const typeSettingWidth = fontSize * 1.75 * previewSettings.linesPerPage;
+  const typeSettingWidthUnit = typeSettingWidth + "mm";
+  const columnCount = Math.floor(printBoxHeight / typeSettingHeight);
+
   return `<!DOCTYPE html>
   <html lang="ja">
   <head>
@@ -476,10 +469,9 @@ function getWebviewContent() {
       }
   
       @page {
-      size: 105mm 148mm;
-      width: 88mm;
-      /*  width: calc(84mm - 1q); */
-      height: 110mm;
+      size: 130mm 190mm;
+      width: calc(${typeSettingWidthUnit} + 0.5mm);
+      height: calc(140mm + 0.5mm);
       margin-top: 20mm;
       margin-bottom: auto;
       margin-left: auto;
@@ -492,23 +484,23 @@ function getWebviewContent() {
       }
   
       @page :left {
-      margin-right: 10mm;
+      margin-right: 15mm;
       @top-left {
-          content: counter(page) "  <$projecttitle>";
-          margin-left: 12q;
-          margin-top: 135mm;
+          content: counter(page) "  ${projectTitle}";
+          margin-left: 0mm;
+          margin-top: 170mm;
           writing-mode: horizontal-tb;
           /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
       }
       }
       @page :right {
-      margin-right: 14mm;
+      margin-right: 15mm;
       /* border-bottom: 1pt solid black; */
       /* 右下ノンブル */
       @top-right {
-          content: "<$fullname>   "counter(page);
-          margin-right: 12q;
-          margin-top: 135mm;
+          content: " ${projectTitle}  "counter(page);
+          margin-right: 0mm;
+          margin-top: 170mm;
           writing-mode: horizontal-tb;
           /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
       }
@@ -521,8 +513,13 @@ function getWebviewContent() {
       }
   
       body{
+        column-count: ${columnCount};
       }
   
+      div#draft{
+
+      }
+
       h1 {
       /* フォント */
       font-weight: Extrabold;
@@ -572,133 +569,136 @@ function getWebviewContent() {
       }
   
       p {
-        font-size: calc(110mm / ${previewSettings.lineLength});
-        line-height: 1.65;
+        font-size: ${fontSizeWithUnit};
+        line-height: 1.75;
+        height: calc(${fontSizeWithUnit} * ${previewSettings.lineLength} + 0.05rem);
         text-indent: 0em;
         hanging-punctuation: force-end;
         line-break:strict;
         page-break-inside: auto;
-    }
- 
-      div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
-        padding-block-start: calc( ${previewSettings.fontSize} * ${previewSettings.lineHeightRate});
-        }
+      }
 
-        div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
-        padding-block-end: calc( ${previewSettings.fontSize} * ${previewSettings.lineHeightRate});
-        }
+    div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
+      padding-block-start: calc( ${fontSizeWithUnit} * ${previewSettings.lineHeightRate});
+      }
+
+      div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
+      padding-block-end: calc( ${fontSizeWithUnit} * ${previewSettings.lineHeightRate});
+      }
 
     
     div.indent-1 p{
-    height: calc( 110mm - (${previewSettings.fontSize}));
-    padding-top: ${previewSettings.fontSize};
+    height: calc( 110mm - (100vh * ${previewSettings.fontSize}));
+    padding-top: calc( ${fontSizeWithUnit});
     }
 
     div.indent-2 p{
-    height: calc( 110mm - (${previewSettings.fontSize} * 2));
-    padding-top: calc(${previewSettings.fontSize} * 2);
+    height: calc( 110mm - (100vh * ${previewSettings.fontSize} * 2));
+    padding-top: calc(${fontSizeWithUnit} * 2);
     }
 
     div.indent-3 p{
-    height: calc( 110mm - (${previewSettings.fontSize} * 3));
-    padding-top: calc(${previewSettings.fontSize} * 3);
+    height: calc( 110mm - (${fontSizeWithUnit} * 3));
+    padding-top: calc(${fontSizeWithUnit} * 3);
     }
 
-        p.goth {
-        margin-top: 3em;
-        font-family: "游ゴシック", "YuGothic", san-serif;
-        margin-block-start: 1em;
-        margin-block-end: 1em;
-        }
-  
-        p.align-rb {
-        text-align: right;
-        }
+    p.goth {
+    margin-top: 3em;
+    font-family: "游ゴシック", "YuGothic", san-serif;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    }
 
-        p.goth + p.goth {
-        margin-block-start: -1em;
-        }
+    p.align-rb {
+    text-align: right;
+    }
 
-        div.codes {
-        display: inline-block;
-        margin: 3em 1em;
-        writing-mode: horizontal-tb;
-        padding: 1em;
-        font-family: "Courier", monospace;
-        font-size: 0.8em;
-        }
+    p.goth + p.goth {
+    margin-block-start: -1em;
+    }
+
+    div.codes {
+    display: inline-block;
+    margin: 3em 1em;
+    writing-mode: horizontal-tb;
+    padding: 1em;
+    font-family: "Courier", monospace;
+    font-size: 0.8em;
+    }
   
-      div.codes p {
-      text-orientation: sideways;
-      }
-  
-      p.star {
-      text-indent: 3em;
-      margin-right: 16pt;
-      margin-left: 16pt;
-      }
-  
-      hr {
-      border: none;
-      border-right: 1pt solid black;
-      height: 6em;
-      margin: auto 8.5pt;
-      }
-  
-      /* 縦中横 */
-      .tcy {
-      -webkit-text-combine: horizontal;
-      text-combine: horizontal;
-      -ms-text-combine-horizontal: all;
-      text-combine-horizontal: digit 2;
-      text-combine-upright: digit 2;
-      }
-  
-      /* 圏点（<span class="smaller">ゴマ</span>） */
-      em.side-dot, em.sesame_dot {
-      font-style: normal;
-      -webkit-text-emphasis-style: sesame;
-      text-emphasis-style: sesame;
-      }
-  
-      /*著作者*/
-      .author {
-      position: absolute;
-      bottom: 0;
-      font-size: 8.5pt;
-      margin-top: 50pt;
-      letter-spacing: normal;
-      }
-  
-      /*画像＋キャプション*/
-      figure {
-      display: block;
-      width: 236pt;
-      -ms-writing-mode: lr-tb;
-      -webkit-writing-mode: horizontal-tb;
-      writing-mode: horizontal-tb;
-      }
-  
-      figure img {
-      width: 100%;
-      height: auto;
-      vertical-align: bottom;
-      }
-  
-      figcaption {
-      text-align: left;
-      font-size: 7pt;
-      }
-  
-      /*奥付*/
-      .colophon {
-      font-size: 7pt;
-      margin-right: 48pt;
-      }
-      /* 級さげ */
-      span.smaller{
-          font-size:6.5pt
-      }
+    div.codes p {
+    text-orientation: sideways;
+    }
+
+    p.star {
+    text-indent: 3em;
+    margin-right: 16pt;
+    margin-left: 16pt;
+    }
+
+    hr {
+    border: none;
+    border-right: 1pt solid black;
+    height: 6em;
+    margin: auto 8.5pt;
+    }
+
+    /* 縦中横 */
+    .tcy {
+    -webkit-text-combine: horizontal;
+    text-combine: horizontal;
+    -ms-text-combine-horizontal: all;
+    text-combine-horizontal: digit 2;
+    text-combine-upright: digit 2;
+    }
+
+    /* 圏点（<span class="smaller">ゴマ</span>） */
+    em.side-dot, em.sesame_dot {
+    font-style: normal;
+    -webkit-text-emphasis-style: sesame;
+    text-emphasis-style: sesame;
+    margin-right: -1em;
+    display: inline-block;
+    }
+
+    /*著作者*/
+    .author {
+    position: absolute;
+    bottom: 0;
+    font-size: 8.5pt;
+    margin-top: 50pt;
+    letter-spacing: normal;
+    }
+
+    /*画像＋キャプション*/
+    figure {
+    display: block;
+    width: 236pt;
+    -ms-writing-mode: lr-tb;
+    -webkit-writing-mode: horizontal-tb;
+    writing-mode: horizontal-tb;
+    }
+
+    figure img {
+    width: 100%;
+    height: auto;
+    vertical-align: bottom;
+    }
+
+    figcaption {
+    text-align: left;
+    font-size: 7pt;
+    }
+
+    /*奥付*/
+    .colophon {
+    font-size: 7pt;
+    margin-right: 48pt;
+    }
+    /* 級さげ */
+    span.smaller{
+        font-size:6.5pt
+    }
   
     div.comment {
         display:none;
@@ -707,138 +707,13 @@ function getWebviewContent() {
     p.blank {
         color:transparent;
     }
+    </style>
 
-  @media screen{
-      body {
-            writing-mode: vertical-rl;
-            font-family: ${previewSettings.fontFamily};
-            height: ${previewSettings.pageHeight};
-            overflow-y:hidden;
-            padding:0;
-        }
-        
-        #cursor {
-            background-color: rgb(125,125,125,);
-            animation-duration: 0.5s;
-            animation-name: cursorAnimation;
-            animation-iteration-count: infinite;
-        }
-  
-        p {
-            height: ${previewSettings.pageHeight};
-            font-family: ${previewSettings.fontFamily};
-            font-size: ${previewSettings.fontSize};
-            margin:0 0 0 0;
-            vertical-align: middle;
-        }
-          
-        em.side-dot {
-            font-style: normal;
-            text-emphasis: filled sesame rgb(128,128,128);
-            -webkit-text-emphasis: filled sesame rgb(128,128,128);
-        }
-        
-        span.tcy {
-            text-combine: horizontal;
-            -webkit-text-combine:horizontal;
-        }
-
-        @keyframes cursorAnimation {
-                from {
-                    background-color: rgba(66,66,66,0);
-                }
-            
-                to {
-                    background-color: rgba(125,125,125,0.7);
-                }
-            }
-  
-          body{
-              background-image:   linear-gradient(to right, rgba(50, 50, 50, 0.5) 0.5pt, rgba(0, 0, 50, 0.05) 10em);
-              background-size:    ${previewSettings.pageWidth} ${previewSettings.pageHeight};
-              background-repeat:  repeat-x;
-              background-position: right 0px;
-          }
-          p{
-              background-image:   linear-gradient( rgba(50, 50, 50, 1) 0.5pt, transparent 1pt),
-                                  linear-gradient(to right, rgba(50, 50, 50, 1) 0.5pt, rgba(0, 0, 50, 0.05) 1pt);
-              background-size:    ${previewSettings.lineHeight} ${previewSettings.fontSize},
-                                  ${previewSettings.lineHeight} ${previewSettings.fontSize};
-              background-repeat:  repeat,
-                                  repeat;
-              background-position: right 0px,
-                                  right 0px;
-          }
-
-          div.indent-1 p{
-            height: calc( ${previewSettings.pageHeight} - (${previewSettings.fontSize}));
-            padding-top: ${previewSettings.fontSize};
-            }
-        
-            div.indent-2 p{
-            height: calc( ${previewSettings.pageHeight} - (${previewSettings.fontSize} * 2));
-            padding-top: calc(${previewSettings.fontSize} * 2);
-            }
-        
-            div.indent-3 p{
-            height: calc( ${previewSettings.pageHeight} - (${previewSettings.fontSize} * 3));
-            padding-top: calc(${previewSettings.fontSize} * 3);
-            }
-
-        
-          span.comment{
-            display:block;
-            border-radius:1em;
-            border:1.5pt solid rgba(70,70,00,0.9);
-            padding:0.25em 0.25em;
-            position:absolute;
-            margin-right: -3em;
-            margin-top: 0.5em;
-            top: ${previewSettings.pageHeight};
-            background-color:rgba(50,50,00,0.5);
-            max-width: 20em;
-          }
-
-          span.comment::before{
-            content: '';
-            position: absolute;
-            right: 1em;
-            top: -15px;
-            display: block;
-            width: 0;
-            height: 0;
-            border-right: 15px solid transparent;
-            border-bottom: 15px solid rgba(70,70,00,0.9);
-            border-left: 15px solid transparent;
-          }
-
-          span.commentbody{
-              margin:0.5em 1em;
-              writing-mode:lr-tb;
-              font-family:sans-serif;
-              font-size:0.8em;
-              line-height:1;
-          }
-  
-      }
-        </style>
-      <link rel="stylesheet" href="">
   </head>
   <body>
+  <div id="draft">
   ${myText}
-  
-  <script>
-  
-  setTimeout( (function(){
-      var width = document.body.clientWidth;
-      var cursor = document.getElementById('cursor');
-      var panelWidth = window.innerWidth;
-      var scrollEnd = cursor.offsetLeft - width + (panelWidth / 2);
-      window.scrollTo( scrollEnd , scrollEnd);
-      console.log(width, cursor, panelWidth, scrollEnd);
-  }), 1);
-
-</script>
+  </div>
   </body>
   </html>`;
 }

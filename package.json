@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.3.17",
+  "version": "1.4.0",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -90,27 +90,22 @@
       }
     ],
     "configuration": {
-      "title": "縦書きプレビュー設定",
+      "title": "Novel-writer設定",
       "properties": {
         "Novel.preview.fontFamily": {
           "type": "string",
           "default": "serif",
           "description": "プレビュー用のフォント名を入力してください。 \ne.g. \"UD Digi Kyokasho NK-R\",\"ヒラギノ明朝 ProN W3\", \"HiraMinProN-W3\", serif, sans-serif;"
         },
-        "Novel.preview.fontSize": {
-          "type": "string",
-          "default": "14pt",
-          "description": "文字の基本サイズを入力してください。利用できる単位は、pt、mm、em、rem、px、vh、vw、qの8種類です"
-        },
         "Novel.preview.lineLength": {
           "type": "number",
           "default": "40",
-          "description": "一行の文字数を指定してください"
+          "description": "一行の文字数を指定してください\n行数はプレビュー、印刷どちらも有効です"
         },
         "Novel.preview.linesPerPage": {
           "type": "number",
           "default": "10",
-          "description": "1ページの行数を指定してください"
+          "description": "PDF作成時の印刷時の1ページの行数を指定してください"
         },
         "Novel.compile.separator": {
           "type": "string",
@@ -390,7 +385,6 @@
     "node-levenshtein": "^3.0.7",
     "path": "^0.12.7",
     "sinon": "^14.0.0",
-    "text-encoding": "^0.7.0",
     "ts-loader": "^9.4.1",
     "typescript": "^4.8.4",
     "utf-8-validate": "^5.0.9",

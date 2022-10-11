@@ -5,7 +5,7 @@ import * as assert from 'assert';
 import * as vscode from 'vscode';
 import * as sinon from 'sinon';
 
-import { getConfig, FontSize, UnitOfFontSize } from '../../config';
+import { getConfig } from '../../config';
 
 suite('Config Test Suite', () => {
     let sandbox: sinon.SinonSandbox;
@@ -39,17 +39,6 @@ suite('Config Test Suite', () => {
             assert.strictEqual<string>(getConfig().fontFamily, 'serif');
         });
 
-        test('fontSize should be 14pt', () => {
-            assert.strictEqual<FontSize>(getConfig().fontSize, '14pt');
-        });
-
-        test('numFontSize should be 14', () => {
-            assert.strictEqual<number>(getConfig().numFontSize, 14);
-        });
-
-        test('unitOfFontSize should be pt', () => {
-            assert.strictEqual<UnitOfFontSize>(getConfig().unitOfFontSize, 'pt');
-        });
     });
 
     suite('When novel configuration has some values', () => {
@@ -78,16 +67,5 @@ suite('Config Test Suite', () => {
             assert.strictEqual<string>(getConfig().fontFamily, 'Helvetica');
         });
 
-        test('fontSize should be 48px', () => {
-            assert.strictEqual<FontSize>(getConfig().fontSize, '48px');
-        });
-
-        test('numFontSize should be 48', () => {
-            assert.strictEqual<number>(getConfig().numFontSize, 48);
-        });
-
-        test('unitOfFontSize should be px', () => {
-            assert.strictEqual<UnitOfFontSize>(getConfig().unitOfFontSize, 'px');
-        });
     });
 });
