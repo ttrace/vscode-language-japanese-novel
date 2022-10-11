@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import * as cp from "child_process";
 import * as http from "http";
-import * as net from "net";
 import * as path from "path";
 import * as fs from "fs";
 import * as os from "os";
@@ -17,10 +16,8 @@ import {
   desableTokenizer,
   enableTokenizer,
 } from "./tokenize";
-import * as textEncoding from "text-encoding";
 
 const output = vscode.window.createOutputChannel("Novel");
-const TextDecoder = textEncoding.TextDecoder;
 //リソースとなるhtmlファイル
 //let html: Buffer;
 let documentRoot: vscode.Uri;
@@ -347,13 +344,13 @@ function sendsettingwebsockets(socketServer: websockets.Server) {
   });
 }
 
-let keyPressFlag = false;
 
+//let keyPressFlag = false;
 const publishWebsocketsDelay: any = {
   publish: function (socketServer: websockets.Server) {
     publishwebsockets(socketServer);
-    keyPressFlag = false;
-    delete this.timeoutID;
+    //keyPressFlag = false;
+    //delete this.timeoutID;
   },
   presskey: function (s: websockets.Server) {
     if (previewRedrawing) return;
