@@ -20,7 +20,7 @@
 - [PDF出力](#pdf出力)
 - [テキスト結合](#テキスト結合)
 - [参考にした文献](#参考にした文献)
-- [copyright](#copyright)
+- [Copyright](#copyright)
 - [付録](#付録)
   - [ハイライト設定](#ハイライト設定)
 
@@ -118,7 +118,7 @@ contributed by [yasudaz](https://github.com/yasudaz)
 
 #### 版面指定
 
-文字サイズ、文字数、1ページあたりの行数を指定できます。
+1行の字数、1ページあたりの行数を指定できます。
 
 #### 正規表現検索置換
 
@@ -126,14 +126,17 @@ contributed by [yasudaz](https://github.com/yasudaz)
 
 ## PDF出力
 
-この小説言語モードは、実験的に[Vivliostyle/CLI](https://vivliostyle.org/ja/)を用いて縦書きのPDFを出力します。
-ワークスペースが必要になるので、フォルダを開いて利用してください。
-
-PDF出力を試したい方は、以下のコマンドをターミナルで実行して、VivlioStyleをインストールしてからPDF出力を実行してください。
+novel-writerは[Vivliostyle/CLI](https://vivliostyle.org/ja/)と連動して、A5変型版（130mm×190mm）の縦書きPDFを出力します。以下のコマンドをでVivlioStyleをインストールしてからPDF出力を実行してください。
 
 ```
 npm install @vivliostyle/cli -g
 ```
+
+![PDF出力](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/pdf-typesettings.png)
+
+1行が短く、ページあたりの行数が長い場合には段組で印刷します。
+
+* PDF出力にはワークスペースが必要です。フォルダを開いて利用してください。
 
 ## テキスト結合
 
