@@ -90,7 +90,7 @@
       }
     ],
     "configuration": {
-      "title": "縦書きプレビュー設定",
+      "title": "Novel-writer設定",
       "properties": {
         "Novel.preview.fontFamily": {
           "type": "string",
@@ -106,11 +106,6 @@
           "type": "number",
           "default": "10",
           "description": "PDF作成時の印刷時の1ページの行数を指定してください"
-        },
-        "Novel.preview.draftPaper": {
-          "type": "bool",
-          "default": false,
-          "description": "PDFを作成するときに原稿用紙スタイルにするかどうかを決定してください"
         },
         "Novel.compile.separator": {
           "type": "string",

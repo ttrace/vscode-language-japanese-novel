@@ -431,6 +431,7 @@ function getPrintContent() {
   const fontSize = (previewSettings.lineLength > (previewSettings.linesPerPage * 1.75)) ? (printBoxHeight / previewSettings.lineLength) : (printBoxWidth / (previewSettings.linesPerPage * 1.75));
   // フォントサイズ in mm
   const fontSizeWithUnit = fontSize + "mm";
+  const lineHeightWithUnit = fontSize * 1.75 + "mm";
   const projectTitle = vscode.workspace.workspaceFolders![0].name;
   const typeSettingHeight = fontSize * previewSettings.lineLength
   const typeSettingHeightUnit = typeSettingHeight + "mm";
@@ -570,15 +571,15 @@ function getPrintContent() {
         hanging-punctuation: force-end;
         line-break:strict;
         page-break-inside: auto;
-    }
- 
-      div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
-        padding-block-start: calc( ${fontSizeWithUnit} * ${previewSettings.lineHeightRate});
-        }
+      }
 
-        div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
-        padding-block-end: calc( ${fontSizeWithUnit} * ${previewSettings.lineHeightRate});
-        }
+    div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
+      padding-block-start: calc( ${fontSizeWithUnit} * ${previewSettings.lineHeightRate});
+      }
+
+      div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
+      padding-block-end: calc( ${fontSizeWithUnit} * ${previewSettings.lineHeightRate});
+      }
 
     
     div.indent-1 p{
@@ -596,29 +597,29 @@ function getPrintContent() {
     padding-top: calc(${fontSizeWithUnit} * 3);
     }
 
-        p.goth {
-        margin-top: 3em;
-        font-family: "游ゴシック", "YuGothic", san-serif;
-        margin-block-start: 1em;
-        margin-block-end: 1em;
-        }
-  
-        p.align-rb {
-        text-align: right;
-        }
+    p.goth {
+    margin-top: 3em;
+    font-family: "游ゴシック", "YuGothic", san-serif;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    }
 
-        p.goth + p.goth {
-        margin-block-start: -1em;
-        }
+    p.align-rb {
+    text-align: right;
+    }
 
-        div.codes {
-        display: inline-block;
-        margin: 3em 1em;
-        writing-mode: horizontal-tb;
-        padding: 1em;
-        font-family: "Courier", monospace;
-        font-size: 0.8em;
-        }
+    p.goth + p.goth {
+    margin-block-start: -1em;
+    }
+
+    div.codes {
+    display: inline-block;
+    margin: 3em 1em;
+    writing-mode: horizontal-tb;
+    padding: 1em;
+    font-family: "Courier", monospace;
+    font-size: 0.8em;
+    }
   
       div.codes p {
       text-orientation: sideways;
@@ -701,106 +702,7 @@ function getPrintContent() {
     p.blank {
         color:transparent;
     }
-
-  @media screen{
-      body {
-            writing-mode: vertical-rl;
-            font-family: ${previewSettings.fontFamily};
-            overflow-y:hidden;
-            padding:0;
-        }
-        
-        #cursor {
-            background-color: rgb(125,125,125,);
-            animation-duration: 0.5s;
-            animation-name: cursorAnimation;
-            animation-iteration-count: infinite;
-        }
-  
-        p {
-            font-family: ${previewSettings.fontFamily};
-            font-size: calc(100vh * ${previewSettings.fontSize});
-            margin:0 0 0 0;
-            vertical-align: middle;
-        }
-          
-        em.side-dot {
-            font-style: normal;
-            text-emphasis: filled sesame rgb(128,128,128);
-            -webkit-text-emphasis: filled sesame rgb(128,128,128);
-            margin-right: -1em;
-            display: inline-block;
-        }
-        
-        span.tcy {
-            text-combine: horizontal;
-            -webkit-text-combine:horizontal;
-        }
-
-
-          p{
-              background-image:   linear-gradient( rgba(50, 50, 50, 1) 0.5pt, transparent 1pt),
-                                  linear-gradient(to right, rgba(50, 50, 50, 1) 0.5pt, rgba(0, 0, 50, 0.05) 1pt);
-              background-size:    calc( 100vh * calc( 100vh * ${previewSettings.fontSize}) * ${previewSettings.lineHeight}) calc( 100vh * ${previewSettings.fontSize}),
-              calc( 100vh * calc( 100vh * ${previewSettings.fontSize}) * ${previewSettings.lineHeight}) calc( 100vh * ${previewSettings.fontSize});
-              background-repeat:  repeat,
-                                  repeat;
-              background-position: right 0px,
-                                  right 0px;
-          }
-
-          div.indent-1 p{
-            height: calc( 100vh - (100vh * ${previewSettings.fontSize}));
-            padding-top: (100vh * ${previewSettings.fontSize});
-            }
-        
-            div.indent-2 p{
-            height: calc( 100vh - (100vh * ${previewSettings.fontSize} * 2));
-            padding-top: calc((100vh * ${previewSettings.fontSize}) * 2);
-            }
-        
-            div.indent-3 p{
-            height: calc( 100vh - (100vh * ${previewSettings.fontSize} * 3));
-            padding-top: calc((100vh * ${previewSettings.fontSize}) * 3);
-            }
-
-        
-          span.comment{
-            display:block;
-            border-radius:1em;
-            border:1.5pt solid rgba(70,70,00,0.9);
-            padding:0.25em 0.25em;
-            position:absolute;
-            margin-right: -3em;
-            margin-top: 0.5em;
-            top: 100vh;
-            background-color:rgba(50,50,00,0.5);
-            max-width: 20em;
-          }
-
-          span.comment::before{
-            content: '';
-            position: absolute;
-            right: 1em;
-            top: -15px;
-            display: block;
-            width: 0;
-            height: 0;
-            border-right: 15px solid transparent;
-            border-bottom: 15px solid rgba(70,70,00,0.9);
-            border-left: 15px solid transparent;
-          }
-
-          span.commentbody{
-              margin:0.5em 1em;
-              writing-mode:lr-tb;
-              font-family:sans-serif;
-              font-size:0.8em;
-              line-height:1;
-          }
-  
-      }
-        </style>
+    </style>
 
   </head>
   <body>
