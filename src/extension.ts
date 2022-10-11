@@ -824,55 +824,6 @@ function getPrintContent() {
   <div id="draft">
   ${myText}
   </div>
-  <script lang="js">
-  var buildingLineNumber = false;
-  const paragraphs = document.querySelectorAll("#draft p");
-  let linenumber = 0;
-  lineNumber();
-
-  function lineNumber() {
-  if (buildingLineNumber) return;
-  buildingLineNumber = true;
-    const computedLineHeight = getComputedStyle(
-    paragraphs[0]
-    ).getPropertyValue("line-height");
-    console.log("computedLineHeight:",computedLineHeight );
-    const paragraphWidth = getComputedStyle(paragraphs[0]).getPropertyValue(
-    "width"
-    );
-    
-  const lineNumWrapper = document.getElementById("lineNumbers");
-
-  for(i = 0; i < 20; i++){
-    const numSpan = document.createElement("span");
-    numSpan.setAttribute("class", "line-index");
-    numSpan.setAttribute("style",
-       \`display:block;
-       width: calc(2.857142857142857mm * 1.75);
-       font-size: 4px;
-       text-align: center;
-       writing-mode: horizontal-tb;
-       transform:scale(0.8, 0.6)\`);
-
-    for (let p = 0; p < paragraphs.length; p++) {
-    const paragraph = paragraphs[p];
-    let lndiv = document.createElement("div");
-    lndiv.setAttribute("class", "line-numbers");
-    paragraph.prepend(lndiv);
-    const lineNumberBlock = lndiv;
-    const paragraphWidth =
-        getComputedStyle(paragraph).getPropertyValue("width");
-    const numbersOfLines = Math.round(
-        parseInt(paragraphWidth) / parseInt(computedLineHeight)
-    );
-
-    numSpan.innerText = i + 1;
-    lineNumWrapper.append(numSpan);
-  }
-  buildingLineNumber = false;
-}
-  
-</script>
   </body>
   </html>`;
 }
