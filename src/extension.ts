@@ -291,7 +291,6 @@ function launchserver(
 }
 
 function openWebViewPanel() {
-  //    vscode.window.showInformationMessage('Hello, world!');
   const serversHostname = os.hostname();
   const panel = vscode.window.createWebviewPanel(
     "preview", // Identifies the type of the webview. Used internally
@@ -409,6 +408,7 @@ function exportpdf(): void {
         }
         output.appendLine(`ファイル名: ${stdout}`);
         output.appendLine("PDFの保存が終わりました");
+        vscode.window.showInformationMessage(`PDFの保存が終わりました`);
       });
       output.appendLine("HTML");
     });
@@ -465,7 +465,7 @@ function getPrintContent() {
   
       @page {
       size: 130mm 190mm;
-      width: calc(${typeSettingWidthUnit} + 0.1mm);
+      width: calc(${typeSettingWidthUnit} + 0.05mm);
       height: 140mm;
       margin-top: 20mm;
       margin-bottom: auto;
@@ -566,7 +566,7 @@ function getPrintContent() {
       p {
         font-size: ${fontSizeWithUnit};
         line-height: 1.75;
-        height: calc(${fontSizeWithUnit} * ${previewSettings.lineLength} + 0.5rem);
+        height: calc(${fontSizeWithUnit} * ${previewSettings.lineLength} + 0.05rem);
         text-indent: 0em;
         hanging-punctuation: force-end;
         line-break:strict;
@@ -621,79 +621,79 @@ function getPrintContent() {
     font-size: 0.8em;
     }
   
-      div.codes p {
-      text-orientation: sideways;
-      }
-  
-      p.star {
-      text-indent: 3em;
-      margin-right: 16pt;
-      margin-left: 16pt;
-      }
-  
-      hr {
-      border: none;
-      border-right: 1pt solid black;
-      height: 6em;
-      margin: auto 8.5pt;
-      }
-  
-      /* 縦中横 */
-      .tcy {
-      -webkit-text-combine: horizontal;
-      text-combine: horizontal;
-      -ms-text-combine-horizontal: all;
-      text-combine-horizontal: digit 2;
-      text-combine-upright: digit 2;
-      }
-  
-      /* 圏点（<span class="smaller">ゴマ</span>） */
-      em.side-dot, em.sesame_dot {
-      font-style: normal;
-      -webkit-text-emphasis-style: sesame;
-      text-emphasis-style: sesame;
-      margin-right: -1em;
-      display: inline-block;
-      }
-  
-      /*著作者*/
-      .author {
-      position: absolute;
-      bottom: 0;
-      font-size: 8.5pt;
-      margin-top: 50pt;
-      letter-spacing: normal;
-      }
-  
-      /*画像＋キャプション*/
-      figure {
-      display: block;
-      width: 236pt;
-      -ms-writing-mode: lr-tb;
-      -webkit-writing-mode: horizontal-tb;
-      writing-mode: horizontal-tb;
-      }
-  
-      figure img {
-      width: 100%;
-      height: auto;
-      vertical-align: bottom;
-      }
-  
-      figcaption {
-      text-align: left;
-      font-size: 7pt;
-      }
-  
-      /*奥付*/
-      .colophon {
-      font-size: 7pt;
-      margin-right: 48pt;
-      }
-      /* 級さげ */
-      span.smaller{
-          font-size:6.5pt
-      }
+    div.codes p {
+    text-orientation: sideways;
+    }
+
+    p.star {
+    text-indent: 3em;
+    margin-right: 16pt;
+    margin-left: 16pt;
+    }
+
+    hr {
+    border: none;
+    border-right: 1pt solid black;
+    height: 6em;
+    margin: auto 8.5pt;
+    }
+
+    /* 縦中横 */
+    .tcy {
+    -webkit-text-combine: horizontal;
+    text-combine: horizontal;
+    -ms-text-combine-horizontal: all;
+    text-combine-horizontal: digit 2;
+    text-combine-upright: digit 2;
+    }
+
+    /* 圏点（<span class="smaller">ゴマ</span>） */
+    em.side-dot, em.sesame_dot {
+    font-style: normal;
+    -webkit-text-emphasis-style: sesame;
+    text-emphasis-style: sesame;
+    margin-right: -1em;
+    display: inline-block;
+    }
+
+    /*著作者*/
+    .author {
+    position: absolute;
+    bottom: 0;
+    font-size: 8.5pt;
+    margin-top: 50pt;
+    letter-spacing: normal;
+    }
+
+    /*画像＋キャプション*/
+    figure {
+    display: block;
+    width: 236pt;
+    -ms-writing-mode: lr-tb;
+    -webkit-writing-mode: horizontal-tb;
+    writing-mode: horizontal-tb;
+    }
+
+    figure img {
+    width: 100%;
+    height: auto;
+    vertical-align: bottom;
+    }
+
+    figcaption {
+    text-align: left;
+    font-size: 7pt;
+    }
+
+    /*奥付*/
+    .colophon {
+    font-size: 7pt;
+    margin-right: 48pt;
+    }
+    /* 級さげ */
+    span.smaller{
+        font-size:6.5pt
+    }
   
     div.comment {
         display:none;
