@@ -113,7 +113,8 @@ export function fileList(dirPath: string): any {
 
 function getFiles(dirPath: string) {
   //console.log("getFiles",dirPath);
-  const filesInFolder = fs.readdirSync(dirPath, { withFileTypes: true });
+  const filesInFolder = fs.existsSync(dirPath)? fs.readdirSync(dirPath, { withFileTypes: true }) : [];
+  if(filesInFolder) console.log(`${dirPath}が見つかりませんでした`);
   return filesInFolder;
 }
 
