@@ -342,27 +342,7 @@ const publishWebsocketsDelay: any = {
     if (previewRedrawing) return;
     previewRedrawing = true;
     this.publish(s);
-    //this.cancel();
-    // if (!keyPressFlag) {
-    //     const currentEditor = vscode.window.activeTextEditor;
-    //     if (currentEditor) {
-    //         const updateCounter = Math.min(
-    //             Math.ceil(currentEditor.document.getText().length / 50),
-    //             1500
-    //         );
-    //         this.timeoutID = setTimeout(socketServer => {
-    //             this.publish(socketServer);
-    //         }, updateCounter, s);
-    //         keyPressFlag = true;
-    //     }
-    // }
   },
-  // cancel: function () {
-  //     if (typeof this.timeoutID == "number") {
-  //         this.clearTimeout(this.timeoutID);
-  //         delete this.timeoutID;
-  //     }
-  // }
 };
 
 function previewserver() {
