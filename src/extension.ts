@@ -481,7 +481,7 @@ function getPrintContent() {
   
       @page {
       size: 130mm 190mm;
-      width: ${typeSettingWidthUnit};
+      width: calc(${typeSettingWidthUnit} + 0.1mm);
       height: 140mm;
       margin-top: 20mm;
       margin-bottom: auto;
@@ -582,7 +582,7 @@ function getPrintContent() {
       p {
         font-size: ${fontSizeWithUnit};
         line-height: 1.75;
-        height: calc(${fontSizeWithUnit} * ${previewSettings.lineLength});
+        height: calc(${fontSizeWithUnit} * ${previewSettings.lineLength} + 0.5rem);
         text-indent: 0em;
         hanging-punctuation: force-end;
         line-break:strict;
@@ -668,6 +668,8 @@ function getPrintContent() {
       font-style: normal;
       -webkit-text-emphasis-style: sesame;
       text-emphasis-style: sesame;
+      margin-right: -1em;
+      display: inline-block;
       }
   
       /*著作者*/
@@ -743,6 +745,8 @@ function getPrintContent() {
             font-style: normal;
             text-emphasis: filled sesame rgb(128,128,128);
             -webkit-text-emphasis: filled sesame rgb(128,128,128);
+            margin-right: -1em;
+            display: inline-block;
         }
         
         span.tcy {
