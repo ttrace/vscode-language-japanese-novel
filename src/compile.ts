@@ -2,16 +2,24 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 import { getConfig } from "./config";
+import { deadLineFolderPath } from "./extension";
+import { basename } from "path";
 
 //fsモジュールの使い方 https://qiita.com/oblivion/items/2725a4b3ca3a99f8d1a3
 export default function compileDocs(): void {
-  const projectName = vscode.workspace.workspaceFolders![0].name;
+  const projectName =
+    deadLineFolderPath() == ""
+      ? vscode.workspace.workspaceFolders![0].name
+      : vscode.workspace.workspaceFolders![0].name + "-" +
+        path.basename(deadLineFolderPath());
   const projectPath: string = vscode.workspace.workspaceFolders![0].uri.fsPath;
   const config = getConfig();
   const separatorString = "\n\n　　　" + config.separator + "\n\n";
-  const draftRootPath = draftRoot();
+  const draftRootPath =
+    deadLineFolderPath() == "" ? draftRoot() : deadLineFolderPath();
 
   console.log("ProjectName: ", projectName);
+  console.log("締め切りフォルダー", deadLineFolderPath());
 
   //      publishフォルダがなければ作る
   if (!fs.existsSync(projectPath + "/publish")) {
@@ -131,7 +139,7 @@ function getFiles(dirPath: string) {
   const filesInFolder = fs.existsSync(dirPath)
     ? fs.readdirSync(dirPath, { withFileTypes: true })
     : [];
-  if (filesInFolder) console.log(`${dirPath}が見つかりませんでした`);
+  if (!filesInFolder) console.log(`${dirPath}が見つかりませんでした`);
   return filesInFolder;
 }
 

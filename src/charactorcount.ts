@@ -20,11 +20,16 @@ import simpleGit, { SimpleGit } from "simple-git";
 import { distance } from "fastest-levenshtein";
 
 let projectCharacterCountNum = 0;
+let countingFolderPath = "";
 
 if (draftRoot() != "") {
   projectCharacterCountNum = totalLength(draftRoot());
 } else {
   projectCharacterCountNum = 0;
+}
+
+export function deadLineFolderPath(): string{
+   return countingFolderPath;
 }
 
 export class CharacterCounter {
@@ -149,10 +154,12 @@ export class CharacterCounter {
     if (!fs.existsSync(pathToFolder)) {
       this._countingFolder = "";
       this._countingTargetNum = 0;
+      countingFolderPath = "";
       this._updateProjectCharacterCount();
       this._setIfChildOfTarget();
       return;
     }
+    countingFolderPath = pathToFolder;
     this._countingFolder = pathToFolder;
     this._countingTargetNum = targetCharacter;
     this._updateProjectCharacterCount();

@@ -9,6 +9,7 @@ import { getConfig } from "./config";
 import compileDocs, { draftRoot } from "./compile";
 import { draftsObject } from "./compile"; // filelist オブジェクトもある
 import { CharacterCounter, CharacterCounterController } from "./charactorcount";
+export * from "./charactorcount";
 import { editorText, OriginEditor } from "./editor";
 import {
   activateTokenizer,
@@ -399,6 +400,8 @@ function exportpdf(): void {
 
     vscode.workspace.fs.writeFile(myPath, myHtmlBinary).then(() => {
       output.appendLine(`saving pdf to ${vivlioCommand}`);
+      vscode.window.showInformationMessage(`PDF出力開始……`);
+
       cp.execFile(vivlioCommand, vivlioParams, (err, stdout, stderr) => {
         if (err) {
           console.log(`エラー: ${err.message}`);
@@ -467,8 +470,8 @@ function getPrintContent() {
   
       @page {
       size: 130mm 190mm;
-      width: calc(${typeSettingWidthUnit} + 0.05mm);
-      height: 140mm;
+      width: calc(${typeSettingWidthUnit} + 0.5mm);
+      height: calc(140mm + 0.5mm);
       margin-top: 20mm;
       margin-bottom: auto;
       margin-left: auto;
