@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.4.0",
+  "version": "1.4.2",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -241,7 +241,6 @@
             },
             "*.aozora": {
               "foreground": "#9d9d9d"
-              
             },
             "bracket.aozora": {
               "foreground": "#4b4b4b"
@@ -382,6 +381,7 @@
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
     "mocha": "^10.0.0",
+    "net": "^1.0.2",
     "node-levenshtein": "^3.0.7",
     "path": "^0.12.7",
     "sinon": "^14.0.0",
