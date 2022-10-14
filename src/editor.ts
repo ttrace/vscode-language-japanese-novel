@@ -223,11 +223,14 @@ export class MyCodelensProvider implements vscode.CodeLensProvider {
           arguments: [nextUrl],
     
         };
+        
+        const CodeLenses = [];
+        if(prevTitle!="")CodeLenses.push(new vscode.CodeLens(topOfDocument, prevLens))
+        if(nextTitle!="")CodeLenses.push(new vscode.CodeLens(taleOfDocument, nextLens))
+        // const prevSection = new vscode.CodeLens(topOfDocument, prevLens);
+        // const nextSection = new vscode.CodeLens(taleOfDocument, nextLens);
     
-        const prevSection = new vscode.CodeLens(topOfDocument, prevLens);
-        const nextSection = new vscode.CodeLens(taleOfDocument, nextLens);
-    
-        resolve([prevSection, nextSection]);
+        resolve(CodeLenses);
       });
     });
     
