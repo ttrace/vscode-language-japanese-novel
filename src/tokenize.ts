@@ -5,6 +5,7 @@ import { prependListener } from "process";
 
 const tokenTypes = new Map<string, number>();
 const tokenModifiers = new Map<string, number>();
+
 let tokenizeFlag = false;
 
 export const legend = (function () {
@@ -71,10 +72,14 @@ export function activateTokenizer(
   );
 
   // context.subscriptions.push(vscode.languages.registerDocumentRangeSemanticTokensProvider({ language: 'novel' }, new DocumentRangeSemanticTokensProvider(), legend));
-  tokenizeFlag = true;
+
+  //  tokenizeFlag = true;
+  const tokenizeSetting = context.workspaceState.get("deadlineFolderPath");
+  tokenizeFlag = (typeof tokenizeSetting == "boolean") ? tokenizeSetting : true;
 }
 
-export function desableTokenizer() {
+export function desableTokenizer(context: vscode.ExtensionContext) {
+  context.workspaceState.update("deadlineFolderPath", false);
   tokenizeFlag = false;
   vscode.languages.registerDocumentSemanticTokensProvider(
     { language: "novel" },
@@ -83,8 +88,9 @@ export function desableTokenizer() {
   );
 }
 
-export function enableTokenizer() {
+export function enableTokenizer(context: vscode.ExtensionContext) {
   tokenizeFlag = true;
+  context.workspaceState.update("deadlineFolderPath", true);
   vscode.languages.registerDocumentSemanticTokensProvider(
     { language: "novel" },
     new DocumentSemanticTokensProvider(),
