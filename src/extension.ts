@@ -10,7 +10,7 @@ import compileDocs, { draftRoot } from "./compile";
 import { draftsObject } from "./compile"; // filelist オブジェクトもある
 import { CharacterCounter, CharacterCounterController } from "./charactorcount";
 export * from "./charactorcount";
-import { editorText, OriginEditor } from "./editor";
+import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
 import {
   activateTokenizer,
   changeTenseAspect,
@@ -38,15 +38,18 @@ function emptyPort(callback: any) {
   const server = new net.Server();
 
   socket.on("error", function (e) {
-    console.log('try:', port);
-    server.on('listening', () => {
-      server.close();
-      console.log('ok:', port);
-      callback(port);
-    }).on('error', () => {
-      console.log('ng:', port);
-      loop();
-    }).listen(port, '127.0.0.1');
+    console.log("try:", port);
+    server
+      .on("listening", () => {
+        server.close();
+        console.log("ok:", port);
+        callback(port);
+      })
+      .on("error", () => {
+        console.log("ng:", port);
+        loop();
+      })
+      .listen(port, "127.0.0.1");
   });
 
   function loop() {
@@ -80,12 +83,12 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.hide-morpheme", async () =>{
+    vscode.commands.registerCommand("Novel.hide-morpheme", async () => {
       desableTokenizer(context);
     })
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.show-morpheme",  async () =>{
+    vscode.commands.registerCommand("Novel.show-morpheme", async () => {
       enableTokenizer(context);
     })
   );
@@ -120,6 +123,7 @@ export function activate(context: vscode.ExtensionContext): void {
     );
   }
 
+  //カウンター
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.set-counter", async (e) => {
       const path = e.fsPath;
@@ -165,6 +169,39 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   documentRoot = vscode.Uri.joinPath(context.extensionUri, "htdocs");
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "Novel.openfile",
+      (args: any)=>{
+        vscode.commands.executeCommand("vscode.open",args)
+      }
+    )
+
+  );
+  const codeLensProviderDisposable = vscode.languages.registerCodeLensProvider(
+    {language: 'novel',
+      scheme: 'file',},
+    new MyCodelensProvider()
+  )
+
+  context.subscriptions.push(codeLensProviderDisposable)
+
+  // vscode.workspace.onDidOpenTextDocument((e) => {
+
+  //     const editor = vscode.window.activeTextEditor;
+  //     if (typeof editor != "undefined") {
+  //       latestEditor = editor;
+  //       console.log("editor changed!");
+  //     }
+  //     if (
+  //       editor?.document.languageId == "novel"
+  //     ) {
+  //       previewBesideSection(editor);
+  //     }
+    
+  // });
+
 }
 
 let latestEditor: vscode.TextEditor;
@@ -387,7 +424,6 @@ function verticalpreview() {
     launchserver(originEditor);
   }
 }
-
 
 function deactivate() {
   //

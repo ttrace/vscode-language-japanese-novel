@@ -81,7 +81,7 @@ export function fileList(dirPath: string): any {
   const filesInFolder = getFiles(dirPath);
   const root = {};
 
-  console.log("files from system:", filesInFolder);
+//  console.log("files from system:", filesInFolder);
 
   const labelOfList = path.basename(dirPath);
   const files = [];

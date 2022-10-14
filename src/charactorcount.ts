@@ -28,8 +28,8 @@ if (draftRoot() != "") {
   projectCharacterCountNum = 0;
 }
 
-export function deadLineFolderPath(): string{
-   return countingFolderPath;
+export function deadLineFolderPath(): string {
+  return countingFolderPath;
 }
 
 export class CharacterCounter {
