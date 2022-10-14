@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { getConfig } from "./config";
+import { draftRoot, fileList } from "./compile";
 
 export type OriginEditor = vscode.TextEditor | "active" | undefined;
 
@@ -108,4 +109,77 @@ export function markUpHtml(myHtml: string) {
   );
 
   return taggedHTML;
+}
+
+let nextSectionStyle = vscode.window.createTextEditorDecorationType({
+  isWholeLine: true,
+  after: {
+    color: "#fff",
+    backgroundColor: "#333",
+    contentText: "前の行",
+    textDecoration: `;
+      display: block;
+      widht: 100%;
+      padding: 0.1em;
+      margin: 0em;
+      margin-top: 1em;
+      border-radius: 0.2em;
+      font-size: 0.75em;
+      `,
+  },
+});
+
+export async function previewBesideSection(editor: vscode.TextEditor) {
+  
+  console.log('decoration');
+  const decorationsArrayNext: vscode.DecorationOptions[] = [];
+  
+  const myFileList = fileList(draftRoot());
+  const docIndex = (myFileList.files.findIndex((e:any)=> e.dir == editor.document.fileName));
+  let nextDocIndex = null;
+
+  //次のファイルがディレクトリの場合
+  for (let index = docIndex + 1; index < myFileList.files.length; index++){
+    if(myFileList.files[index].dir){
+      console.log("nextDoc in loop", myFileList.files[index]);
+      nextDocIndex = index;
+      break;
+    }
+    nextDocIndex = null;
+  }
+
+  // 末尾の場合
+  if (nextDocIndex == null) return;
+
+  console.log("nextDoc" ,myFileList.files[nextDocIndex]);
+  const nextDocData = await vscode.workspace.fs.readFile(vscode.Uri.file(myFileList.files[nextDocIndex].dir));
+  const nextDocText = Buffer.from(nextDocData).toString('utf8');
+  //console.log("readingFile:",nextDocText);
+  const newNextSectionStyle = vscode.window.createTextEditorDecorationType({
+    isWholeLine: true,
+    after: {
+      contentText: `${myFileList.files[nextDocIndex].name} ${nextDocText.substring(0, 20)}……`,
+      textDecoration: `;
+      opacity: 0.5;
+      display: block;
+      border-top: 1px dotted;
+      padding: 0.1em;
+      margin: 0em;
+      margin-top: 1em;
+      border-radius: 0.2em;
+      `,
+    },
+  });
+  
+  const firstLine = editor.document.lineAt(0);
+  const lastLine = editor.document.lineAt(editor.document.lineCount - 1);
+  const prevRange = new vscode.Range(lastLine.range.end, lastLine.range.end);
+  const range = new vscode.Range(lastLine.range.end, lastLine.range.end);
+  
+  const decorationNext = { range };
+  decorationsArrayNext.push(decorationNext);
+  
+  editor.setDecorations(nextSectionStyle, []);
+  editor.setDecorations(newNextSectionStyle, decorationsArrayNext);
+  nextSectionStyle = newNextSectionStyle;
 }
