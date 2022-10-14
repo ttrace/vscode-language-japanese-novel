@@ -80,10 +80,14 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.hide-morpheme", desableTokenizer)
+    vscode.commands.registerCommand("Novel.hide-morpheme", async () =>{
+      desableTokenizer(context);
+    })
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.show-morpheme", enableTokenizer)
+    vscode.commands.registerCommand("Novel.show-morpheme",  async () =>{
+      enableTokenizer(context);
+    })
   );
 
   context.subscriptions.push(
