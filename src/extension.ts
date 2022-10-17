@@ -187,20 +187,20 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(codeLensProviderDisposable)
 
-  // vscode.workspace.onDidOpenTextDocument((e) => {
+  vscode.workspace.onDidOpenTextDocument((e) => {
 
-  //     const editor = vscode.window.activeTextEditor;
-  //     if (typeof editor != "undefined") {
-  //       latestEditor = editor;
-  //       console.log("editor changed!");
-  //     }
-  //     if (
-  //       editor?.document.languageId == "novel"
-  //     ) {
-  //       previewBesideSection(editor);
-  //     }
+      const editor = vscode.window.activeTextEditor;
+      if (typeof editor != "undefined") {
+        latestEditor = editor;
+        console.log("editor changed!");
+      }
+      if (
+        editor?.document.languageId == "novel"
+      ) {
+        previewBesideSection(editor);
+      }
     
-  // });
+  });
 
 }
 

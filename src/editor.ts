@@ -116,13 +116,12 @@ let nextSectionStyle = vscode.window.createTextEditorDecorationType({
   after: {
     color: "#fff",
     backgroundColor: "#333",
-    contentText: "前の行",
     textDecoration: `;
       display: block;
       widht: 100%;
       padding: 0.1em;
       margin: 0em;
-      margin-top: 1em;
+      margin-top: 0em;
       border-radius: 0.2em;
       font-size: 0.75em;
       `,
@@ -158,16 +157,18 @@ export async function previewBesideSection(editor: vscode.TextEditor) {
   );
   const nextDocText = Buffer.from(nextDocData)
     .toString("utf8")
-    .substring(0, 100)
+    .substring(0, 300)
+    .replace(/([^\n]{0,30})/g, "$1\\a")
     .replace(/\n/g, "");
   console.log(nextDocText);
   const textDecorationCss = `;
-  content: '${myFileList.files[nextDocIndex].name}: ${nextDocText}';
+  content: '${nextDocText}';
   display: block;
   opacity: 0.5;
   border-top: 1px dotted;
   padding: 0.1em;
-  margin-top: 1em;`;
+  white-space: pre;
+  margin-top: 0.5em;`;
   const newNextSectionStyle = vscode.window.createTextEditorDecorationType({
     isWholeLine: true,
     after: {
@@ -300,9 +301,7 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
     const dataString = Buffer.from(nextDocData).toString("utf8");
     nextDocText =
       "次のシーン：" +
-      myFileList.files[nextDocIndex].name +
-      dataString.slice(0, 30).replace(/\n/g, "") +
-      "〜";
+      myFileList.files[nextDocIndex].name;
   }
 
   return {
