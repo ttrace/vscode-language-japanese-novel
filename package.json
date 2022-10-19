@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.5.0-alpha-text",
+  "version": "1.5.0-alpha-01",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
     "vscode:pretest": "npm run compile",
     "watch": "tsc -watch -p ./",
     "test": "node ./dist/test/runTest.js",
-    "compile-webpack": "webpack",
+    "compile-webpack": "npx webpack --mode development",
     "test-webpack": "webpack --watch",
     "package-webpack": "webpack --mode production --devtool hidden-source-map"
   },

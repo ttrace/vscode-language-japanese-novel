@@ -171,37 +171,27 @@ export function activate(context: vscode.ExtensionContext): void {
   documentRoot = vscode.Uri.joinPath(context.extensionUri, "htdocs");
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "Novel.openfile",
-      (args: any)=>{
-        vscode.commands.executeCommand("vscode.open",args)
-      }
-    )
-
+    vscode.commands.registerCommand("Novel.openfile", (args: any) => {
+      vscode.commands.executeCommand("vscode.open", args);
+    })
   );
   const codeLensProviderDisposable = vscode.languages.registerCodeLensProvider(
-    {language: 'novel',
-      scheme: 'file',},
+    { language: "novel", scheme: "file" },
     new MyCodelensProvider()
-  )
+  );
 
-  context.subscriptions.push(codeLensProviderDisposable)
+  context.subscriptions.push(codeLensProviderDisposable);
 
   vscode.workspace.onDidOpenTextDocument((e) => {
-
-      const editor = vscode.window.activeTextEditor;
-      if (typeof editor != "undefined") {
-        latestEditor = editor;
-        console.log("editor changed!");
-      }
-      if (
-        editor?.document.languageId == "novel"
-      ) {
-        previewBesideSection(editor);
-      }
-    
+    const editor = vscode.window.activeTextEditor;
+    if (typeof editor != "undefined") {
+      latestEditor = editor;
+      console.log("editor changed!");
+    }
+    if (editor?.document.languageId == "novel") {
+      previewBesideSection(editor);
+    }
   });
-
 }
 
 let latestEditor: vscode.TextEditor;

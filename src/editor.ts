@@ -111,90 +111,90 @@ export function markUpHtml(myHtml: string) {
   return taggedHTML;
 }
 
-let nextSectionStyle = vscode.window.createTextEditorDecorationType({
-  isWholeLine: true,
-  after: {
-    color: "#fff",
-    backgroundColor: "#333",
-    textDecoration: `;
-      display: block;
-      widht: 100%;
-      padding: 0.1em;
-      margin: 0em;
-      margin-top: 0em;
-      border-radius: 0.2em;
-      font-size: 0.75em;
-      `,
-  },
-});
+let prevSectionStyle = vscode.window.createTextEditorDecorationType({});
+let nextSectionStyle = vscode.window.createTextEditorDecorationType({});
 
 export async function previewBesideSection(editor: vscode.TextEditor) {
   console.log("decoration");
+  const decorationsArrayPrev: vscode.DecorationOptions[] = [];
   const decorationsArrayNext: vscode.DecorationOptions[] = [];
 
-  const myFileList = fileList(draftRoot());
-  const docIndex = myFileList.files.findIndex(
-    (e: any) => e.dir == editor.document.fileName
-  );
-  let nextDocIndex = null;
-
-  //次のファイルがディレクトリの場合
-  for (let index = docIndex + 1; index < myFileList.files.length; index++) {
-    if (myFileList.files[index].dir) {
-      console.log("nextDoc in loop", myFileList.files[index]);
-      nextDocIndex = index;
-      break;
-    }
-    nextDocIndex = null;
-  }
-
-  // 末尾の場合
-  if (nextDocIndex == null) return;
-
-  console.log("nextDoc", myFileList.files[nextDocIndex]);
-  const nextDocData = await vscode.workspace.fs.readFile(
-    vscode.Uri.file(myFileList.files[nextDocIndex].dir)
-  );
-  const nextDocText = Buffer.from(nextDocData)
-    .toString("utf8")
-    .substring(0, 300)
-    .replace(/([^\n]{0,30})/g, "$1\\a")
-    .replace(/\n/g, "");
-  console.log(nextDocText);
-  const textDecorationCss = `;
-  content: '${nextDocText}';
-  display: block;
-  opacity: 0.5;
-  border-top: 1px dotted;
-  padding: 0.1em;
-  white-space: pre;
-  margin-top: 0.5em;`;
-  const newNextSectionStyle = vscode.window.createTextEditorDecorationType({
-    isWholeLine: true,
-    after: {
-      textDecoration: textDecorationCss,
-      // contentText: `${myFileList.files[nextDocIndex].name} ${nextDocText.substring(0, 400)}……`,
-    },
-  });
-
-  const firstLine = editor.document.lineAt(0);
   const lastLine = editor.document.lineAt(editor.document.lineCount - 1);
-  const prevRange = new vscode.Range(lastLine.range.end, lastLine.range.end);
-  const range = new vscode.Range(lastLine.range.end, lastLine.range.end);
 
+  let range = new vscode.Range(0, 0, 0, 0);
+  const decorationPrev = { range };
+  decorationsArrayPrev.push(decorationPrev);
+
+  range = new vscode.Range(lastLine.range.end, lastLine.range.end);
   const decorationNext = { range };
   decorationsArrayNext.push(decorationNext);
 
-  editor.setDecorations(nextSectionStyle, []);
-  editor.setDecorations(newNextSectionStyle, decorationsArrayNext);
-  nextSectionStyle = newNextSectionStyle;
+  getBesideText(editor.document).then((value) => {
+    const prevText = value.prevText;
+    const nextText = value.nextText;
+
+    const prevDocText = prevText
+      .substring(0, 300)
+      .replace(/(.{0,30})/g, "$1\\a")
+      .replace(/\\a\\a/g, "\\a");
+
+    const nextDocText = nextText
+      .substring(0, 300)
+      .replace(/(.{0,30})/g, "$1\\a")
+      .replace(/\\a\\a/g, "\\a");
+
+    const prevDecorationCss = `;
+    display: block;
+    opacity: 0.5;
+    border-bottom: 1px dotted;
+    padding: 0.1em;
+    white-space: pre;
+    padding-bottom: em;
+    height: 2em;
+    overflow-y: hidden`;
+
+    const nextDecorationCss = `;
+    content: '${nextDocText}〜';
+    display: block;
+    opacity: 0.5;
+    border-top: 1px dotted;
+    padding: 0.1em;
+    white-space: pre;
+    margin-top: 0.5em;`;
+
+    const newPrevSectionStyle = vscode.window.createTextEditorDecorationType({
+      isWholeLine: true,
+      before: {
+        contentText: prevDocText,
+        textDecoration: prevDecorationCss,
+      },
+    });
+
+    const newNextSectionStyle = vscode.window.createTextEditorDecorationType({
+      isWholeLine: true,
+      after: {
+        textDecoration: nextDecorationCss,
+      },
+    });
+
+    editor.setDecorations(prevSectionStyle, []);
+    editor.setDecorations(nextSectionStyle, []);
+    if (value.prevUrl) {
+      //editor.setDecorations(newPrevSectionStyle, decorationsArrayPrev);
+      prevSectionStyle = newPrevSectionStyle;
+    }
+    if (value.nextUrl) {
+      editor.setDecorations(newNextSectionStyle, decorationsArrayNext);
+      nextSectionStyle = newNextSectionStyle;
+    }
+  });
 }
 
 export class MyCodelensProvider implements vscode.CodeLensProvider {
   async provideCodeLenses(
     document: vscode.TextDocument
   ): Promise<vscode.CodeLens[]> {
-    return new Promise((resolve, reject) =>{
+    return new Promise((resolve, reject) => {
       const editor = vscode.window.activeTextEditor;
       const topOfDocument = new vscode.Range(0, 0, 0, 0);
       const lastLine = editor?.document.lineAt(editor.document.lineCount - 1);
@@ -202,46 +202,47 @@ export class MyCodelensProvider implements vscode.CodeLensProvider {
         lastLine!.range.end,
         lastLine!.range.end
       );
-  
+
       //const besides = getBesideText(document);
-      getBesideText(document).then(value => {
-        const prevTitle = value.prevText;
-        const nextTitle = value.nextText;
+      getBesideText(document).then((value) => {
+        const prevTitle = value.prevTitle;
+        const prevText = value.prevText.slice(-30).replace(/\n/g, "");
+        const nextTitle = value.nextTitle;
         const prevUrl = value.prevUrl;
         const nextUrl = value.nextUrl;
-  
+
         const prevLens = {
           command: "Novel.openfile",
-          title: prevTitle,
+          title: prevTitle + prevText,
           tooltip: "前のシーンのファイルを開く",
           arguments: [prevUrl],
         };
-    
+
         const nextLens = {
           command: "Novel.openfile",
           title: nextTitle,
           tooltip: "次のシーンのファイルを開く",
           arguments: [nextUrl],
-    
         };
-        
+
         const CodeLenses = [];
-        if(prevTitle!="")CodeLenses.push(new vscode.CodeLens(topOfDocument, prevLens))
-        if(nextTitle!="")CodeLenses.push(new vscode.CodeLens(taleOfDocument, nextLens))
-        // const prevSection = new vscode.CodeLens(topOfDocument, prevLens);
-        // const nextSection = new vscode.CodeLens(taleOfDocument, nextLens);
-    
+        if (prevTitle != "")
+          CodeLenses.push(new vscode.CodeLens(topOfDocument, prevLens));
+        if (nextTitle != "")
+          CodeLenses.push(new vscode.CodeLens(taleOfDocument, nextLens));
+
         resolve(CodeLenses);
       });
     });
-    
   }
 }
 
 async function getBesideText(document: vscode.TextDocument): Promise<{
-  prevUrl: vscode.Uri| null;
+  prevUrl: vscode.Uri | null;
+  prevTitle: string;
   prevText: string;
-  nextUrl: vscode.Uri| null;
+  nextUrl: vscode.Uri | null;
+  nextTitle: string;
   nextText: string;
 }> {
   const myFileList = fileList(draftRoot());
@@ -252,6 +253,8 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
   let nextDocIndex = null;
   let prevDocUrl = null;
   let nextDocUrl = null;
+  let prevDocTitle = "";
+  let nextDocTitle = "";
   let prevDocText = "";
   let nextDocText = "";
 
@@ -286,11 +289,8 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
     prevDocUrl = vscode.Uri.file(myFileList.files[prevDocIndex].dir);
     const nextDocData = await vscode.workspace.fs.readFile(prevDocUrl);
     const dataString = Buffer.from(nextDocData).toString("utf8");
-    prevDocText =
-      "前のシーン：" +
-      myFileList.files[prevDocIndex].name +
-      "　〜" +
-      dataString.slice(-30).replace(/\n/g, "");
+    prevDocTitle = "前のシーン：" + myFileList.files[prevDocIndex].name;
+    prevDocText = dataString;
   }
 
   // 次のファイルが有効な場合
@@ -299,15 +299,16 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
     nextDocUrl = vscode.Uri.file(myFileList.files[nextDocIndex].dir);
     const nextDocData = await vscode.workspace.fs.readFile(nextDocUrl);
     const dataString = Buffer.from(nextDocData).toString("utf8");
-    nextDocText =
-      "次のシーン：" +
-      myFileList.files[nextDocIndex].name;
+    nextDocTitle = "次のシーン：" + myFileList.files[nextDocIndex].name;
+    nextDocText = dataString;
   }
 
   return {
     prevUrl: prevDocUrl,
+    prevTitle: prevDocTitle,
     prevText: prevDocText,
     nextUrl: nextDocUrl,
+    nextTitle: nextDocTitle,
     nextText: nextDocText,
   };
 }
