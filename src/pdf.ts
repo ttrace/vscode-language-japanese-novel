@@ -34,15 +34,21 @@ export function exportpdf(): void {
       output.appendLine(`saving pdf to ${vivlioCommand}`);
       
       if (!vivlioLaunching) {
-        //vivlioLaunching = true;
+        vivlioLaunching = true;
         vscode.window.showInformationMessage(`プレビュー起動中……`);
         const vivlioProcess = cp.execFile(vivlioCommand, vivlioParams, { killSignal: 'SIGILL'}, (err, stdout, stderr) => {
           if (err) {
             console.log(`Vivlioエラー: ${err.message}`);
             output.appendLine(`Vivlioエラー: ${err.message}`);
+            vivlioLaunching = false;
             return;
           }
-          console.log(`Vivlio出力: ${stderr}`);
+          if (stdout){
+            console.log(`Vivlio出力： ${stdout}`);
+          }
+          if (stderr){
+            console.log(`Vivlioエラー出力： ${stderr}`);
+          }
           //output.appendLine(`ファイル名: ${stdout}`);
           //output.appendLine("PDFの保存が終わりました");
           vscode.window.showInformationMessage(`PDFの保存が終わりました`);
@@ -51,8 +57,8 @@ export function exportpdf(): void {
 
          vivlioProcess.on('close', (code, signal) => {
            if(vivlioProcess.killed){
-             vivlioLaunching = false;
              exportpdf();
+             vivlioLaunching = true;
            }
            console.log(`ERROR: child terminated. Exit code: ${code}, signal: ${signal}`);
          })
@@ -69,10 +75,10 @@ function getPrintContent() {
 
   const myText = editorText("active");
   const previewSettings = getConfig();
-  const printBoxHeight = 140;
-  const printBoxWidth = 100;
+  const printBoxHeight = 150.4;
+  const printBoxWidth = 104.14;
   const fontSize =
-    previewSettings.lineLength > previewSettings.linesPerPage * 1.75 * 1.4
+    previewSettings.lineLength > previewSettings.linesPerPage * 1.75 * 1.444
       ? printBoxHeight / previewSettings.lineLength
       : printBoxWidth / (previewSettings.linesPerPage * 1.75);
   // フォントサイズ in mm
@@ -85,8 +91,9 @@ function getPrintContent() {
   const typeSettingWidthUnit = typeSettingWidth + "mm";
   const columnCount = Math.floor(
     printBoxHeight / (typeSettingHeight + fontSize)
-  );
-  const columnCSS = columnCount > 1 ? `column-count: ${columnCount};` : "";
+    );
+    const columnCSS = columnCount > 1 ? `column-count: ${columnCount};` : "";
+    const columnHeitghtRate = "calc(" + (typeSettingHeight / 150.4 * columnCount * 105) + "% + 0.5em)";
 
   return `<!DOCTYPE html>
   <html lang="ja">
@@ -113,13 +120,12 @@ function getPrintContent() {
       }
   
       @page {
-      size: 130mm 190mm;
-      width: calc(${typeSettingWidthUnit} + 0.2mm);
-      height: calc(140mm + 0.2mm);
-      margin-top: 20mm;
-      margin-bottom: auto;
-      margin-left: auto;
-      margin-right: auto;
+      size: 127mm 188mm;
+      height: ;
+      margin-top: 10%;
+      margin-bottom: 10%;
+      margin-left: 8%;
+      margin-right: 8%;
       /* 以下、マージンボックスに継承される */
       font-size: 6pt;
       font-family: "游明朝", "YuMincho", serif;
@@ -128,23 +134,25 @@ function getPrintContent() {
       }
   
       @page :left {
-      margin-right: 15mm;
-      @top-left {
+        margin-right: 6%;
+        margin-left: 10%;
+        @bottom-left {
           content: counter(page) "  ${projectTitle}";
           margin-left: 0mm;
-          margin-top: 170mm;
+          margin-top: 50%;
           writing-mode: horizontal-tb;
           /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
       }
       }
       @page :right {
-      margin-right: 15mm;
-      /* border-bottom: 1pt solid black; */
+        margin-left: 6%;
+        margin-right: 10%;
+        /* border-bottom: 1pt solid black; */
       /* 右下ノンブル */
-      @top-right {
+      @bottom-right {
           content: " ${projectTitle}  "counter(page);
           margin-right: 0mm;
-          margin-top: 170mm;
+          margin-top: 50%;
           writing-mode: horizontal-tb;
           /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
       }
@@ -215,7 +223,7 @@ function getPrintContent() {
       p {
         font-size: ${fontSizeWithUnit};
         line-height: 1.75;
-        height: calc(${fontSizeWithUnit} * ${previewSettings.lineLength} + 0.5mm);
+        height: ${columnHeitghtRate};
         text-indent: 0em;
         hanging-punctuation: force-end;
         line-break:strict;
