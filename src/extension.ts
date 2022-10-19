@@ -445,7 +445,7 @@ function getPrintContent() {
   const printBoxHeight = 140;
   const printBoxWidth = 100;
   const fontSize =
-    previewSettings.lineLength > previewSettings.linesPerPage * 1.75
+    previewSettings.lineLength > previewSettings.linesPerPage * 1.75 * 1.4
       ? printBoxHeight / previewSettings.lineLength
       : printBoxWidth / (previewSettings.linesPerPage * 1.75);
   // フォントサイズ in mm
@@ -456,7 +456,9 @@ function getPrintContent() {
   const typeSettingHeightUnit = typeSettingHeight + "mm";
   const typeSettingWidth = fontSize * 1.75 * previewSettings.linesPerPage;
   const typeSettingWidthUnit = typeSettingWidth + "mm";
-  const columnCount = Math.floor(printBoxHeight / typeSettingHeight);
+  const columnCount = Math.floor(printBoxHeight / (typeSettingHeight + fontSize));
+  const columnCSS = columnCount>1 ? `column-count: ${columnCount};` : "";
+  
 
   return `<!DOCTYPE html>
   <html lang="ja">
@@ -484,8 +486,8 @@ function getPrintContent() {
   
       @page {
       size: 130mm 190mm;
-      width: calc(${typeSettingWidthUnit} + 0.5mm);
-      height: calc(140mm + 0.5mm);
+      width: calc(${typeSettingWidthUnit} + 0.2mm);
+      height: calc(140mm + 0.2mm);
       margin-top: 20mm;
       margin-bottom: auto;
       margin-left: auto;
@@ -527,7 +529,7 @@ function getPrintContent() {
       }
   
       body{
-        column-count: ${columnCount};
+        ${columnCSS}
       }
   
       div#draft{
