@@ -10,7 +10,7 @@
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ],
             "outFiles": [
-                "${workspaceFolder}/dist/test/**/*.js"
+                "${workspaceFolder}/dist/*.js"
             ],
             "preLaunchTask": "npm: compile-webpack"
         },
