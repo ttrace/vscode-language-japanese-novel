@@ -4,13 +4,13 @@
 
 <!-- code_chunk_output -->
 
-- [実装しているハイライト](#実装しているハイライト)
+- [ハイライト](#ハイライト)
   - [品詞ハイライト](#品詞ハイライト)
-- [文末辞の切り替え](#文末辞の切り替え)
 - [文字数のカウント](#文字数のカウント)
   - [締め切りフォルダーの設定](#締め切りフォルダーの設定)
   - [編集距離の表示](#編集距離の表示)
-  - [制限事項](#制限事項)
+- [次のシーン、前のシーンへ移動](#次のシーン-前のシーンへ移動)
+- [文末辞の切り替え](#文末辞の切り替え)
 - [縦書きプレビュー](#縦書きプレビュー)
   - [プレビュー画面との画面連動](#プレビュー画面との画面連動)
   - [プレビュー設定](#プレビュー設定)
@@ -38,9 +38,9 @@ novel-writerは長編小説（ノベル）の執筆支援を行います。
 
 ![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/highlight-and-vertical.png)
 
-## 実装しているハイライト
+##　ハイライト
 
-novel-writer は小説で用いられる会話文と、青空文庫注記法で提案された「《》」で囲むルビや縦中横をハイライトします。
+novel-writerは小説で用いる会話文や青空文庫注記法などをハイライトします。
 
 - 鉤括弧（「」）で挟まれた会話
 - 青空文庫の注記
@@ -67,12 +67,6 @@ novel-writerは形態素解析を用いて分割した品詞をハイライト�
 
 品詞ハイライトにはJavaScriptの形態素解析ライブラリ [Kuromoji.js](https://www.npmjs.com/package/kuromoji) を利用しています。素晴らしいライブラリです。この場を借りてお礼申し上げます。
 
-## 文末辞の切り替え
-
-novel-writerは、日本語の小説で使われる連体形文末辞（〜していた。〜と言った。〜を持った。）と終止形文末辞（〜している。〜と言う。〜を持つ。）を切り替えることができます。  
-「Novel:文末辞入れ替え」コマンドにキーボードショートカットを登録してお使いください。文章のリズムを整える作業が軽減できることでしょう。
-
-![文末辞の切り替え](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/tense-aspect-change.gif)
 
 ## 文字数のカウント
 
@@ -89,12 +83,27 @@ novel-writerは、日本語の小説で使われる連体形文末辞（〜し�
 
 ### 編集距離の表示
 
-Gitでファイルの履歴を管理している場合には、前日の状態から現在までの編集距離をリアルタイムに表示します。  
+Gitでファイルの履歴を管理している場合には、前日から現在までの編集距離をリアルタイムに表示します。  
 改稿した分量を把握するのにお使いください。
 
 ![編集距離](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/edit-distance.png)
 
+## 次のシーン、前のシーンへ移動
 
+novel形式の書類を開いているときには、前のシーンにあたるファイルや、直後のシーンを開くナビゲーターが表示されます。
+ナビゲーターは設定で表示しないように設定できます。
+
+![前のシーンを開く](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/prev-scnene.png)
+
+![次のシーンを開く](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/next-scnene.png)
+
+
+## 文末辞の切り替え
+
+novel-writerは、日本語の小説で使われる連体形文末辞（〜していた。〜と言った。〜を持った。）と終止形文末辞（〜している。〜と言う。〜を持つ。）を切り替えることができます。  
+「Novel:文末辞入れ替え」コマンドにキーボードショートカットを登録してお使いください。文章のリズムを整える作業が軽減できることでしょう。
+
+![文末辞の切り替え](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/tense-aspect-change.gif)
 
 ## 縦書きプレビュー
 
@@ -130,15 +139,19 @@ contributed by [yasudaz](https://github.com/yasudaz)
 
 ## PDF出力
 
-novel-writerは[Vivliostyle/CLI](https://vivliostyle.org/ja/)と連動して、A5変型版（130mm×190mm）の縦書きPDFを出力します。以下のコマンドをでVivlioStyleをインストールしてからPDF出力を実行してください。
+novel-writerは[Vivliostyle/CLI](https://vivliostyle.org/ja/)を用いて、選択しているテキストファイルのA5変型版（130mm×190mm）の縦書きPDFを出力します。以下のコマンドをでVivlioStyleをインストールしてからPDF出力を実行してください。
 
 ```
 npm install @vivliostyle/cli -g
 ```
 
+1行が短く、ページあたりの行数が長い場合には段組で印刷します。
+
 ![PDF出力](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/pdf-typesettings.png)
 
-1行が短く、ページあたりの行数が長い場合には段組で印刷します。
+PDFを保存するときは、Vivliostyleの印刷ダイアログでプリンターを「PDFに保存」に設定してください。
+
+![PDFを保存](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/print-dialogue.png)
 
 * PDF出力にはワークスペースが必要です。フォルダを開いて利用してください。
 
@@ -153,6 +166,9 @@ novel-writerは階層化されたフォルダーの中のテキストも結合�
 資料などをワークスペースに保存している場合には、テキストファイルを「原稿（あるいはDraft」フォルダーに入れておいてください。
 
 ## 参考にした文献
+
+novel-writerはさまざまなWeb文書を参考にさせていただきました。特に参考になったのは以下の二つのウェブサイトです。
+
 VSCodeで俺々言語モードを作る
 https://qiita.com/takl/items/ba2f63db515f66585d1f
 

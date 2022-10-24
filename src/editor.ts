@@ -115,6 +115,7 @@ let prevSectionStyle = vscode.window.createTextEditorDecorationType({});
 let nextSectionStyle = vscode.window.createTextEditorDecorationType({});
 
 export async function previewBesideSection(editor: vscode.TextEditor) {
+  if(!getConfig().sceneNav) return;
   console.log("decoration");
   const decorationsArrayPrev: vscode.DecorationOptions[] = [];
   const decorationsArrayNext: vscode.DecorationOptions[] = [];
@@ -141,7 +142,7 @@ export async function previewBesideSection(editor: vscode.TextEditor) {
     const nextDocText = nextText
       .substring(0, 300)
       .replace(/(.{0,30})/g, "$1\\a")
-      .replace(/\\a\\a/g, "\\a");
+      .replace(/\\a\\a/g, "\\a").replace(/\\a$/, "");
 
     const prevDecorationCss = `;
     display: block;
@@ -154,7 +155,7 @@ export async function previewBesideSection(editor: vscode.TextEditor) {
     overflow-y: hidden`;
 
     const nextDecorationCss = `;
-    content: '${nextDocText}〜';
+    content: '${nextDocText}……';
     display: block;
     opacity: 0.5;
     border-top: 1px dotted;
@@ -195,6 +196,7 @@ export class MyCodelensProvider implements vscode.CodeLensProvider {
     document: vscode.TextDocument
   ): Promise<vscode.CodeLens[]> {
     return new Promise((resolve, reject) => {
+      if(!getConfig().sceneNav) return;
       const editor = vscode.window.activeTextEditor;
 
       //const besides = getBesideText(document);
@@ -207,7 +209,7 @@ export class MyCodelensProvider implements vscode.CodeLensProvider {
 
         const prevLens = {
           command: "Novel.openfile",
-          title: prevTitle + prevText,
+          title: prevTitle + " ……"+ prevText,
           tooltip: "前のシーンのファイルを開く",
           arguments: [prevUrl],
         };
