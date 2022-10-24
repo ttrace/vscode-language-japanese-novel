@@ -196,12 +196,6 @@ export class MyCodelensProvider implements vscode.CodeLensProvider {
   ): Promise<vscode.CodeLens[]> {
     return new Promise((resolve, reject) => {
       const editor = vscode.window.activeTextEditor;
-      const topOfDocument = new vscode.Range(0, 0, 0, 0);
-      const lastLine = editor?.document.lineAt(editor.document.lineCount - 1);
-      const taleOfDocument = new vscode.Range(
-        lastLine!.range.end,
-        lastLine!.range.end
-      );
 
       //const besides = getBesideText(document);
       getBesideText(document).then((value) => {
@@ -225,6 +219,22 @@ export class MyCodelensProvider implements vscode.CodeLensProvider {
           arguments: [nextUrl],
         };
 
+        const topOfDocument = new vscode.Range(0, 0, 0, 0);
+        let lastLine = editor?.document.lineAt(editor.document.lineCount - 1);
+        if (!lastLine?.isEmptyOrWhitespace && nextTitle != "") {
+          editor?.edit((edit) => {
+            edit.insert(
+              new vscode.Position(editor.document.lineCount, lastLine!.range.contains.length),
+              "\n"
+            );
+            lastLine = editor?.document.lineAt(editor.document.lineCount - 1);
+          });
+        }
+        const taleOfDocument = new vscode.Range(
+          lastLine!.range.end,
+          lastLine!.range.end
+        );
+  
         const CodeLenses = [];
         if (prevTitle != "")
           CodeLenses.push(new vscode.CodeLens(topOfDocument, prevLens));
