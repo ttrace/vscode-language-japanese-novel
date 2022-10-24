@@ -3,16 +3,15 @@ import * as fs from "fs";
 import * as path from "path";
 import { getConfig } from "./config";
 import { deadLineFolderPath } from "./extension";
-import { basename } from "path";
 
 //fsモジュールの使い方 https://qiita.com/oblivion/items/2725a4b3ca3a99f8d1a3
 export default function compileDocs(): void {
   const projectName =
     deadLineFolderPath() == ""
-      ? vscode.workspace.workspaceFolders![0].name
-      : vscode.workspace.workspaceFolders![0].name + "-" +
+      ? vscode.workspace.workspaceFolders?.[0].name
+      : vscode.workspace.workspaceFolders?.[0].name + "-" +
         path.basename(deadLineFolderPath());
-  const projectPath: string = vscode.workspace.workspaceFolders![0].uri.fsPath;
+  const projectPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
   const config = getConfig();
   const separatorString = "\n\n　　　" + config.separator + "\n\n";
   const draftRootPath =
@@ -37,7 +36,7 @@ export default function compileDocs(): void {
   //  テキストを書き込む
   const filelist = fileList(draftRootPath).files;
   filelist.forEach(
-    (listItem: { dir: number | fs.PathLike; depthIndicator: number }) => {
+    (listItem: { dir?: string; depthIndicator?: number }) => {
       let appendingContext = "";
       if (listItem.dir) {
         appendingContext = fs.readFileSync(listItem.dir, "utf8");
@@ -51,12 +50,12 @@ export default function compileDocs(): void {
 }
 
 export function draftRoot(): string {
-  if (vscode.workspace.name == undefined) {
+  if (vscode.workspace.name == undefined || vscode.workspace.workspaceFolders == undefined) {
     return "";
   } else {
-    const projectPath: string =
-      vscode.workspace.workspaceFolders![0].uri.fsPath;
-    let draftRootPath: string = projectPath;
+    const projectPath =
+      vscode.workspace.workspaceFolders[0].uri.fsPath;
+    let draftRootPath = projectPath;
     const projectFiles = fs.readdirSync(projectPath);
     //「原稿」あるいは「Draft」フォルダーを原稿フォルダのルートにする。
     if (
@@ -75,17 +74,30 @@ export function draftRoot(): string {
   }
 }
 
+type File = {
+  dir?: string;
+  name?: string;
+  length?: number;
+  directoryName?: string;
+  directoryLength?: number;
+  depthIndicator?: number;
+}
+
+type FileList = {
+  label: string;
+  files: File[];
+  length: number;
+}
+
 //fileList()は、ファイルパスと（再帰処理用の）ディレクトリ深度を受け取って、ファイルリストの配列と総文字数を返す。
-export function fileList(dirPath: string): any {
+export function fileList(dirPath: string): FileList {
   let characterCount = 0;
   const filesInFolder = getFiles(dirPath);
-  const root = {};
 
 //  console.log("files from system:", filesInFolder);
 
   const labelOfList = path.basename(dirPath);
-  const files = [];
-  const maxDirectoryDepth = 6;
+  const files: File[] = [];
 
   for (const dirent of filesInFolder) {
     if (dirent.isDirectory() && dirent.name == "publish") {
@@ -143,14 +155,14 @@ function getFiles(dirPath: string) {
   return filesInFolder;
 }
 
-//型の指定
-export function draftsObject(dirPath: string): {
+type FileNode = {
   dir: string;
   name: string;
   length: number;
-}[] {
-  //ここから本体コード
-  const results = [];
+}
+
+export function draftsObject(dirPath: string): FileNode[] {
+  const results: FileNode[] = [];
 
   const filesInFolder = getFiles(dirPath);
 
@@ -163,10 +175,10 @@ export function draftsObject(dirPath: string): {
       console.log("dictionary folder");
     } else if (dirent.isDirectory()) {
       const directoryPath = path.join(dirPath, dirent.name);
-      const containerFiles: any = draftsObject(directoryPath);
+      const containerFiles = draftsObject(directoryPath);
 
       let containerLength = 0;
-      containerFiles.forEach((element: string | any[]) => {
+      containerFiles.forEach(element => {
         containerLength += element.length;
       });
 
