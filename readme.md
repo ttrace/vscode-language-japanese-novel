@@ -93,9 +93,9 @@ Gitでファイルの履歴を管理している場合には、前日から現�
 novel形式の書類を開いているときには、前のシーンにあたるファイルや、直後のシーンを開くナビゲーターが表示されます。
 ナビゲーターは設定で表示しないように設定できます。
 
-![前のシーンを開く](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/prev-scnene.png)
+![前のシーンを開く](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/prev-scene.png)
 
-![次のシーンを開く](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/next-scnene.png)
+![次のシーンを開く](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/next-scene.png)
 
 
 ## 文末辞の切り替え
