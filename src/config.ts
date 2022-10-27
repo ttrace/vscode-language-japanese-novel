@@ -10,6 +10,7 @@ export type NovelSettings = {
   userRegex: Array<[string, string]>;
   separator: string;
   sceneNav: boolean;
+  previewAnimate: boolean;
 };
 
 export function getConfig(): NovelSettings {
@@ -28,6 +29,8 @@ export function getConfig(): NovelSettings {
   const separator = config.get<string>("compile.separator", "＊");
   const vscodeTheme = vscode.window.activeColorTheme;
   const sceneNav = config.get<boolean>("editor.sceneNavigator", true);
+  const previewAnimate = config.get<boolean>("preview.animate", true);
+  
 
   const novelSettings = {
     lineHeightRate,
@@ -39,7 +42,8 @@ export function getConfig(): NovelSettings {
     userRegex,
     separator,
     vscodeTheme,
-    sceneNav
+    sceneNav,
+    previewAnimate
   };
   return novelSettings;
 }

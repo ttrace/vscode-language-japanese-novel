@@ -107,7 +107,11 @@
           "default": "10",
           "description": "PDF作成時の印刷時の1ページの行数を指定してください"
         },
-
+        "Novel.preview.animate": {
+          "type": "boolean",
+          "default":true,
+          "description": "縦書きプレビューのスクロールをアニメーション表示する"
+        },
         "Novel.editor.sceneNavigator": {
           "type": "boolean",
           "default":true,
