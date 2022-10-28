@@ -114,8 +114,8 @@
             "サーバーからメッセージを受信したときに呼び出されるイベント"
           );
 
-          console.log('生データ', e.data);
-          
+          console.log('生データ', e);
+
           if (e.data[0] === "<") {
             draftwrapper.textContent = "";
             draftwrapper.insertAdjacentHTML("afterbegin", e.data);

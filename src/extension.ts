@@ -79,7 +79,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("Novel.export-pdf", exportpdf)
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.launch-preview-server", launchserver)
+    vscode.commands.registerCommand("Novel.launch-preview-server", launchHeadlessServer)
   );
 
   context.subscriptions.push(
@@ -197,8 +197,9 @@ export function activate(context: vscode.ExtensionContext): void {
 let latestEditor: vscode.TextEditor;
 
 function launchserver(originEditor: vscode.TextEditor) {
-  //もしサーバーが動いていたらポートの番号をずらす
-  latestEditor = vscode.window.activeTextEditor!;
+  
+  latestEditor = originEditor;
+  console.log("サーバー起動", latestEditor);
 
   //Webサーバの起動。ドキュメントルートはnode_modules/novel-writer/htdocsになる。
   const viewerServer = http.createServer(function (request, response) {
@@ -417,6 +418,7 @@ const publishWebsocketsDelay: any = {
     this.publish(s);
   },
 };
+
 function verticalpreview() {
   const originEditor = vscode.window.activeTextEditor;
   WebViewPanel = true;
@@ -424,6 +426,14 @@ function verticalpreview() {
     launchserver(originEditor);
   }
 }
+
+function launchHeadlessServer() {
+  const originEditor = vscode.window.activeTextEditor;
+  if (typeof originEditor != "undefined") {
+    launchserver(originEditor);
+  }
+}
+
 
 function deactivate() {
   //
