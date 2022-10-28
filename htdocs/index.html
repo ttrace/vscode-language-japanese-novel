@@ -39,7 +39,7 @@
           !scrolling
         ) {
           scrolling = true;
-          if(previewsettings.previewAnimate){
+          if (previewsettings.previewAnimate) {
             $("html,body").animate({ scrollLeft: scrollEnd }, 250, function () {
               scrolling = false;
               // 描画終了
@@ -113,13 +113,16 @@
           console.log(
             "サーバーからメッセージを受信したときに呼び出されるイベント"
           );
-          //console.log(e.data);
+
+          console.log('生データ', e.data);
+          
           if (e.data[0] === "<") {
             draftwrapper.textContent = "";
             draftwrapper.insertAdjacentHTML("afterbegin", e.data);
             setTimeout(sock.send("redrawFinished"), 500);
           } else {
             const message = JSON.parse(e.data);
+            console.log(message, e.data);
 
             if (message.files) {
               //    loadGraph(message);

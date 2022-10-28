@@ -198,7 +198,7 @@ let latestEditor: vscode.TextEditor;
 
 function launchserver(originEditor: vscode.TextEditor) {
   //もしサーバーが動いていたらポートの番号をずらす
-  latestEditor = originEditor;
+  latestEditor = vscode.window.activeTextEditor!;
 
   //Webサーバの起動。ドキュメントルートはnode_modules/novel-writer/htdocsになる。
   const viewerServer = http.createServer(function (request, response) {
@@ -275,6 +275,7 @@ function launchserver(originEditor: vscode.TextEditor) {
       } else if (message == "redrawFinished") {
         // 再描画終了を受け取った時
         previewRedrawing = false;
+        if(keyPressStored) publishWebsocketsDelay.presskey(s);
       } else if (message == "giveMeObject") {
         // メタデータ送信要求を受け取った時
         const sendingObjects = draftsObject(draftRoot());
@@ -353,9 +354,9 @@ function launchserver(originEditor: vscode.TextEditor) {
 
   publishWebsocketsDelay.presskey(s);
 
+  const serversHostname = os.hostname();
   if (WebViewPanel) {
     //    vscode.window.showInformationMessage('Hello, world!');
-    const serversHostname = os.hostname();
     const panel = vscode.window.createWebviewPanel(
       "preview", // Identifies the type of the webview. Used internally
       "原稿プレビュー http://" + serversHostname + ":" + servicePort, // Title of the panel displayed to the user
@@ -380,6 +381,10 @@ function launchserver(originEditor: vscode.TextEditor) {
           <iframe src="http://localhost:${servicePort}" frameBorder="0" style="min-width: 100%; min-height: 100%" />
       </body>
   </html>`;
+  } else {
+    vscode.window.showInformationMessage(
+      `http://${serversHostname}:${servicePort} でサーバーを起動しました`
+    );
   }
 }
 
@@ -395,18 +400,23 @@ function sendsettingwebsockets(socketServer: websockets.Server) {
   });
 }
 
-//let keyPressFlag = false;
+let keyPressStored = false;
+
 const publishWebsocketsDelay: any = {
   publish: function (socketServer: websockets.Server) {
     publishwebsockets(socketServer);
   },
   presskey: function (s: websockets.Server) {
-    if (previewRedrawing) return;
+    if (previewRedrawing){
+      //リドロー中
+      keyPressStored = true;
+      return;
+    } 
     previewRedrawing = true;
+    keyPressStored = false;
     this.publish(s);
   },
 };
-
 function verticalpreview() {
   const originEditor = vscode.window.activeTextEditor;
   WebViewPanel = true;
