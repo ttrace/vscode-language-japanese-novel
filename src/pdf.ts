@@ -240,17 +240,17 @@ function getPrintContent() {
 
     
     div.indent-1 p{
-    height: calc( 110mm - (100vh * ${previewSettings.fontSize}));
+    height: calc( ${columnHeitghtRate} - ${fontSizeWithUnit});
     padding-top: calc( ${fontSizeWithUnit});
     }
 
     div.indent-2 p{
-    height: calc( 110mm - (100vh * ${previewSettings.fontSize} * 2));
+    height: calc( ${columnHeitghtRate} - (${fontSizeWithUnit} * 2));
     padding-top: calc(${fontSizeWithUnit} * 2);
     }
 
     div.indent-3 p{
-    height: calc( 110mm - (${fontSizeWithUnit} * 3));
+    height: calc( ${columnHeitghtRate} - (${fontSizeWithUnit} * 3));
     padding-top: calc(${fontSizeWithUnit} * 3);
     }
 

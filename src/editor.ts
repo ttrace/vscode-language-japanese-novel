@@ -298,7 +298,7 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
   // 前のファイルが有効な場合
   if (prevDocIndex != null) {
     console.log("nextDoc", myFileList.files[prevDocIndex]);
-    prevDocUrl = vscode.Uri.file(myFileList.files[prevDocIndex].dir);
+    prevDocUrl = vscode.Uri.file(myFileList.files[prevDocIndex].dir!);
     const nextDocData = await vscode.workspace.fs.readFile(prevDocUrl);
     const dataString = Buffer.from(nextDocData).toString("utf8");
     prevDocTitle = "前のシーン：" + myFileList.files[prevDocIndex].name;
@@ -308,7 +308,7 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
   // 次のファイルが有効な場合
   if (nextDocIndex != null) {
     console.log("nextDoc", myFileList.files[nextDocIndex]);
-    nextDocUrl = vscode.Uri.file(myFileList.files[nextDocIndex].dir);
+    nextDocUrl = vscode.Uri.file(myFileList.files[nextDocIndex].dir!);
     const nextDocData = await vscode.workspace.fs.readFile(nextDocUrl);
     const dataString = Buffer.from(nextDocData).toString("utf8");
     nextDocTitle = "次のシーン：" + myFileList.files[nextDocIndex].name;

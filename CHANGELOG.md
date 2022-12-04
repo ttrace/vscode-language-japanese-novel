@@ -1,5 +1,32 @@
 # Changelog
 
+# 1.5.3
+
+- 初期設定でPDF出力が崩れるのを暫定的に修正
+- ライブラリのアップデート
+    simple-git                        ^3.14.1  →    ^3.15.1
+    ws                                 ^8.9.0  →    ^8.11.0
+    @types/mocha                      ^10.0.0  →    ^10.0.1
+    @types/node                       ^18.8.0  →  ^18.11.10
+    @types/vscode                     ^1.71.0  →    ^1.73.1
+    @typescript-eslint/eslint-plugin  ^5.38.1  →    ^5.45.0
+    @typescript-eslint/parser         ^5.38.1  →    ^5.45.0
+    @vscode/test-web                  ^0.0.30  →    ^0.0.33
+    bufferutil                         ^4.0.6  →     ^4.0.7
+    eslint                            ^8.24.0  →    ^8.29.0
+    mocha                             ^10.0.0  →    ^10.1.0
+    sinon                             ^14.0.0  →    ^15.0.0
+    ts-loader                          ^9.4.1  →     ^9.4.2
+    typescript                         ^4.8.4  →     ^4.9.3
+    utf-8-validate                     ^5.0.9  →    ^5.0.10
+    util                              ^0.12.4  →    ^0.12.5
+    webpack                           ^5.74.0  →    ^5.75.0
+    webpack-cli                       ^4.10.0  →     ^5.0.0
+
+# 1.5.2
+
+-  PDF出力時に字下げのレイアウトが崩れていたのを修正
+
 # 1.5.1
 
 - 縦書きプレビューのアニメーションスクロールを切る設定を追加
