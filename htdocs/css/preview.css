@@ -18,6 +18,7 @@ html {
   font-family: "游明朝", "YuMincho", serif;
   font-weight: Medium;
   text-align: justify;
+  hanging-punctuation: none;
 }
 
 #draft {
@@ -86,7 +87,7 @@ ruby > rt {
 p {
   /* line-height: 1.65; */
   text-indent: 0em;
-  hanging-punctuation: force-end;
+  hanging-punctuation: allow-end;
   line-break: strict;
   page-break-inside: auto;
 }

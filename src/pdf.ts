@@ -75,10 +75,10 @@ function getPrintContent() {
 
   const myText = editorText("active");
   const previewSettings = getConfig();
-  const printBoxHeight = 150.4;
-  const printBoxWidth = 104.14;
+  const printBoxHeight = 168; // ドキュメント高さの80%(上下マージン10%を抜いた数)
+  const printBoxWidth = 124.32; // ドキュメント幅の84%(左右マージン16%を抜いた数)
   const fontSize =
-    previewSettings.lineLength > previewSettings.linesPerPage * 1.75 * 1.444
+    previewSettings.lineLength > previewSettings.linesPerPage * 1.75 * (printBoxHeight / printBoxWidth)
       ? printBoxHeight / previewSettings.lineLength
       : printBoxWidth / (previewSettings.linesPerPage * 1.75);
   // フォントサイズ in mm
@@ -92,8 +92,9 @@ function getPrintContent() {
   const columnCount = Math.floor(
     printBoxHeight / (typeSettingHeight + fontSize)
     );
-    const columnCSS = columnCount > 1 ? `column-count: ${columnCount};` : "";
-    const columnHeitghtRate = "calc(" + (typeSettingHeight / 150.4 * columnCount * 105) + "% + 0.5em)";
+  const noColumnGap = columnCount == 1 ? "2em" : "0";
+  const columnCSS = columnCount > 1 ? `column-count: ${columnCount};` : "";
+  const columnHeitghtRate = "calc(" + (fontSize * previewSettings.lineLength) + "mm + 0.5em)";
 
   return `<!DOCTYPE html>
   <html lang="ja">
@@ -120,8 +121,7 @@ function getPrintContent() {
       }
   
       @page {
-      size: 127mm 188mm;
-      height: ;
+      size: 148mm 210mm;
       margin-top: 10%;
       margin-bottom: 10%;
       margin-left: 8%;
@@ -225,7 +225,7 @@ function getPrintContent() {
         line-height: 1.75;
         height: ${columnHeitghtRate};
         text-indent: 0em;
-        hanging-punctuation: force-end;
+        hanging-punctuation: none;
         line-break:strict;
         page-break-inside: auto;
       }
