@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.5.4",
+  "version": "1.6.0-alpha",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -138,6 +138,23 @@
           "when": "explorerResourceIsFolder == true",
           "command": "Novel.set-counter",
           "group": "YourGroup@1"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+          {
+              "id": "novel",
+              "title": "ノベルライター",
+              "icon": "resource/icon.png"
+          }
+      ]
+  },
+    "views": {
+      "novel": [
+        {
+          "id": "draftTree",
+          "name": "原稿ツリー"
         }
       ]
     },
