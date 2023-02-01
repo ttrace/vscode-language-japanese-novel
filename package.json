@@ -109,12 +109,12 @@
         },
         "Novel.preview.animate": {
           "type": "boolean",
-          "default":true,
+          "default": true,
           "description": "縦書きプレビューのスクロールをアニメーション表示する"
         },
         "Novel.editor.sceneNavigator": {
           "type": "boolean",
-          "default":true,
+          "default": true,
           "description": "次のシーン、前のシーンを開くためのナビゲーターを表示する"
         },
         "Novel.compile.separator": {
@@ -143,17 +143,17 @@
     },
     "viewsContainers": {
       "activitybar": [
-          {
-              "id": "novel",
-              "title": "ノベルライター",
-              "icon": "resource/icon.png"
-          }
-      ]
-  },
-    "views": {
-      "novel": [
         {
-          "id": "draftTree",
+          "id": "novelPanel",
+          "title": "ノベルライター",
+          "icon": "resource/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "novelPanel": [
+        {
+          "id": "draftTreePanel",
           "name": "原稿ツリー"
         }
       ]

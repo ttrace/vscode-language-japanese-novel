@@ -8,6 +8,7 @@ import * as websockets from "ws";
 import { getConfig } from "./config";
 import compileDocs, { draftRoot } from "./compile";
 import { draftsObject } from "./compile"; // filelist オブジェクトもある
+import { draftTreeProvider } from "./novel";
 import { CharacterCounter, CharacterCounterController } from "./charactorcount";
 export * from "./charactorcount";
 import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
@@ -79,7 +80,10 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("Novel.export-pdf", exportpdf)
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.launch-preview-server", launchHeadlessServer)
+    vscode.commands.registerCommand(
+      "Novel.launch-preview-server",
+      launchHeadlessServer
+    )
   );
 
   context.subscriptions.push(
@@ -99,6 +103,15 @@ export function activate(context: vscode.ExtensionContext): void {
       changeTenseAspect
     )
   );
+
+  vscode.window.registerTreeDataProvider(
+    "draftTreePanel",
+    new draftTreeProvider(draftRoot())
+  );
+  // refreshコマンドの追加
+  // vscode.commands.registerCommand("draftTree.refreshEntry", () =>
+  //   draftTreeProvider.refresh()
+  // );
 
   const kuromojiPath = context.extensionPath + "/node_modules/kuromoji/dict";
   activateTokenizer(context, kuromojiPath);
@@ -197,7 +210,6 @@ export function activate(context: vscode.ExtensionContext): void {
 let latestEditor: vscode.TextEditor;
 
 function launchserver(originEditor: vscode.TextEditor) {
-  
   latestEditor = originEditor;
   console.log("サーバー起動", latestEditor);
 
@@ -276,7 +288,7 @@ function launchserver(originEditor: vscode.TextEditor) {
       } else if (message == "redrawFinished") {
         // 再描画終了を受け取った時
         previewRedrawing = false;
-        if(keyPressStored) publishWebsocketsDelay.presskey(s);
+        if (keyPressStored) publishWebsocketsDelay.presskey(s);
       } else if (message == "giveMeObject") {
         // メタデータ送信要求を受け取った時
         const sendingObjects = draftsObject(draftRoot());
@@ -408,11 +420,11 @@ const publishWebsocketsDelay: any = {
     publishwebsockets(socketServer);
   },
   presskey: function (s: websockets.Server) {
-    if (previewRedrawing){
+    if (previewRedrawing) {
       //リドロー中
       keyPressStored = true;
       return;
-    } 
+    }
     previewRedrawing = true;
     keyPressStored = false;
     this.publish(s);
@@ -433,7 +445,6 @@ function launchHeadlessServer() {
     launchserver(originEditor);
   }
 }
-
 
 function deactivate() {
   //
