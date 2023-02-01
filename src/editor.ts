@@ -281,7 +281,7 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
     }
     prevSearchIndex = prevSearchIndex - 1;
   }
-  console.log("pre探索結果", prevDocIndex, myFileList.files[prevDocIndex!]);
+  //console.log("pre探索結果", prevDocIndex, myFileList.files[prevDocIndex!]);
 
   //次のファイルを探索
   let nextSearchIndex = docIndex + 1;
@@ -293,7 +293,7 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
     }
     nextSearchIndex++;
   }
-  console.log("next探索結果", nextDocIndex, myFileList.files[nextDocIndex!]);
+  //console.log("next探索結果", nextDocIndex, myFileList.files[nextDocIndex!]);
 
   // 前のファイルが有効な場合
   if (prevDocIndex != null) {
