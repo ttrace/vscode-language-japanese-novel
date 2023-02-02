@@ -30,7 +30,7 @@ const webExtensionConfig = {
 		libraryTarget: 'commonjs2',
 		devtoolModuleFilenameTemplate: '../[resource-path]'
 	},
-	devtool: 'source-map', // create a source map that points to the original source file
+	devtool: 'inline-source-map', // create a source map that points to the original source file
 	externals: {
 		'vscode': 'commonjs vscode', // ignored because it doesn't exist
 	},

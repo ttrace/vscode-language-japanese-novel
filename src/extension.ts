@@ -106,8 +106,9 @@ export function activate(context: vscode.ExtensionContext): void {
 
   vscode.window.registerTreeDataProvider(
     "draftTreePanel",
-    new draftTreeProvider(draftRoot())
+    new draftTreeProvider()
   );
+
   // refreshコマンドの追加
   // vscode.commands.registerCommand("draftTree.refreshEntry", () =>
   //   draftTreeProvider.refresh()
