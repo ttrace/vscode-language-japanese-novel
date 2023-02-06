@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.6.0-alpha",
+  "version": "1.6.0",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -8,7 +8,7 @@
   },
   "icon": "resource/icon.png",
   "engines": {
-    "vscode": "^1.74.0"
+    "vscode": "^1.75.0"
   },
   "main": "dist/extension.js",
   "dependencies": {
@@ -17,9 +17,9 @@
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
     "kuromoji": "^0.1.2",
-    "simple-git": "^3.15.1",
+    "simple-git": "^3.16.0",
     "tree-model": "^1.0.7",
-    "ws": "^8.11.0"
+    "ws": "^8.12.0"
   },
   "scripts": {
     "vscode:prepublish": "npm run package-webpack",
@@ -401,22 +401,22 @@
     }
   },
   "devDependencies": {
-    "@types/glob": "^8.0.0",
+    "@types/glob": "^8.0.1",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^18.11.18",
+    "@types/node": "^18.11.19",
     "@types/sinon": "^10.0.13",
     "@types/text-encoding": "^0.0.36",
-    "@types/vscode": "^1.74.0",
+    "@types/vscode": "^1.75.0",
     "@types/webpack-env": "^1.18.0",
-    "@types/ws": "^8.5.3",
-    "@typescript-eslint/eslint-plugin": "^5.47.1",
-    "@typescript-eslint/parser": "^5.47.1",
-    "@vscode/test-web": "^0.0.33",
+    "@types/ws": "^8.5.4",
+    "@typescript-eslint/eslint-plugin": "^5.50.0",
+    "@typescript-eslint/parser": "^5.50.0",
+    "@vscode/test-web": "^0.0.34",
     "bufferutil": "^4.0.7",
     "child_process": "^1.0.2",
-    "eslint": "^8.30.0",
+    "eslint": "^8.33.0",
     "fs": "^0.0.1-security",
-    "glob": "^8.0.3",
+    "glob": "^8.1.0",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
     "mocha": "^10.2.0",
@@ -425,8 +425,8 @@
     "path": "^0.12.7",
     "sinon": "^15.0.1",
     "ts-loader": "^9.4.2",
-    "typescript": "^4.9.4",
-    "utf-8-validate": "^5.0.10",
+    "typescript": "^4.9.5",
+    "utf-8-validate": "^6.0.2",
     "util": "^0.12.5",
     "vscode-test": "^1.5.2",
     "webpack": "^5.75.0",

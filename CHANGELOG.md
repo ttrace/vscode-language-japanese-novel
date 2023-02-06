@@ -1,5 +1,22 @@
 # Changelog
 
+# 1.6.0
+
+- ノベルライターサイドパネル追加
+- ライブラリのアップデート
+    ws                                  ^8.11.0  →    ^8.12.0
+    @types/glob                          ^8.0.0  →     ^8.0.1
+    @types/node                       ^18.11.18  →  ^18.11.19
+    @types/vscode                       ^1.74.0  →    ^1.75.0
+    @types/ws                            ^8.5.3  →     ^8.5.4
+    @typescript-eslint/eslint-plugin    ^5.47.1  →    ^5.50.0
+    @typescript-eslint/parser           ^5.47.1  →    ^5.50.0
+    @vscode/test-web                    ^0.0.33  →    ^0.0.34
+    eslint                              ^8.30.0  →    ^8.33.0
+    glob                                 ^8.0.3  →     ^8.1.0
+    typescript                           ^4.9.4  →     ^4.9.5
+    utf-8-validate                      ^5.0.10  →     ^6.0.2
+
 # 1.5.4
 
 - PDF書き出しの判型をA5に変更
