@@ -102,9 +102,9 @@ export function fileList(dirPath: string): FileList {
 
   for (const dirent of filesInFolder) {
     if (dirent.isDirectory() && dirent.name == "publish") {
-      console.log("publish folder");
+      //console.log("publish folder");
     } else if (dirent.name.match(/^\..*/)) {
-      console.log("invisible docs");
+      //console.log("invisible docs");
     } else if (dirent.isDirectory()) {
       const fp = path.join(dirPath, dirent.name);
       const containerFiles = fileList(fp);

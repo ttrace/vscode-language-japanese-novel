@@ -116,7 +116,7 @@ let nextSectionStyle = vscode.window.createTextEditorDecorationType({});
 
 export async function previewBesideSection(editor: vscode.TextEditor) {
   if(!getConfig().sceneNav) return;
-  console.log("decoration");
+  //console.log("decoration");
   const decorationsArrayPrev: vscode.DecorationOptions[] = [];
   const decorationsArrayNext: vscode.DecorationOptions[] = [];
 
@@ -270,12 +270,12 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
   let prevDocText = "";
   let nextDocText = "";
 
-  console.log("探索", docIndex, myFileList.files[docIndex]);
+  //console.log("探索", docIndex, myFileList.files[docIndex]);
   //前のシーンファイルを探索
   let prevSearchIndex = docIndex - 1;
   while (prevSearchIndex >= 0) {
     if (myFileList.files[prevSearchIndex].dir) {
-      console.log("prevDoc in loop", myFileList.files[prevSearchIndex]);
+      // console.log("prevDoc in loop", myFileList.files[prevSearchIndex]);
       prevDocIndex = prevSearchIndex;
       break;
     }
@@ -287,7 +287,7 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
   let nextSearchIndex = docIndex + 1;
   while (nextSearchIndex < myFileList.files.length) {
     if (myFileList.files[nextSearchIndex].dir) {
-      console.log("nextDoc in loop", myFileList.files[nextSearchIndex]);
+      // console.log("nextDoc in loop", myFileList.files[nextSearchIndex]);
       nextDocIndex = nextSearchIndex;
       break;
     }
@@ -297,7 +297,7 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
 
   // 前のファイルが有効な場合
   if (prevDocIndex != null) {
-    console.log("nextDoc", myFileList.files[prevDocIndex]);
+    // console.log("nextDoc", myFileList.files[prevDocIndex]);
     prevDocUrl = vscode.Uri.file(myFileList.files[prevDocIndex].dir!);
     const nextDocData = await vscode.workspace.fs.readFile(prevDocUrl);
     const dataString = Buffer.from(nextDocData).toString("utf8");
@@ -307,7 +307,7 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
 
   // 次のファイルが有効な場合
   if (nextDocIndex != null) {
-    console.log("nextDoc", myFileList.files[nextDocIndex]);
+    // console.log("nextDoc", myFileList.files[nextDocIndex]);
     nextDocUrl = vscode.Uri.file(myFileList.files[nextDocIndex].dir!);
     const nextDocData = await vscode.workspace.fs.readFile(nextDocUrl);
     const dataString = Buffer.from(nextDocData).toString("utf8");

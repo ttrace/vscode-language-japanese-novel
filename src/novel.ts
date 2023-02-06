@@ -1,3 +1,5 @@
+/* eslint-disable no-inner-declarations */
+/* eslint-disable @typescript-eslint/no-namespace */
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
@@ -21,7 +23,25 @@ export class draftTreeProvider
   implements vscode.TreeDataProvider<draftTreeItem>
 {
   //draftTreeOrign = () => draftsObject(draftRoot());
+  private watch: vscode.FileSystemWatcher;
+  constructor() {
+    this.watch = vscode.workspace.createFileSystemWatcher("**/*.txt");
 
+    this.watch.onDidChange((uri) => {
+      console.log("changed!!!", uri);
+      this._onDidChangeTreeData.fire();
+    });
+    this.watch.onDidCreate((uri) => {
+      console.log("changed!!!", uri);
+      this._onDidChangeTreeData.fire();
+    });
+    this.watch.onDidDelete((uri) => {
+      console.log("changed!!!", uri);
+      this._onDidChangeTreeData.fire();
+    });
+
+    console.log(draftRoot());
+  }
   //
   private _onDidChangeTreeData: vscode.EventEmitter<
     draftTreeItem | undefined | void
@@ -49,19 +69,16 @@ export class draftTreeProvider
       const draftTreeOrign: FileNode[] = draftsObject(draftRoot());
       return this.buildDraftTree(draftTreeOrign);
     }
-    console.log("element", element);
     return this.buildDraftTree(element.children);
   }
 
   private buildDraftTree(draftObj: FileNode[]): draftTreeItem[] {
     const children: draftTreeItem[] = [];
-    console.log("coming", draftObj);
     draftObj.forEach((draftItem: TreeFileNode) => {
       const treeItem = new draftTreeItem(draftItem);
 
       children.push(treeItem);
       if (draftItem.children !== undefined) {
-        console.log("directory!", draftItem.children);
         this.buildDraftTree(draftItem.children);
       }
     });
@@ -80,7 +97,8 @@ class draftTreeItem extends vscode.TreeItem {
         : vscode.TreeItemCollapsibleState.Expanded
     );
 
-    this.label = draftItem.name.replace(/([0-9]+[-_\s]*)*(.+)(.txt)/, "$2");
+    this.label = draftItem.name.replace(/^([0-9]+[-_\s]*){0,1}(.+)(.txt)$/, "$2");
+    console.log(draftItem.name);
     this.description = `:${Intl.NumberFormat().format(draftItem.length)}文字`;
     this.iconPath = draftItem.children
       ? new vscode.ThemeIcon("folder-library")
