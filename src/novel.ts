@@ -17,30 +17,40 @@ type FileNode = {
   length: number;
 };
 
-
-export class draftTreeProvider {
+export class draftTreeProvider
+  implements vscode.TreeDataProvider<draftTreeItem>
+{
   //draftTreeOrign = () => draftsObject(draftRoot());
 
-  getTreeItem(element: draftTreeItem): draftTreeItem | Thenable<draftTreeItem> {
-    
+  //
+  private _onDidChangeTreeData: vscode.EventEmitter<
+    draftTreeItem | undefined | void
+  > = new vscode.EventEmitter<draftTreeItem | undefined | void>();
+  readonly onDidChangeTreeData: vscode.Event<draftTreeItem | undefined | void> =
+    this._onDidChangeTreeData.event;
+
+  refresh(): void {
+    console.log("refresh");
+    this._onDidChangeTreeData.fire();
+  }
+
+  getTreeItem(element: draftTreeItem): draftTreeItem | draftTreeItem {
     //ツリーの最小単位を返す
     return element;
   }
 
-  getChildren(element?: any): Thenable<draftTreeItem[]> {
+  getChildren(element?: any): draftTreeItem[] {
     if (draftRoot() == "") {
       vscode.window.showInformationMessage("No dependency in empty workspace");
-      return Promise.resolve([]);
+      return [];
     }
 
-    if (element) {
-      console.log("element", element);
-      return Promise.resolve(this.buildDraftTree(element));
-    } else {
+    if (element === undefined) {
       const draftTreeOrign: FileNode[] = draftsObject(draftRoot());
-      return Promise.resolve(this.buildDraftTree(draftTreeOrign));
+      return this.buildDraftTree(draftTreeOrign);
     }
-    return Promise.resolve([]);
+    console.log("element", element);
+    return this.buildDraftTree(element.children);
   }
 
   private buildDraftTree(draftObj: FileNode[]): draftTreeItem[] {
@@ -48,7 +58,7 @@ export class draftTreeProvider {
     console.log("coming", draftObj);
     draftObj.forEach((draftItem: TreeFileNode) => {
       const treeItem = new draftTreeItem(draftItem);
-      console.log("DraftObj:", treeItem);
+
       children.push(treeItem);
       if (draftItem.children !== undefined) {
         console.log("directory!", draftItem.children);
@@ -61,6 +71,7 @@ export class draftTreeProvider {
 }
 
 class draftTreeItem extends vscode.TreeItem {
+  children: vscode.TreeItem;
   constructor(draftItem: any) {
     super(
       draftItem.name,
@@ -68,6 +79,19 @@ class draftTreeItem extends vscode.TreeItem {
         ? vscode.TreeItemCollapsibleState.None
         : vscode.TreeItemCollapsibleState.Expanded
     );
-    this.label = draftItem.name;
+
+    this.label = draftItem.name.replace(/([0-9]+[-_\s]*)*(.+)(.txt)/, "$2");
+    this.description = `:${Intl.NumberFormat().format(draftItem.length)}文字`;
+    this.iconPath = draftItem.children
+      ? new vscode.ThemeIcon("folder-library")
+      : new vscode.ThemeIcon("note");
+    this.children = draftItem.children;
+    if (draftItem.children === undefined) {
+      this.command = {
+        command: "vscode.open",
+        title: "ファイルを開く",
+        arguments: [draftItem.dir],
+      };
+    }
   }
 }

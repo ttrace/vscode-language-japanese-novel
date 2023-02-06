@@ -71,6 +71,11 @@
       {
         "command": "Novel.set-counter",
         "title": "Novel:締め切りフォルダー"
+      },
+      {
+        "command": "draftTree.refresh",
+        "title": "再表示",
+        "icon": "$(refresh)"
       }
     ],
     "languages": [
@@ -138,6 +143,13 @@
           "when": "explorerResourceIsFolder == true",
           "command": "Novel.set-counter",
           "group": "YourGroup@1"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "draftTree.refresh",
+          "when": "view == draftTreePanel",
+          "group": "navigation"
         }
       ]
     },
