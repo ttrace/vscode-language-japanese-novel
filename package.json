@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -51,10 +51,6 @@
       {
         "command": "Novel.change-tenseAspect",
         "title": "Novel:文末辞入れ替え"
-      },
-      {
-        "command": "Novel.show-morpheme",
-        "title": "Novel:品詞ハイライト開始"
       },
       {
         "command": "Novel.launch-preview-server",
@@ -116,6 +112,11 @@
           "type": "boolean",
           "default": true,
           "description": "縦書きプレビューのスクロールをアニメーション表示する"
+        },
+        "Novel.preview.semanticHighligting": {
+          "type": "boolean",
+          "default": true,
+          "description": "品詞ハイライトを行う\n設定は再読み込み後に有効になります"
         },
         "Novel.editor.sceneNavigator": {
           "type": "boolean",

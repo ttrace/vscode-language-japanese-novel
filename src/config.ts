@@ -11,6 +11,7 @@ export type NovelSettings = {
   separator: string;
   sceneNav: boolean;
   previewAnimate: boolean;
+  semanticHighligting: boolean;
 };
 
 export function getConfig(): NovelSettings {
@@ -30,6 +31,7 @@ export function getConfig(): NovelSettings {
   const vscodeTheme = vscode.window.activeColorTheme;
   const sceneNav = config.get<boolean>("editor.sceneNavigator", true);
   const previewAnimate = config.get<boolean>("preview.animate", true);
+  const semanticHighligting = config.get<boolean>("preview.semanticHighligting", true);
   
 
   const novelSettings = {
@@ -43,7 +45,8 @@ export function getConfig(): NovelSettings {
     separator,
     vscodeTheme,
     sceneNav,
-    previewAnimate
+    previewAnimate,
+    semanticHighligting
   };
   return novelSettings;
 }

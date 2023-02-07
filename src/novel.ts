@@ -97,7 +97,7 @@ class draftTreeItem extends vscode.TreeItem {
         : vscode.TreeItemCollapsibleState.Expanded
     );
 
-    this.label = draftItem.name.replace(/^([0-9]+[-_\s]*){0,1}(.+)(.txt)$/, "$2");
+    this.label = draftItem.name.replace(/^([0-9]+[-_\s]){0,1}(.+)(.txt)$/, "$2");
     console.log(draftItem.name);
     this.description = `:${Intl.NumberFormat().format(draftItem.length)}文字`;
     this.iconPath = draftItem.children

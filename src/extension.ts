@@ -15,8 +15,8 @@ import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
 import {
   activateTokenizer,
   changeTenseAspect,
-  desableTokenizer,
-  enableTokenizer,
+  // desableTokenizer,
+  // enableTokenizer,
 } from "./tokenize";
 import { exportpdf } from "./pdf";
 
@@ -87,17 +87,6 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.hide-morpheme", async () => {
-      desableTokenizer(context);
-    })
-  );
-  context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.show-morpheme", async () => {
-      enableTokenizer(context);
-    })
-  );
-
-  context.subscriptions.push(
     vscode.commands.registerCommand(
       "Novel.change-tenseAspect",
       changeTenseAspect
@@ -113,11 +102,6 @@ export function activate(context: vscode.ExtensionContext): void {
   vscode.commands.registerCommand("draftTree.refresh", () =>
     draftNodeTreeProvider.refresh()
   );
-
-  // refreshコマンドの追加
-  // vscode.commands.registerCommand("draftTree.refreshEntry", () =>
-  //   draftTreeProvider.refresh()
-  // );
 
   const kuromojiPath = context.extensionPath + "/node_modules/kuromoji/dict";
   activateTokenizer(context, kuromojiPath);
