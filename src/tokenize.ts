@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import { Position, Range } from "vscode";
 import * as kuromoji from "kuromoji";
 import { prependListener } from "process";
+import config from "simple-git/dist/src/lib/tasks/config";
+import { getConfig } from "./config";
 
 const tokenTypes = new Map<string, number>();
 const tokenModifiers = new Map<string, number>();
@@ -71,32 +73,13 @@ export function activateTokenizer(
     )
   );
 
-  // context.subscriptions.push(vscode.languages.registerDocumentRangeSemanticTokensProvider({ language: 'novel' }, new DocumentRangeSemanticTokensProvider(), legend));
 
-  //  tokenizeFlag = true;
-  const tokenizeSetting = context.workspaceState.get("deadlineFolderPath");
+
+  const tokenizeSetting = getConfig().semanticHighligting;
+  console.log("ハイライト！",tokenizeSetting);
   tokenizeFlag = (typeof tokenizeSetting == "boolean") ? tokenizeSetting : true;
 }
 
-export function desableTokenizer(context: vscode.ExtensionContext) {
-  context.workspaceState.update("deadlineFolderPath", false);
-  tokenizeFlag = false;
-  vscode.languages.registerDocumentSemanticTokensProvider(
-    { language: "novel" },
-    new DocumentSemanticTokensProvider(),
-    legend
-  );
-}
-
-export function enableTokenizer(context: vscode.ExtensionContext) {
-  tokenizeFlag = true;
-  context.workspaceState.update("deadlineFolderPath", true);
-  vscode.languages.registerDocumentSemanticTokensProvider(
-    { language: "novel" },
-    new DocumentSemanticTokensProvider(),
-    legend
-  );
-}
 
 interface IParsedToken {
   line: number;
