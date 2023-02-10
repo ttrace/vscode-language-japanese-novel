@@ -32,37 +32,43 @@ export function exportpdf(): void {
 
     vscode.workspace.fs.writeFile(myPath, myHtmlBinary).then(() => {
       output.appendLine(`saving pdf to ${vivlioCommand}`);
-      
+
       if (!vivlioLaunching) {
         vivlioLaunching = true;
         vscode.window.showInformationMessage(`プレビュー起動中……`);
-        const vivlioProcess = cp.execFile(vivlioCommand, vivlioParams, { killSignal: 'SIGILL'}, (err, stdout, stderr) => {
-          if (err) {
-            console.log(`Vivlioエラー: ${err.message}`);
-            output.appendLine(`Vivlioエラー: ${err.message}`);
+        const vivlioProcess = cp.execFile(
+          vivlioCommand,
+          vivlioParams,
+          { killSignal: "SIGILL" },
+          (err, stdout, stderr) => {
+            if (err) {
+              console.log(`Vivlioエラー: ${err.message}`);
+              output.appendLine(`Vivlioエラー: ${err.message}`);
+              vivlioLaunching = false;
+              return;
+            }
+            if (stdout) {
+              console.log(`Vivlio出力： ${stdout}`);
+            }
+            if (stderr) {
+              console.log(`Vivlioエラー出力： ${stderr}`);
+            }
+            //output.appendLine(`ファイル名: ${stdout}`);
+            //output.appendLine("PDFの保存が終わりました");
+            vscode.window.showInformationMessage(`PDFの保存が終わりました`);
             vivlioLaunching = false;
-            return;
           }
-          if (stdout){
-            console.log(`Vivlio出力： ${stdout}`);
+        );
+
+        vivlioProcess.on("close", (code, signal) => {
+          if (vivlioProcess.killed) {
+            exportpdf();
+            vivlioLaunching = true;
           }
-          if (stderr){
-            console.log(`Vivlioエラー出力： ${stderr}`);
-          }
-          //output.appendLine(`ファイル名: ${stdout}`);
-          //output.appendLine("PDFの保存が終わりました");
-          vscode.window.showInformationMessage(`PDFの保存が終わりました`);
-          vivlioLaunching = false;
+          console.log(
+            `ERROR: child terminated. Exit code: ${code}, signal: ${signal}`
+          );
         });
-
-         vivlioProcess.on('close', (code, signal) => {
-           if(vivlioProcess.killed){
-             exportpdf();
-             vivlioLaunching = true;
-           }
-           console.log(`ERROR: child terminated. Exit code: ${code}, signal: ${signal}`);
-         })
-
       } else {
         vscode.window.showInformationMessage(`プレビューが作成されました`);
       }
@@ -78,7 +84,8 @@ function getPrintContent() {
   const printBoxHeight = 168; // ドキュメント高さの80%(上下マージン10%を抜いた数)
   const printBoxWidth = 124.32; // ドキュメント幅の84%(左右マージン16%を抜いた数)
   const fontSize =
-    previewSettings.lineLength > previewSettings.linesPerPage * 1.75 * (printBoxHeight / printBoxWidth)
+    previewSettings.lineLength >
+    previewSettings.linesPerPage * 1.75 * (printBoxHeight / printBoxWidth)
       ? printBoxHeight / previewSettings.lineLength
       : printBoxWidth / (previewSettings.linesPerPage * 1.75);
   // フォントサイズ in mm
@@ -90,11 +97,20 @@ function getPrintContent() {
   const typeSettingWidth = fontSize * 1.75 * previewSettings.linesPerPage;
   const typeSettingWidthUnit = typeSettingWidth + "mm";
   const columnCount = Math.floor(
-    printBoxHeight / (typeSettingHeight + fontSize)
-    );
+    printBoxHeight / (typeSettingHeight + fontSize * 2)
+  );
+  console.log(
+    "column",
+    `${printBoxHeight} / (${typeSettingHeight} + ${fontSize} * 2)`
+  );
   const noColumnGap = columnCount == 1 ? "2em" : "0";
-  const columnCSS = columnCount > 1 ? `column-count: ${columnCount};` : "";
-  const columnHeitghtRate = "calc(" + (fontSize * previewSettings.lineLength) + "mm + 0.5em)";
+  const columnCSS =
+    columnCount > 1
+      ? `column-count: ${columnCount};
+  column-fill: auto;`
+      : "";
+  const columnHeitghtRate =
+    "calc(" + fontSize * previewSettings.lineLength + "mm + 0.5em)";
 
   return `<!DOCTYPE html>
   <html lang="ja">
@@ -122,6 +138,7 @@ function getPrintContent() {
   
       @page {
       size: 148mm 210mm;
+      width: calc(${fontSizeWithUnit} * 1.75 * ${previewSettings.linesPerPage});
       margin-top: 10%;
       margin-bottom: 10%;
       margin-left: 8%;
