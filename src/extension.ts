@@ -376,12 +376,13 @@ function launchserver(originEditor: vscode.TextEditor) {
           body{
               width:100vw;
               height:100vh;
-              overflor:hidden;
+              padding:0;
+              overflow-y:hidden;
           }
           </style>
       </head>
       <body>
-          <iframe src="http://localhost:${servicePort}" frameBorder="0" style="min-width: 100%; min-height: 100%" />
+          <iframe src="http://localhost:${servicePort}" frameBorder="0" style="margin:none;width:100%;min-width: 100%; min-height: 100%" />
       </body>
   </html>`;
   } else {
