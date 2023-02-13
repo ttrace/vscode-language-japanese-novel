@@ -19,6 +19,7 @@ html {
   font-weight: Medium;
   text-align: justify;
   hanging-punctuation: allow-end;
+  text-spacing: none;
   overflow-y: hidden;
 }
 

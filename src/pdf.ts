@@ -112,6 +112,8 @@ function getPrintContent() {
   const columnHeitghtRate =
     "calc(" + fontSize * previewSettings.lineLength + "mm + 0.5em)";
 
+  const typesettingInformation = `${previewSettings.lineLength}字×${previewSettings.linesPerPage}行`;
+
   return `<!DOCTYPE html>
   <html lang="ja">
   <head>
@@ -138,7 +140,7 @@ function getPrintContent() {
   
       @page {
       size: 148mm 210mm;
-      width: calc(${fontSizeWithUnit} * 1.75 * ${previewSettings.linesPerPage});
+      width: calc(${fontSizeWithUnit} * 1.75 * ${previewSettings.linesPerPage} + (${fontSizeWithUnit} * 0.4));
       margin-top: 10%;
       margin-bottom: 10%;
       margin-left: 8%;
@@ -154,7 +156,7 @@ function getPrintContent() {
         margin-right: 6%;
         margin-left: 10%;
         @bottom-left {
-          content: counter(page) "  ${projectTitle}";
+          content: counter(page) "  ${projectTitle} ${typesettingInformation}";
           margin-left: 0mm;
           margin-top: 50%;
           writing-mode: horizontal-tb;
@@ -167,7 +169,7 @@ function getPrintContent() {
         /* border-bottom: 1pt solid black; */
       /* 右下ノンブル */
       @bottom-right {
-          content: " ${projectTitle}  "counter(page);
+          content: "${typesettingInformation} ${projectTitle}  "counter(page);
           margin-right: 0mm;
           margin-top: 50%;
           writing-mode: horizontal-tb;
@@ -179,6 +181,8 @@ function getPrintContent() {
       font-family: "游明朝", "YuMincho", serif;
       font-weight: Medium;
       text-align: justify;
+      hanging-punctuation: allow-end;
+      text-spacing: none;
       }
   
       body{
@@ -242,7 +246,7 @@ function getPrintContent() {
         line-height: 1.75;
         height: ${columnHeitghtRate};
         text-indent: 0em;
-        hanging-punctuation: none;
+        hanging-punctuation: allow-end;
         line-break:strict;
         page-break-inside: auto;
       }
