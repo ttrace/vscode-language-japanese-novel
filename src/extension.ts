@@ -129,7 +129,9 @@ export function activate(context: vscode.ExtensionContext): void {
   //カウンター
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.set-counter", async (e) => {
-      const path = e.fsPath;
+      console.log("setcounter", e.resourceUri.path);
+      const path = e.collapsibleState ? e.resourceUri.path: e.fsPath;
+      console.log("path", path);
       let currentLength = 0;
 
       draftsObject(path).forEach((element) => {

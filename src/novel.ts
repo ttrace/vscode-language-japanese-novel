@@ -98,8 +98,8 @@ class draftTreeItem extends vscode.TreeItem {
     );
 
     this.label = draftItem.name.replace(/^([0-9]+[-_\s]){0,1}(.+)(.txt)$/, "$2");
-    console.log(draftItem.name);
     this.description = `:${Intl.NumberFormat().format(draftItem.length)}文字`;
+    this.resourceUri = vscode.Uri.file(draftItem.dir);
     this.iconPath = draftItem.children
       ? new vscode.ThemeIcon("folder-library")
       : new vscode.ThemeIcon("note");
@@ -110,6 +110,9 @@ class draftTreeItem extends vscode.TreeItem {
         title: "ファイルを開く",
         arguments: [draftItem.dir],
       };
+      this.contextValue = "file";
+    } else {
+      this.contextValue = "folder";
     }
   }
 }

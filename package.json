@@ -152,6 +152,12 @@
           "when": "view == draftTreePanel",
           "group": "navigation"
         }
+      ],
+      "view/item/context": [
+        {
+          "command": "Novel.set-counter",
+          "when": "view == draftTreePanel && viewItem == folder"
+        }
       ]
     },
     "viewsContainers": {
