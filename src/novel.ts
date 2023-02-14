@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 import { draftRoot, draftsObject } from "./compile";
-import { setFlagsFromString } from "v8";
+import { deadLineFolderPath, deadLineTextCount } from "./charactorcount";
 
 type TreeFileNode = {
   dir: string;
@@ -74,6 +74,7 @@ export class draftTreeProvider
 
   private buildDraftTree(draftObj: FileNode[]): draftTreeItem[] {
     const children: draftTreeItem[] = [];
+
     draftObj.forEach((draftItem: TreeFileNode) => {
       const treeItem = new draftTreeItem(draftItem);
 
@@ -97,12 +98,25 @@ class draftTreeItem extends vscode.TreeItem {
         : vscode.TreeItemCollapsibleState.Expanded
     );
 
-    this.label = draftItem.name.replace(/^([0-9]+[-_\s]){0,1}(.+)(.txt)$/, "$2");
+    this.label = draftItem.name.replace(
+      /^([0-9]+[-_\s]){0,1}(.+)(.txt)$/,
+      "$2"
+    );
     this.description = `:${Intl.NumberFormat().format(draftItem.length)}文字`;
     this.resourceUri = vscode.Uri.file(draftItem.dir);
-    this.iconPath = draftItem.children
-      ? new vscode.ThemeIcon("folder-library")
-      : new vscode.ThemeIcon("note");
+
+
+    if (!draftItem.children) {
+      this.iconPath = new vscode.ThemeIcon("note");
+    } else {
+      this.iconPath = new vscode.ThemeIcon("folder-library");
+    }
+
+    if (draftItem.dir == deadLineFolderPath()){
+      this.iconPath = new vscode.ThemeIcon("folder-active");
+      this.description = `:${Intl.NumberFormat().format(draftItem.length)}/${deadLineTextCount()}文字`;
+    }
+
     this.children = draftItem.children;
     if (draftItem.children === undefined) {
       this.command = {
