@@ -21,6 +21,7 @@ import { distance } from "fastest-levenshtein";
 
 let projectCharacterCountNum = 0;
 let countingFolderPath = "";
+let countingTarget = "";
 
 if (draftRoot() != "") {
   projectCharacterCountNum = totalLength(draftRoot());
@@ -30,6 +31,10 @@ if (draftRoot() != "") {
 
 export function deadLineFolderPath(): string {
   return countingFolderPath;
+}
+
+export function deadLineTextCount(): string {
+  return countingTarget;
 }
 
 export class CharacterCounter {
@@ -160,6 +165,7 @@ export class CharacterCounter {
       return;
     }
     countingFolderPath = pathToFolder;
+    countingTarget = Intl.NumberFormat().format(targetCharacter);
     this._countingFolder = pathToFolder;
     this._countingTargetNum = targetCharacter;
     this._updateProjectCharacterCount();

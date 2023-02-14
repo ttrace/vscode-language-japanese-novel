@@ -20,9 +20,10 @@ export function editorText(originEditor: OriginEditor): string {
   // カーソル位置
   if (text.slice(cursorOffset, cursorOffset + 1) == "\n") {
     cursorTaggedHtml =
-      text.slice(0, cursorOffset) +
-      '<span id="cursor">　</span>' +
-      text.slice(cursorOffset);
+    text.slice(0, cursorOffset - 1) +
+    '<span id="cursor">' +
+      text.slice(cursorOffset - 1, cursorOffset) +
+    '</span>' + text.slice(cursorOffset);
   } else {
     cursorTaggedHtml =
       text.slice(0, cursorOffset) +

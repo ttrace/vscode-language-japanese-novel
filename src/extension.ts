@@ -26,6 +26,8 @@ let documentRoot: vscode.Uri;
 let WebViewPanel = false;
 let servicePort = 8080;
 let previewRedrawing = false;
+export let deadlineFolderPath: string;
+export let deadlineTextCount: string;
 
 emptyPort(function (port: number) {
   servicePort = port;
@@ -126,12 +128,11 @@ export function activate(context: vscode.ExtensionContext): void {
     );
   }
 
-  //カウンター
+  //締め切りカウンター
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.set-counter", async (e) => {
-      const path = e.fsPath;
+      const path = e.collapsibleState ? e.resourceUri.path: e.fsPath;
       let currentLength = 0;
-
       draftsObject(path).forEach((element) => {
         currentLength += element.length;
       });
@@ -149,7 +150,9 @@ export function activate(context: vscode.ExtensionContext): void {
           // 入力が正常に行われている
           context.workspaceState.update("deadlineFolderPath", path);
           context.workspaceState.update("deadlineTextCount", result);
-          console.log("saving memento", path, result);
+          deadlineFolderPath = path;
+          deadlineTextCount = result;
+          console.log("saving memento", deadlineFolderPath, deadlineTextCount);
           characterCounter._setCounterToFolder(path, parseInt(result));
 
           vscode.window.showInformationMessage(
@@ -165,11 +168,17 @@ export function activate(context: vscode.ExtensionContext): void {
         characterCounter._setCounterToFolder("", 0);
         context.workspaceState.update("deadlineFolderPath", null);
         context.workspaceState.update("deadlineTextCount", null);
+        deadlineFolderPath = "";
+        deadlineTextCount = "";
 
         result = "0";
       }
+      //ツリービュー更新
+      vscode.commands.executeCommand("draftTree.refresh");
     })
   );
+
+
 
   documentRoot = vscode.Uri.joinPath(context.extensionUri, "htdocs");
 
@@ -376,12 +385,13 @@ function launchserver(originEditor: vscode.TextEditor) {
           body{
               width:100vw;
               height:100vh;
-              overflor:hidden;
+              padding:0;
+              overflow-y:hidden;
           }
           </style>
       </head>
       <body>
-          <iframe src="http://localhost:${servicePort}" frameBorder="0" style="min-width: 100%; min-height: 100%" />
+          <iframe src="http://localhost:${servicePort}" frameBorder="0" style="margin:none;width:100%;min-width: 100%; min-height: 100%" />
       </body>
   </html>`;
   } else {
