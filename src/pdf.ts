@@ -22,6 +22,7 @@ export function exportpdf(): void {
     output.appendLine(`starting to publish: ${myPath}`);
     const vivlioParams = [
       vivlioSubCommand,
+      // "--http",
       myPath.fsPath,
       // "-o",
       // vscode.Uri.joinPath(myWorkingDirectory, "output.pdf").fsPath,
@@ -35,7 +36,7 @@ export function exportpdf(): void {
 
       if (!vivlioLaunching) {
         vivlioLaunching = true;
-        vscode.window.showInformationMessage(`プレビュー起動中……`);
+        vscode.window.showInformationMessage(`プレビュー起動中……\n初回起動には少々時間がかかります`);
         const vivlioProcess = cp.execFile(
           vivlioCommand,
           vivlioParams,
