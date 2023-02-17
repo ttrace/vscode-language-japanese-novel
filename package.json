@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.6.3",
+  "version": "1.6.4",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -31,7 +31,8 @@
     "test": "node ./dist/test/runTest.js",
     "compile-webpack": "webpack",
     "test-webpack": "webpack --watch",
-    "package-webpack": "webpack --mode production --devtool hidden-source-map"
+    "package-webpack": "webpack --mode production --devtool hidden-source-map",
+    "watch-web": "webpack --watch"
   },
   "activationEvents": [
     "onLanguage:novel",

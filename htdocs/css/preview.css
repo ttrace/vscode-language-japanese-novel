@@ -212,6 +212,12 @@ body {
   display: inline-block;
 }
 
+#cursor.blank{
+  margin-bottom: -1em;
+  text-combine-upright: horizontal;
+  -webkit-text-combine: horizontal;
+}
+
 p {
   margin: 0 0 0 0;
   vertical-align: middle;

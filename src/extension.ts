@@ -15,8 +15,6 @@ import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
 import {
   activateTokenizer,
   changeTenseAspect,
-  // desableTokenizer,
-  // enableTokenizer,
 } from "./tokenize";
 import { exportpdf } from "./pdf";
 
