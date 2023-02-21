@@ -22,7 +22,7 @@ export function exportpdf(): void {
     output.appendLine(`starting to publish: ${myPath}`);
     const vivlioParams = [
       vivlioSubCommand,
-      // "--http",
+      "--no-sandbox",
       myPath.fsPath,
       // "-o",
       // vscode.Uri.joinPath(myWorkingDirectory, "output.pdf").fsPath,
