@@ -14,7 +14,7 @@ export * from "./charactorcount";
 import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
 import {
   activateTokenizer,
-  changeTenseAspect,
+  changeTenseAspect,buildTensProvidor
 } from "./tokenize";
 import { exportpdf } from "./pdf";
 
@@ -105,6 +105,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const kuromojiPath = context.extensionPath + "/node_modules/kuromoji/dict";
   activateTokenizer(context, kuromojiPath);
+  buildTensProvidor(kuromojiPath);
 
   //context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel'}, new DocumentSemanticTokensProvider(), legend));
 

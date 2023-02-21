@@ -73,13 +73,10 @@ export function activateTokenizer(
     )
   );
 
-
-
   const tokenizeSetting = getConfig().semanticHighligting;
-  console.log("ハイライト！",tokenizeSetting);
-  tokenizeFlag = (typeof tokenizeSetting == "boolean") ? tokenizeSetting : true;
+  console.log("ハイライト！", tokenizeSetting);
+  tokenizeFlag = typeof tokenizeSetting == "boolean" ? tokenizeSetting : true;
 }
-
 
 interface IParsedToken {
   line: number;
@@ -461,6 +458,8 @@ export function changeTenseAspect() {
   const lineString = document?.lineAt(editor!.selection.active.line).text;
   const cursorPosition = editor!.selection.start;
 
+  console.log("reusabule!!! ", kuromojiMakerObject.getToken(lineString));
+
   kuromojiBuilder.build(async (err: any, tokenizer: any) => {
     // 辞書がなかったりするとここでエラーになります(´・ω・｀)
     if (err) {
@@ -720,4 +719,33 @@ function changeText(range: vscode.Range, text: string) {
   editor?.edit((TextEditorEdit) => {
     TextEditorEdit.replace(range, text);
   });
+}
+
+export class kuromojiMaker {
+  private _tokinizer: any;
+
+  constructor(kuromojiPath:string) {
+    const kuromojiBuilder = kuromoji.builder({
+      dicPath: kuromojiPath,
+    });
+    kuromojiBuilder.build(async (err: any, tokenizer: any) => {
+      // 辞書がない場合のエラー
+      if (err) {
+        console.dir("Kuromoji initialize error:" + err.message);
+        throw err;
+      }
+      this._tokinizer = tokenizer.tokenize();
+    });
+  }
+
+  public getToken(lineString?: string): any {
+    return this._tokinizer(lineString);
+  }
+}
+
+let kuromojiMakerObject: any;
+export function buildTensProvidor(
+  kuromojiPath: string
+) {
+  kuromojiMakerObject = new kuromojiMaker(kuromojiPath);
 }
