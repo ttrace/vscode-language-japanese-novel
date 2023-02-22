@@ -1,5 +1,9 @@
 # Changelog
 
+# 1.6.6
+
+- Windowsで原稿ツリーのコマンドが動作していなかったバグの修正
+
 # 1.6.5
 
 - vivliostyle の実行オプションに --no-sandbox を追加
