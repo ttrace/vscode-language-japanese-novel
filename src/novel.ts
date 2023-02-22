@@ -103,7 +103,7 @@ class draftTreeItem extends vscode.TreeItem {
       "$2"
     );
     this.description = `:${Intl.NumberFormat().format(draftItem.length)}文字`;
-    this.resourceUri = vscode.Uri.file(draftItem.dir);
+    this.resourceUri = vscode.Uri.file(path.resolve(draftItem.dir));
 
 
     if (!draftItem.children) {
@@ -122,7 +122,7 @@ class draftTreeItem extends vscode.TreeItem {
       this.command = {
         command: "vscode.open",
         title: "ファイルを開く",
-        arguments: [draftItem.dir],
+        arguments: [path.resolve(draftItem.dir)],
       };
       this.contextValue = "file";
     } else {
