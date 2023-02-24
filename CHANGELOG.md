@@ -1,5 +1,9 @@
 # Changelog
 
+# 1.6.7
+
+- Windowsの標準環境（非WSL）で、Vivliostyleを用いるPDF出力が動作していなかったバグを修正
+
 # 1.6.6
 
 - Windowsで原稿ツリーのコマンドが動作していなかったバグの修正

@@ -3,6 +3,7 @@ import { editorText } from "./editor";
 import { getConfig } from "./config";
 import * as cp from "child_process";
 import exp = require("constants");
+import { draftRoot } from "./compile";
 
 const output = vscode.window.createOutputChannel("Novel");
 let vivlioLaunching = false;
@@ -18,12 +19,15 @@ export function exportpdf(): void {
     const myWorkingDirectory = folderUri;
     const vivlioCommand = "vivliostyle";
     const vivlioSubCommand = "preview";
+    const execPath = draftRoot().match(/^[a-z]:\\/)
+      ? myPath.path.replace(/^\//, '')
+      : myPath.path;
 
     output.appendLine(`starting to publish: ${myPath}`);
     const vivlioParams = [
       vivlioSubCommand,
       "--no-sandbox",
-      myPath.fsPath,
+      myPath.path,
       // "-o",
       // vscode.Uri.joinPath(myWorkingDirectory, "output.pdf").fsPath,
     ];
@@ -36,14 +40,13 @@ export function exportpdf(): void {
 
       if (!vivlioLaunching) {
         vivlioLaunching = true;
-        vscode.window.showInformationMessage(`プレビュー起動中……\n初回起動には少々時間がかかります`);
-        const vivlioProcess = cp.execFile(
-          vivlioCommand,
-          vivlioParams,
-          { killSignal: "SIGILL" },
+        vscode.window.showInformationMessage(
+          `プレビュー起動中……\n初回起動には少々時間がかかります`
+        );
+        const vivlioProcess = cp.exec(
+          `${vivlioCommand} ${vivlioSubCommand} ${execPath}`,
           (err, stdout, stderr) => {
             if (err) {
-              console.log(`Vivlioエラー: ${err.message}`);
               output.appendLine(`Vivlioエラー: ${err.message}`);
               vivlioLaunching = false;
               return;
@@ -378,6 +381,9 @@ function getPrintContent() {
         display:none;
     }
 
+    #cursor {
+      display:none;
+    }
     p.blank {
         color:transparent;
     }
