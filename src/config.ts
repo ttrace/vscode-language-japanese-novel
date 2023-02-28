@@ -7,6 +7,7 @@ export type NovelSettings = {
   lineLength: number;
   linesPerPage: number;
   lineHeight: number;
+  pageStarting: string;
   userRegex: Array<[string, string]>;
   separator: string;
   sceneNav: boolean;
@@ -23,6 +24,7 @@ export function getConfig(): NovelSettings {
   const fontSize = 1 / lineLength; // フォントサイズは行長分の１
   const linesPerPage = config.get<number>("preview.linesPerPage", 10);
   const lineHeight = fontSize * lineHeightRate;
+  const pageStarting = config.get<string>("preview.pageStarting", "左");
   const userRegex = config.get<Array<[string, string]>>(
     "preview.userRegex",
     []
@@ -31,8 +33,10 @@ export function getConfig(): NovelSettings {
   const vscodeTheme = vscode.window.activeColorTheme;
   const sceneNav = config.get<boolean>("editor.sceneNavigator", true);
   const previewAnimate = config.get<boolean>("preview.animate", true);
-  const semanticHighligting = config.get<boolean>("preview.semanticHighligting", true);
-  
+  const semanticHighligting = config.get<boolean>(
+    "preview.semanticHighligting",
+    true
+  );
 
   const novelSettings = {
     lineHeightRate,
@@ -41,12 +45,13 @@ export function getConfig(): NovelSettings {
     lineLength,
     linesPerPage,
     lineHeight,
+    pageStarting,
     userRegex,
     separator,
     vscodeTheme,
     sceneNav,
     previewAnimate,
-    semanticHighligting
+    semanticHighligting,
   };
   return novelSettings;
 }

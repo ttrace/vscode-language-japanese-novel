@@ -16,7 +16,7 @@ import {
   activateTokenizer,
   changeTenseAspect,
 } from "./tokenize";
-import { exportpdf } from "./pdf";
+import { exportpdf, previewpdf } from "./pdf";
 
 //リソースとなるhtmlファイル
 //let html: Buffer;
@@ -79,6 +79,10 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.export-pdf", exportpdf)
   );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("Novel.preview-pdf", previewpdf)
+  );
+
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "Novel.launch-preview-server",

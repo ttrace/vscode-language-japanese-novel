@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as path from "path";
 import { editorText } from "./editor";
 import { getConfig } from "./config";
 import * as cp from "child_process";
@@ -8,43 +9,74 @@ import { draftRoot } from "./compile";
 const output = vscode.window.createOutputChannel("Novel");
 let vivlioLaunching = false;
 
-export function exportpdf(): void {
+export function previewpdf() {
+  exportpdf(true);
+}
+
+export async function exportpdf(preview: boolean | undefined): Promise<void> {
   const myHtml = getPrintContent();
   if (!vscode.workspace.workspaceFolders) {
     vscode.window.showWarningMessage(`ワークスペースが見つかりません`);
     return;
   } else {
+    let fileName: string | undefined;
+    if (!preview) {
+      const filePath = vscode.window.activeTextEditor?.document.fileName;
+      const pdfName = filePath
+        ? path.basename(filePath).replace(/\.[a-zA-Z]+$/, "")
+        : "名称未設定";
+      fileName = await vscode.window.showInputBox(
+        {
+          title: "ファイル名の設定",
+          prompt: `出力するPDFのファイル名を入力してください`,
+          placeHolder: pdfName,
+          value: pdfName,
+          ignoreFocusOut: false
+        }
+      );
+    }
     const folderUri = vscode.workspace.workspaceFolders[0].uri;
     const myPath = vscode.Uri.joinPath(folderUri, "publish.html");
     const myWorkingDirectory = folderUri;
     const vivlioCommand = "vivliostyle";
-    const vivlioSubCommand = "preview";
+    const vivlioSubCommand = preview ? "preview" : "build";
     const execPath = draftRoot().match(/^[a-z]:\\/)
-      ? myPath.path.replace(/^\//, '')
+      ? myPath.path.replace(/^\//, "")
       : myPath.path;
+    const vivlioExportPath = !preview
+      ? vscode.Uri.joinPath(myWorkingDirectory, `${fileName}.pdf`).fsPath
+      : "";
+    const vivlioExportOption = !preview ? "-o" : "";
 
     output.appendLine(`starting to publish: ${myPath}`);
     const vivlioParams = [
       vivlioSubCommand,
       "--no-sandbox",
       myPath.path,
+      vivlioExportOption,
+      vivlioExportPath,
       // "-o",
       // vscode.Uri.joinPath(myWorkingDirectory, "output.pdf").fsPath,
     ];
 
-    output.appendLine(`starting to publish: ${vivlioCommand} ${vivlioParams}`);
     const myHtmlBinary = Buffer.from(myHtml, "utf8");
 
     vscode.workspace.fs.writeFile(myPath, myHtmlBinary).then(() => {
       output.appendLine(`saving pdf to ${vivlioCommand}`);
 
-      if (!vivlioLaunching) {
-        vivlioLaunching = true;
-        vscode.window.showInformationMessage(
-          `プレビュー起動中……\n初回起動には少々時間がかかります`
-        );
+      if (!vivlioLaunching || !preview) {
+        vivlioLaunching = preview ? true : false;
+        if (preview) {
+          vscode.window.showInformationMessage(
+            `プレビュー起動中……\n初回起動には少々時間がかかります`
+          );
+        } else {
+          vscode.window.showInformationMessage(
+            `Vivliostyle起動中……\n初回起動には少々時間がかかります`
+          );
+        }
         const vivlioProcess = cp.exec(
-          `${vivlioCommand} ${vivlioSubCommand} ${execPath}`,
+          `${vivlioCommand} ${vivlioSubCommand} ${execPath} ${vivlioExportOption} ${vivlioExportPath}`,
           (err, stdout, stderr) => {
             if (err) {
               output.appendLine(`Vivlioエラー: ${err.message}`);
@@ -57,8 +89,10 @@ export function exportpdf(): void {
             if (stderr) {
               console.log(`Vivlioエラー出力： ${stderr}`);
             }
-            //output.appendLine(`ファイル名: ${stdout}`);
-            //output.appendLine("PDFの保存が終わりました");
+            if (!preview) {
+              output.appendLine(`ファイル名: ${stdout}`);
+              output.appendLine("PDFの保存が終わりました");
+            }
             vscode.window.showInformationMessage(`PDFの保存が終わりました`);
             vivlioLaunching = false;
           }
@@ -66,8 +100,8 @@ export function exportpdf(): void {
 
         vivlioProcess.on("close", (code, signal) => {
           if (vivlioProcess.killed) {
-            exportpdf();
-            vivlioLaunching = true;
+            //exportpdf(true);
+            vivlioLaunching = false;
           }
           console.log(
             `ERROR: child terminated. Exit code: ${code}, signal: ${signal}`
@@ -103,6 +137,10 @@ function getPrintContent() {
   const columnCount = Math.floor(
     printBoxHeight / (typeSettingHeight + fontSize * 2)
   );
+  const pageStartingCss =
+    previewSettings.pageStarting == "左"
+      ? "break-before: left;\n"
+      : "break-before: right;\n";
   console.log(
     "column",
     `${printBoxHeight} / (${typeSettingHeight} + ${fontSize} * 2)`
@@ -190,6 +228,7 @@ function getPrintContent() {
       }
   
       body{
+        ${pageStartingCss}
         ${columnCSS}
       }
   

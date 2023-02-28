@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.6.7",
+  "version": "1.6.9",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -58,6 +58,10 @@
         "title": "Novel:プレビューサーバー起動"
       },
       {
+        "command": "Novel.preview-pdf",
+        "title": "Novel:PDFプレビュー"
+      },
+      {
         "command": "Novel.export-pdf",
         "title": "Novel:PDF出力"
       },
@@ -108,6 +112,14 @@
           "type": "number",
           "default": "16",
           "description": "PDF作成時の印刷時の1ページの行数を指定してください"
+        },
+        "Novel.preview.pageStarting": {
+          "type": "string",
+          "default": "左",
+          "enum": [
+            "右","左"
+          ],
+          "description": "PDFがどちらのページから始まるか指定してください"
         },
         "Novel.preview.animate": {
           "type": "boolean",
