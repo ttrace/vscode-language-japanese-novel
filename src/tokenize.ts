@@ -458,8 +458,6 @@ export function changeTenseAspect() {
   const lineString = document?.lineAt(editor!.selection.active.line).text;
   const cursorPosition = editor!.selection.start;
 
-  console.log("reusabule!!! ", kuromojiMakerObject.getToken(lineString));
-
   kuromojiBuilder.build(async (err: any, tokenizer: any) => {
     // 辞書がなかったりするとここでエラーになります(´・ω・｀)
     if (err) {
@@ -467,7 +465,7 @@ export function changeTenseAspect() {
       throw err;
     }
     const kuromojiToken = tokenizer.tokenize(lineString);
-    console.log(lineString, cursorPosition, kuromojiToken);
+    //console.log(lineString, cursorPosition, kuromojiToken);
     const punctuationList = kuromojiToken.filter(
       (t: { surface_form: string }) => t.surface_form === "。"
     );
@@ -484,7 +482,6 @@ export function changeTenseAspect() {
         break;
       }
     }
-    console.log("目標の文:", targetSentence);
 
     for (let i = 0; i < kuromojiToken.length; i++) {
       const token = kuromojiToken[i];
@@ -713,39 +710,92 @@ export function changeTenseAspect() {
   });
 }
 
+export async function addRuby() {
+  const editor = vscode.window.activeTextEditor;
+  if (editor == null) return; // エディターがない時は動作しない
+  const document = vscode.window.activeTextEditor?.document;
+  const lineString = document?.lineAt(editor.selection.active.line).text;
+  const selection = editor.selection;
+
+  //空行の時は動作しない
+  if (lineString == "" || lineString == "　") return;
+  //複数行の時は動作しない
+  if (!selection.isSingleLine) return;
+
+  //選択範囲がある場合
+  if (!selection.isEmpty) {
+    // console.log("ルビ選択範囲あり", editor.document.getText(selection));
+    const baseString = editor.document.getText(selection);
+    const ruby = await vscode.window.showInputBox({
+      title: "ルビの入力",
+      prompt: "ルビを入力してください",
+      placeHolder: baseString,
+    });
+    if (ruby == "") return;
+    const replaceRange = new Range(selection.start, selection.end);
+    const rubyString = baseString.match(/^([一-鿏々-〇]+?)$/)
+      ? `${baseString}《${ruby}》`
+      : `｜${baseString}《${ruby}》`;
+    changeText(replaceRange, rubyString);
+    return;
+  }
+
+  //Kuromoji開始
+  kuromojiBuilder.build(async (err: any, tokenizer: any) => {
+    // 辞書がなかったりするとここでエラーになります(´・ω・｀)
+    if (err) {
+      console.dir("Kuromoji initialize error:" + err.message);
+      throw err;
+    }
+    const kuromojiToken = tokenizer.tokenize(lineString);
+    const frontWordsList = kuromojiToken.filter(
+      (token: any) =>
+      selection.start.character <=
+        token.word_position - 1 + token.basic_form.length
+        
+    );
+    // console.log("ルビ位置", selection.start.character);
+    // console.log("カーソル前方の単語", frontWordsList);
+
+    const targetWord = frontWordsList[0];
+    const baseString = targetWord.basic_form;
+    // カタカナをひらがなに
+    const placeHolderRuby = targetWord.reading.replace(
+      /[ァ-ン]/g,
+      function (s: any) {
+        return String.fromCharCode(s.charCodeAt(0) - 0x60);
+      }
+    );
+    // console.log("ターゲット", frontWordsList, targetWord, placeHolderRuby);
+    const ruby = await vscode.window.showInputBox({
+      title: "ルビの入力",
+      prompt: "ルビを入力してください",
+      placeHolder: placeHolderRuby,
+      value: placeHolderRuby,
+    });
+    if (ruby == undefined) return;
+    const replaceStart = new Position(
+      selection.start.line,
+      targetWord.word_position - 1
+    );
+    const replaceEnd = new Position(
+      selection.start.line,
+      targetWord.word_position - 1 + targetWord.basic_form.length
+    );
+    const replaceRange = new Range(replaceStart, replaceEnd);
+
+    const rubyString = baseString.match(/^([一-鿏々-〇]+?)$/)
+      ? `${baseString}《${ruby}》`
+      : `｜${baseString}《${ruby}》`;
+    changeText(replaceRange, rubyString);
+  });
+  return;
+}
+
 //文字の挿入
 function changeText(range: vscode.Range, text: string) {
   const editor = vscode.window.activeTextEditor;
   editor?.edit((TextEditorEdit) => {
     TextEditorEdit.replace(range, text);
   });
-}
-
-export class kuromojiMaker {
-  private _tokinizer: any;
-
-  constructor(kuromojiPath:string) {
-    const kuromojiBuilder = kuromoji.builder({
-      dicPath: kuromojiPath,
-    });
-    kuromojiBuilder.build(async (err: any, tokenizer: any) => {
-      // 辞書がない場合のエラー
-      if (err) {
-        console.dir("Kuromoji initialize error:" + err.message);
-        throw err;
-      }
-      this._tokinizer = tokenizer.tokenize();
-    });
-  }
-
-  public getToken(lineString?: string): any {
-    return this._tokinizer(lineString);
-  }
-}
-
-let kuromojiMakerObject: any;
-export function buildTensProvidor(
-  kuromojiPath: string
-) {
-  kuromojiMakerObject = new kuromojiMaker(kuromojiPath);
 }

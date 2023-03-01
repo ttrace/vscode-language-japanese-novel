@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.6.9",
+  "version": "1.7.0-alpha",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -54,6 +54,10 @@
         "title": "Novel:文末辞入れ替え"
       },
       {
+        "command": "Novel.add-ruby",
+        "title": "Novel:ルビ挿入"
+      },
+      {
         "command": "Novel.launch-preview-server",
         "title": "Novel:プレビューサーバー起動"
       },
@@ -77,6 +81,14 @@
         "command": "draftTree.refresh",
         "title": "再表示",
         "icon": "$(refresh)"
+      }
+    ],
+    "keybindings":[
+      {
+        "command": "Novel.add-ruby",
+        "key": "ctrl+r",
+        "mac": "cmd+r",
+        "when": "editorTextFocus"
       }
     ],
     "languages": [
