@@ -14,7 +14,7 @@ export * from "./charactorcount";
 import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
 import {
   activateTokenizer,
-  changeTenseAspect,
+  changeTenseAspect, addRuby
 } from "./tokenize";
 import { exportpdf, previewpdf } from "./pdf";
 
@@ -96,6 +96,12 @@ export function activate(context: vscode.ExtensionContext): void {
       changeTenseAspect
     )
   );
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "Novel.add-ruby",
+      addRuby
+    )
+  );
 
   const draftNodeTreeProvider = new draftTreeProvider();
   vscode.window.registerTreeDataProvider(
@@ -109,7 +115,6 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const kuromojiPath = context.extensionPath + "/node_modules/kuromoji/dict";
   activateTokenizer(context, kuromojiPath);
-
 
   const characterCounter = new CharacterCounter();
   const controller = new CharacterCounterController(characterCounter);
