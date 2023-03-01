@@ -732,6 +732,7 @@ export async function addRuby() {
       placeHolder: baseString,
     });
     if (ruby == "") return;
+    if (ruby == undefined) return;
     const replaceRange = new Range(selection.start, selection.end);
     const rubyString = baseString.match(/^([一-鿏々-〇]+?)$/)
       ? `${baseString}《${ruby}》`

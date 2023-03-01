@@ -78,6 +78,10 @@ novel形式の書類を開いているときには、前のシーンにあたる
 
 ![次のシーンを開く](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/next-scene.png)
 
+## ルビの挿入
+
+novel-writerは青空文庫スタイルのルビを挿入できます。
+Novel:ルビの追加（または<kbd>Ctrl</kbd>+<kbd>R</kbd>/<kbd>Command</kbd>+R）を実行するときに選択範囲があれば、選択範囲にルビを振ります。選択範囲がない場合には、カーソル前方の単語、またはカーソルが入っている単語にルビを挿入します。
 
 ## 文末辞の切り替え
 
