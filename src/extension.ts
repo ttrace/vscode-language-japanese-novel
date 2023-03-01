@@ -16,7 +16,7 @@ import {
   activateTokenizer,
   changeTenseAspect,buildTensProvidor
 } from "./tokenize";
-import { exportpdf } from "./pdf";
+import { exportpdf, previewpdf } from "./pdf";
 
 //リソースとなるhtmlファイル
 //let html: Buffer;
@@ -80,6 +80,10 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("Novel.export-pdf", exportpdf)
   );
   context.subscriptions.push(
+    vscode.commands.registerCommand("Novel.preview-pdf", previewpdf)
+  );
+
+  context.subscriptions.push(
     vscode.commands.registerCommand(
       "Novel.launch-preview-server",
       launchHeadlessServer
@@ -107,7 +111,6 @@ export function activate(context: vscode.ExtensionContext): void {
   activateTokenizer(context, kuromojiPath);
   buildTensProvidor(kuromojiPath);
 
-  //context.subscriptions.push(vscode.languages.registerDocumentSemanticTokensProvider({ language: 'novel'}, new DocumentSemanticTokensProvider(), legend));
 
   const characterCounter = new CharacterCounter();
   const controller = new CharacterCounterController(characterCounter);
@@ -130,7 +133,10 @@ export function activate(context: vscode.ExtensionContext): void {
   //締め切りカウンター
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.set-counter", async (e) => {
-      const path = e.collapsibleState ? e.resourceUri.path: e.fsPath;
+      let path = e.collapsibleState ? e.resourceUri.path: e.fsPath;
+      if(draftRoot().match(/^[a-z]:\\/)){
+        path = path.replace(/^\//,'').split('/').join('\\');
+      }
       let currentLength = 0;
       draftsObject(path).forEach((element) => {
         currentLength += element.length;
@@ -139,7 +145,7 @@ export function activate(context: vscode.ExtensionContext): void {
       // InputBoxを呼び出す。awaitで完了を待つ。
       let result = await vscode.window.showInputBox({
         prompt:
-          "文字数を入力してください　数字を入力せずにEnterを押すと現在の設定を解除します",
+          `設定する文字数を入力してください。数字を入力せずにEnterを押すと締め切りフォルダーの設定を解除します`,
         placeHolder: `現在の文字数：${currentLength}`,
       });
       // ここで入力を処理する

@@ -1,8 +1,8 @@
 /* eslint-disable no-inner-declarations */
 /* eslint-disable @typescript-eslint/no-namespace */
 import * as vscode from "vscode";
-import * as fs from "fs";
-import * as path from "path";
+//import * as fs from "fs";
+//import * as path from "path";
 import { draftRoot, draftsObject } from "./compile";
 import { deadLineFolderPath, deadLineTextCount } from "./charactorcount";
 
@@ -98,13 +98,14 @@ class draftTreeItem extends vscode.TreeItem {
         : vscode.TreeItemCollapsibleState.Expanded
     );
 
+    const filePath = vscode.Uri.file(draftItem.dir.split('\\').join('/'));
+
     this.label = draftItem.name.replace(
       /^([0-9]+[-_\s]){0,1}(.+)(.txt)$/,
       "$2"
     );
     this.description = `:${Intl.NumberFormat().format(draftItem.length)}文字`;
-    this.resourceUri = vscode.Uri.file(draftItem.dir);
-
+    this.resourceUri = filePath;
 
     if (!draftItem.children) {
       this.iconPath = new vscode.ThemeIcon("note");
@@ -122,7 +123,7 @@ class draftTreeItem extends vscode.TreeItem {
       this.command = {
         command: "vscode.open",
         title: "ファイルを開く",
-        arguments: [draftItem.dir],
+        arguments: [filePath],
       };
       this.contextValue = "file";
     } else {
