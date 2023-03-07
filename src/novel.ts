@@ -28,15 +28,15 @@ export class draftTreeProvider
     this.watch = vscode.workspace.createFileSystemWatcher("**/*.txt");
 
     this.watch.onDidChange((uri) => {
-      console.log("changed!!!", uri);
+      // console.log("changed!!!", uri);
       this._onDidChangeTreeData.fire();
     });
     this.watch.onDidCreate((uri) => {
-      console.log("changed!!!", uri);
+      // console.log("changed!!!", uri);
       this._onDidChangeTreeData.fire();
     });
     this.watch.onDidDelete((uri) => {
-      console.log("changed!!!", uri);
+      // console.log("changed!!!", uri);
       this._onDidChangeTreeData.fire();
     });
 
