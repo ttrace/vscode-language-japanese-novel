@@ -12,10 +12,7 @@ import { draftTreeProvider } from "./novel";
 import { CharacterCounter, CharacterCounterController } from "./charactorcount";
 export * from "./charactorcount";
 import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
-import {
-  activateTokenizer,
-  changeTenseAspect, addRuby
-} from "./tokenize";
+import { activateTokenizer, changeTenseAspect, addRuby } from "./tokenize";
 import { exportpdf, previewpdf } from "./pdf";
 
 //リソースとなるhtmlファイル
@@ -97,10 +94,7 @@ export function activate(context: vscode.ExtensionContext): void {
     )
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "Novel.add-ruby",
-      addRuby
-    )
+    vscode.commands.registerCommand("Novel.add-ruby", addRuby)
   );
 
   const draftNodeTreeProvider = new draftTreeProvider();
@@ -137,9 +131,9 @@ export function activate(context: vscode.ExtensionContext): void {
   //締め切りカウンター
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.set-counter", async (e) => {
-      let path = e.collapsibleState ? e.resourceUri.path: e.fsPath;
-      if(draftRoot().match(/^[a-z]:\\/)){
-        path = path.replace(/^\//,'').split('/').join('\\');
+      let path = e.collapsibleState ? e.resourceUri.path : e.fsPath;
+      if (draftRoot().match(/^[a-z]:\\/)) {
+        path = path.replace(/^\//, "").split("/").join("\\");
       }
       let currentLength = 0;
       draftsObject(path).forEach((element) => {
@@ -148,8 +142,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       // InputBoxを呼び出す。awaitで完了を待つ。
       let result = await vscode.window.showInputBox({
-        prompt:
-          `設定する文字数を入力してください。数字を入力せずにEnterを押すと締め切りフォルダーの設定を解除します`,
+        prompt: `設定する文字数を入力してください。数字を入力せずにEnterを押すと締め切りフォルダーの設定を解除します`,
         placeHolder: `現在の文字数：${currentLength}`,
       });
       // ここで入力を処理する
@@ -186,8 +179,6 @@ export function activate(context: vscode.ExtensionContext): void {
       vscode.commands.executeCommand("draftTree.refresh");
     })
   );
-
-
 
   documentRoot = vscode.Uri.joinPath(context.extensionUri, "htdocs");
 
@@ -302,21 +293,29 @@ function launchserver(originEditor: vscode.TextEditor) {
         const sendingObjects = draftsObject(draftRoot());
         console.log("send:", sendingObjects);
         ws.send(JSON.stringify(sendingObjects));
-      } else if (typeof message == "string" && message.match(/^jump/)) {
+      } else if (
+        typeof message == "string" &&
+        message.match(/^{"label":"jump"/)
+      ) {
+        const messageObject = JSON.parse(message);
         //行のタップを検知した時
         //const originalEditor = vscode.window.activeTextEditor;
 
-        const targetLine = parseInt(message.split("-")[1]);
-        const range = latestEditor.document.lineAt(targetLine).range;
+        const targetLine = parseInt(messageObject.id.split("-")[1]);
+        const targetPosition = new vscode.Position(
+          targetLine,
+          messageObject.cursor
+        );
+        latestEditor.selection = new vscode.Selection(
+          targetPosition,
+          targetPosition
+        );
 
-        if (typeof range != "undefined") {
-          console.log("go to line!");
-          latestEditor.selection = new vscode.Selection(
-            range?.start,
-            range?.end
-          );
-          latestEditor.revealRange(range, vscode.TextEditorRevealType.InCenter);
-        }
+        latestEditor.revealRange(
+          latestEditor.selection,
+          vscode.TextEditorRevealType.InCenter
+        );
+        ws.send(editorText(latestEditor));
       }
     });
   });
