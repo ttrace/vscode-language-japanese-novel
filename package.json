@@ -83,7 +83,7 @@
         "icon": "$(refresh)"
       }
     ],
-    "keybindings":[
+    "keybindings": [
       {
         "command": "Novel.add-ruby",
         "key": "ctrl+r",
@@ -129,7 +129,8 @@
           "type": "string",
           "default": "左",
           "enum": [
-            "右","左"
+            "右",
+            "左"
           ],
           "description": "PDFがどちらのページから始まるか指定してください"
         },
@@ -307,9 +308,7 @@
             "interjection.dialogue": {
               "foreground": "#20b336"
             },
-            "*.quote": {
-              
-            },
+            "*.quote": {},
             "*.aozora": {
               "foreground": "#9d9d9d"
             },
@@ -412,9 +411,7 @@
             "interjection.dialogue": {
               "foreground": "#22c54b"
             },
-            "*.quote": {
-
-            },
+            "*.quote": {},
             "*.aozora": {
               "foreground": "#807e7e"
             },
