@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.7.1",
+  "version": "1.7.3",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -16,7 +16,7 @@
     "fastest-levenshtein": "^1.0.16",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
-    "kuromoji": "^0.1.2",
+    "kuromoji": "git+https://github.com/ttrace/kuromoji.js.git",
     "simple-git": "^3.16.0",
     "tree-model": "^1.0.7",
     "ws": "^8.12.0"
@@ -83,7 +83,7 @@
         "icon": "$(refresh)"
       }
     ],
-    "keybindings":[
+    "keybindings": [
       {
         "command": "Novel.add-ruby",
         "key": "ctrl+r",
@@ -129,7 +129,8 @@
           "type": "string",
           "default": "左",
           "enum": [
-            "右","左"
+            "右",
+            "左"
           ],
           "description": "PDFがどちらのページから始まるか指定してください"
         },
@@ -307,9 +308,7 @@
             "interjection.dialogue": {
               "foreground": "#20b336"
             },
-            "*.quote": {
-              
-            },
+            "*.quote": {},
             "*.aozora": {
               "foreground": "#9d9d9d"
             },
@@ -412,9 +411,7 @@
             "interjection.dialogue": {
               "foreground": "#22c54b"
             },
-            "*.quote": {
-
-            },
+            "*.quote": {},
             "*.aozora": {
               "foreground": "#807e7e"
             },

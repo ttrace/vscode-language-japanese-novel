@@ -315,6 +315,7 @@ function launchserver(originEditor: vscode.TextEditor) {
           latestEditor.selection,
           vscode.TextEditorRevealType.InCenter
         );
+        vscode.window.showTextDocument(latestEditor.document, latestEditor.viewColumn);
         ws.send(editorText(latestEditor));
       }
     });

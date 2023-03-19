@@ -106,7 +106,7 @@ export class DocumentSemanticTokensProvider
       if (tokenizeFlag === true) {
         const r: number[][] = [];
         const builder = new vscode.SemanticTokensBuilder();
-        // const startTime = performance.now();
+        const startTime = performance.now();
 
         kuromojiBuilder.build(async (err: any, tokenizer: any) => {
           // 辞書がなかったりするとここでエラーになります(´・ω・｀)
@@ -307,8 +307,8 @@ export class DocumentSemanticTokensProvider
             }
             openOffset = closeOffset;
             if (j == kuromojiToken.length - 1) {
-              // const endTime = performance.now();
-              // console.log("T処理時間！", endTime - startTime);
+              const endTime = performance.now();
+              console.log("T処理時間！", endTime - startTime);
 
               resolve(builder.build());
               //const builder = new vscode.SemanticTokensBuilder();
