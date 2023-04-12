@@ -104,15 +104,14 @@
         });
 
         $("#draft").on("click", function (e) {
-          let clean, cursor;
           let position = window.getSelection().focusOffset;
           if (cursor && position > cursor) position--;
-          var message = "jump:" + e.target.id;
-          console.log(position);
-          const jumpObject = { "label": "jump", "id": e.target.id, "cursor": position };
-          console.log(jumpObject);
+          const jumpObject = {
+            label: "jump",
+            id: e.target.id,
+            cursor: position,
+          };
           sock.send(JSON.stringify(jumpObject));
-          sock.send(message);
         });
 
         sock.addEventListener("message", (e) => {

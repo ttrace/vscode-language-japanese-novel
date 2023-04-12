@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.7.3",
+  "version": "1.7.5",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -30,6 +30,7 @@
     "watch": "tsc -watch -p ./",
     "test": "node ./dist/test/runTest.js",
     "compile-webpack": "webpack",
+    "debug-webpack": "webpack --mode development",
     "test-webpack": "webpack --watch",
     "package-webpack": "webpack --mode production --devtool hidden-source-map",
     "watch-web": "webpack --watch"

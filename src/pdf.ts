@@ -117,7 +117,7 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
 function getPrintContent() {
   //configuration 読み込み
 
-  const myText = editorText("active");
+  const myText = editorText("active").replace(/<span id="cursor">(.*)<\/span>/g, "$1");
   const previewSettings = getConfig();
   const printBoxHeight = 168; // ドキュメント高さの80%(上下マージン10%を抜いた数)
   const printBoxWidth = 124.32; // ドキュメント幅の84%(左右マージン16%を抜いた数)
@@ -420,9 +420,6 @@ function getPrintContent() {
         display:none;
     }
 
-    #cursor {
-      display:none;
-    }
     p.blank {
         color:transparent;
     }

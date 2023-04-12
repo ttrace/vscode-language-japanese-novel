@@ -3,46 +3,46 @@
 // Hover to view descriptions of existing attributes.
 // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Extension",
-            "type": "extensionHost",
-            "request": "launch",
-            "runtimeExecutable": "${execPath}",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/dist/*.js"
-            ],
-            "preLaunchTask": "npm: compile-webpack"
-        },
-        {
-            "name": "Run Web Extension ",
-            "type": "pwa-extensionHost",
-            "debugWebWorkerHost": true,
-            "request": "launch",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}",
-                "--extensionDevelopmentKind=web"
-            ],
-            "outFiles": ["${workspaceFolder}/dist/web/**/*.js"],
-            "preLaunchTask": "npm: watch-web"
-        },
-        {
-            "name": "Run Extension Tests",
-            "type": "extensionHost",
-            "request": "launch",
-            "runtimeExecutable": "${execPath}",
-            "args": [
-                "--extensionDevelopmentPath=${workspaceFolder}",
-                "--extensionTestsPath=${workspaceFolder}/dist/test/suite/index"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/dist/test/**/*.js"
-            ],
-            "preLaunchTask": "npm: watch"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
+      "outFiles": ["${workspaceFolder}/dist/*.js"],
+      "sourceMaps": true,
+      "webRoot": "${workspaceFolder}",
+      "sourceMapPathOverrides": {
+        "webpack:///*": "${webRoot}/*"
+      },
+      "trace": true, // デバッグ コンソールを取り込む
+      "preLaunchTask": "npm: debug-webpack"
+    },
+    {
+      "name": "Run Web Extension ",
+      "type": "extensionHost",
+      "debugWebWorkerHost": true,
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionDevelopmentKind=web"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/web/**/*.js"],
+      "preLaunchTask": "npm: watch-web"
+    },
+    {
+      "name": "Run Extension Tests",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionTestsPath=${workspaceFolder}/dist/test/suite/index"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/test/**/*.js"],
+      "preLaunchTask": "npm: watch"
+    }
+  ]
 }

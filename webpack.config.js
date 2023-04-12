@@ -30,7 +30,7 @@ const webExtensionConfig = {
 		libraryTarget: 'commonjs2',
 		devtoolModuleFilenameTemplate: '../[resource-path]'
 	},
-	devtool: 'inline-source-map', // create a source map that points to the original source file
+	devtool: 'source-map', // create a source map that points to the original source file
 	externals: {
 		'vscode': 'commonjs vscode', // ignored because it doesn't exist
 	},
@@ -71,4 +71,4 @@ const webExtensionConfig = {
 };
 
 // eslint-disable-next-line no-undef
-module.exports = [ webExtensionConfig ];
+module.exports = [ webExtensionConfig ];1
