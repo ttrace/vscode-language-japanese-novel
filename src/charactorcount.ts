@@ -245,7 +245,8 @@ export class CharacterCounter {
     const activeDocumentPath = window.activeTextEditor?.document.uri.fsPath;
     if (typeof activeDocumentPath != "string") return;
     this.projectPath = workspace.workspaceFolders[0].uri.fsPath;
-    const relatevePath = path.relative(this.projectPath, activeDocumentPath);
+    const relatevePath = 
+      path.relative(this.projectPath, activeDocumentPath).replace(new RegExp('\\' + path.sep, 'g'), '/');
 
     const git: SimpleGit = simpleGit(this.projectPath);
     console.log("git.revparse()", git.revparse(["--is-inside-work-tree"]));

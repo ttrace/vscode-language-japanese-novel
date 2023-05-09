@@ -806,7 +806,7 @@ export async function addRuby() {
 //文字の挿入
 function changeText(range: vscode.Range, text: string) {
   const editor = vscode.window.activeTextEditor;
-  editor?.edit((TextEditorEdit) => {
+  editor?.edit((TextEditorEdit: vscode.TextEditorEdit) => {
     TextEditorEdit.replace(range, text);
   });
 }
