@@ -1,5 +1,25 @@
 # Changelog
 
+# 1.7.6
+
+- 新しいデフォルトカラーテーマに対応
+-   @types/glob                         ^8.0.1  →    ^8.1.0
+    @types/node                       ^18.13.0  →   ^20.1.1
+    @types/sinon                      ^10.0.13  →  ^10.0.14
+    @types/vscode                      ^1.75.0  →   ^1.78.0
+    @typescript-eslint/eslint-plugin   ^5.51.0  →   ^5.59.5
+    @typescript-eslint/parser          ^5.51.0  →   ^5.59.5
+    @vscode/test-web                   ^0.0.34  →   ^0.0.43
+    eslint                             ^8.34.0  →   ^8.40.0
+    glob                                ^8.1.0  →   ^10.2.2
+    simple-git                         ^3.16.0  →   ^3.18.0
+    sinon                              ^15.0.1  →   ^15.0.4
+    typescript                          ^4.9.5  →    ^5.0.4
+    utf-8-validate                      ^6.0.2  →    ^6.0.3
+    webpack                            ^5.75.0  →   ^5.82.0
+    webpack-cli                         ^5.0.1  →    ^5.1.1
+    ws                                 ^8.12.0  →   ^8.13.0
+
 # 1.7.5
 
 - PDF出力でカーソルのある場所から文字が消えるバグを修正

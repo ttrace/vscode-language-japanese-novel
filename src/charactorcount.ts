@@ -4,7 +4,7 @@
 import * as path from "path";
 import * as fs from "fs";
 import { draftsObject } from "./compile";
-import * as TreeModel from "tree-model";
+import TreeModel from "tree-model";
 
 import {
   window,
