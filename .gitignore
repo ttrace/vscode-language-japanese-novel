@@ -10,3 +10,4 @@ publish.html
 test/testForTexts/*
 test/testForNestedDirectory/-Draft
 dist
+secret.node_modulesse
