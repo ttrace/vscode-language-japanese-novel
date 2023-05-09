@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.7.5",
+  "version": "1.7.6",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -8,7 +8,7 @@
   },
   "icon": "resource/icon.png",
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.78.0"
   },
   "main": "dist/extension.js",
   "dependencies": {
@@ -17,9 +17,9 @@
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
     "kuromoji": "git+https://github.com/ttrace/kuromoji.js.git",
-    "simple-git": "^3.16.0",
+    "simple-git": "^3.18.0",
     "tree-model": "^1.0.7",
-    "ws": "^8.12.0"
+    "ws": "^8.13.0"
   },
   "scripts": {
     "vscode:prepublish": "npm run package-webpack",
@@ -36,7 +36,6 @@
     "watch-web": "webpack --watch"
   },
   "activationEvents": [
-    "onLanguage:novel",
     "onLanguage:markdown",
     "onLanguage:plaintext"
   ],
@@ -218,9 +217,6 @@
       }
     ],
     "configurationDefaults": {
-      "novel": {
-        "editor.semanticHighlighting.enabled": true
-      },
       "editor.semanticTokenColorCustomizations": {
         "[Default Light+]": {
           "enabled": true,
@@ -318,6 +314,211 @@
             },
             "*.comment": {
               "foreground": "#4b4b4b"
+            }
+          }
+        },
+        "[Default Light Modern]": {
+          "enabled": true,
+          "rules": {
+            "noun": {
+              "foreground": "#4e549a"
+            },
+            "noun.dialogue": {
+              "foreground": "#20a23a"
+            },
+            "proper_noun": {
+              "foreground": "#0041cc"
+            },
+            "proper_noun.dialogue": {
+              "foreground": "#004b70"
+            },
+            "enum": {
+              "foreground": "#001c78"
+            },
+            "enum.dialogue": {
+              "foreground": "#00b4a8"
+            },
+            "suffix": {
+              "foreground": "#676767"
+            },
+            "suffix.dialogue": {
+              "foreground": "#58adc0"
+            },
+            "personal_pronoun": {
+              "foreground": "#580000"
+            },
+            "personal_pronoun.dialogue": {
+              "foreground": "#005772"
+            },
+            "pronoun": {
+              "foreground": "#34009b"
+            },
+            "pronoun.dialogue": {
+              "foreground": "#0068f0"
+            },
+            "punctuation": {
+              "foreground": "#000000"
+            },
+            "punctuation.dialogue": {
+              "foreground": "#284080"
+            },
+            "bracket": {
+              "foreground": "#d43c00d3"
+            },
+            "bracket.dialogue": {
+              "foreground": "#9a0b0bd3"
+            },
+            "bracket.quote": {
+              "foreground": "#0b1e9ad3"
+            },
+            "adverb": {
+              "foreground": "#b04d02"
+            },
+            "adverb.dialogue": {
+              "foreground": "#30be91"
+            },
+            "auailiary_verb": {
+              "foreground": "#da05ff"
+            },
+            "auailiary_verb.dialogue": {
+              "foreground": "#567387"
+            },
+            "verb": {
+              "foreground": "#8800ff"
+            },
+            "verb.dialogue": {
+              "foreground": "#7fad00"
+            },
+            "particle": {
+              "foreground": "#0000ff"
+            },
+            "particle.dialogue": {
+              "foreground": "#059f2e"
+            },
+            "adjective": {
+              "foreground": "#0771a7"
+            },
+            "interjection": {
+              "foreground": "#ac6404"
+            },
+            "interjection.dialogue": {
+              "foreground": "#20b336"
+            },
+            "*.quote": {},
+            "*.aozora": {
+              "foreground": "#9d9d9d"
+            },
+            "bracket.aozora": {
+              "foreground": "#4b4b4b"
+            },
+            "*.comment": {
+              "foreground": "#4b4b4b"
+            }
+          }
+        },
+        "[Default Dark Modern]": {
+          "enabled": true,
+          "rules": {
+            "noun": {
+              "foreground": "#77c4fc"
+            },
+            "noun.dialogue": {
+              "foreground": "#1dfcbd"
+            },
+            "proper_noun": {
+              "foreground": "#5d8ffb"
+            },
+            "proper_noun.dialogue": {
+              "foreground": "#0efd52",
+              "fontStyle": ""
+            },
+            "enum": {
+              "foreground": "#8fa4e9"
+            },
+            "enum.dialogue": {
+              "foreground": "#02d4c6"
+            },
+            "suffix": {
+              "foreground": "#9489db"
+            },
+            "suffix.dialogue": {
+              "foreground": "#4efab0"
+            },
+            "personal_pronoun": {
+              "foreground": "#83c1ff"
+            },
+            "personal_pronoun.dialogue": {
+              "foreground": "#00aade"
+            },
+            "pronoun": {
+              "foreground": "#6767ff"
+            },
+            "pronoun.dialogue": {
+              "foreground": "#00c0f0"
+            },
+            "punctuation": {
+              "foreground": "#ffffff"
+            },
+            "punctuation.dialogue": {
+              "foreground": "#c7ffca"
+            },
+            "bracket": {
+              "foreground": "#d43c00d3"
+            },
+            "bracket.dialogue": {
+              "foreground": "#ff9900d3"
+            },
+            "bracket.quote": {
+              "foreground": "#5469f1d3"
+            },
+            "adverb": {
+              "foreground": "#ff882d"
+            },
+            "adverb.dialogue": {
+              "foreground": "#30be80"
+            },
+            "auailiary_verb": {
+              "foreground": "#fdb5ff"
+            },
+            "auailiary_verb.dialogue": {
+              "foreground": "#22ca73"
+            },
+            "verb": {
+              "foreground": "#fc50ff"
+            },
+            "verb.dialogue": {
+              "foreground": "#29ff9b"
+            },
+            "particle": {
+              "foreground": "#03cccf"
+            },
+            "particle.dialogue": {
+              "foreground": "#b7f0bc"
+            },
+            "adjective": {
+              "foreground": "#0771a7"
+            },
+            "adjective.dialogue": {
+              "foreground": "#07a74c"
+            },
+            "interjection": {
+              "foreground": "#ac6404"
+            },
+            "interjection.dialogue": {
+              "foreground": "#22c54b"
+            },
+            "*.quote": {},
+            "*.aozora": {
+              "foreground": "#807e7e"
+            },
+            "bracket.aozora": {
+              "foreground": "#8b8b8b"
+            },
+            "*.comment": {
+              "foreground": "#8b8b8b"
+            },
+            "bracket.comment": {
+              "foreground": "#8b8b8b"
             }
           }
         },
@@ -431,36 +632,36 @@
     }
   },
   "devDependencies": {
-    "@types/glob": "^8.0.1",
+    "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.1",
-    "@types/node": "^18.13.0",
-    "@types/sinon": "^10.0.13",
+    "@types/node": "^20.1.1",
+    "@types/sinon": "^10.0.14",
     "@types/text-encoding": "^0.0.36",
-    "@types/vscode": "^1.75.0",
+    "@types/vscode": "^1.78.0",
     "@types/webpack-env": "^1.18.0",
     "@types/ws": "^8.5.4",
-    "@typescript-eslint/eslint-plugin": "^5.51.0",
-    "@typescript-eslint/parser": "^5.51.0",
-    "@vscode/test-web": "^0.0.34",
+    "@typescript-eslint/eslint-plugin": "^5.59.5",
+    "@typescript-eslint/parser": "^5.59.5",
+    "@vscode/test-web": "^0.0.43",
     "bufferutil": "^4.0.7",
     "child_process": "^1.0.2",
-    "eslint": "^8.34.0",
+    "eslint": "^8.40.0",
     "fs": "^0.0.1-security",
-    "glob": "^8.1.0",
+    "glob": "^10.2.2",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
     "mocha": "^10.2.0",
     "net": "^1.0.2",
     "node-levenshtein": "^3.0.7",
     "path": "^0.12.7",
-    "sinon": "^15.0.1",
+    "sinon": "^15.0.4",
     "ts-loader": "^9.4.2",
-    "typescript": "^4.9.5",
-    "utf-8-validate": "^6.0.2",
+    "typescript": "^5.0.4",
+    "utf-8-validate": "^6.0.3",
     "util": "^0.12.5",
     "vscode-test": "^1.5.2",
-    "webpack": "^5.75.0",
-    "webpack-cli": "^5.0.1",
+    "webpack": "^5.82.0",
+    "webpack-cli": "^5.1.1",
     "webpack-env": "^0.8.0",
     "xhr2": "^0.2.1"
   },

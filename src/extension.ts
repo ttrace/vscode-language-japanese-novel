@@ -4,7 +4,7 @@ import * as net from "net";
 import * as path from "path";
 import * as fs from "fs";
 import * as os from "os";
-import * as websockets from "ws";
+import { Server, WebSocket } from "ws";
 import { getConfig } from "./config";
 import compileDocs, { draftRoot } from "./compile";
 import { draftsObject } from "./compile"; // filelist オブジェクトもある
@@ -265,7 +265,7 @@ function launchserver(originEditor: vscode.TextEditor) {
   viewerServer.listen(servicePort);
 
   // Node Websockets Serverを起動する
-  const wsServer = websockets.Server;
+  const wsServer = WebSocket.Server;
   const s = new wsServer({ port: servicePort + 1 });
 
   s.on("connection", (ws) => {
@@ -410,14 +410,14 @@ function launchserver(originEditor: vscode.TextEditor) {
   }
 }
 
-function publishwebsockets(socketServer: websockets.Server) {
-  socketServer.clients.forEach((client: websockets) => {
+function publishwebsockets(socketServer: { clients: WebSocket[]; }) {
+  socketServer.clients.forEach((client: WebSocket) => {
     client.send(editorText("active"));
   });
 }
 
-function sendsettingwebsockets(socketServer: websockets.Server) {
-  socketServer.clients.forEach((client: websockets) => {
+function sendsettingwebsockets(socketServer: Server<WebSocket>) {
+  socketServer.clients.forEach((client: WebSocket) => {
     client.send(JSON.stringify(getConfig()));
   });
 }
@@ -425,10 +425,10 @@ function sendsettingwebsockets(socketServer: websockets.Server) {
 let keyPressStored = false;
 
 const publishWebsocketsDelay: any = {
-  publish: function (socketServer: websockets.Server) {
+  publish: function (socketServer: { clients: WebSocket[]; }) {
     publishwebsockets(socketServer);
   },
-  presskey: function (s: websockets.Server) {
+  presskey: function (s: any) {
     if (previewRedrawing) {
       //リドロー中
       keyPressStored = true;
