@@ -1,5 +1,11 @@
 # Changelog
 
+# 1.7.7
+
+- [Fix relative path separator, and add a type suggestion.](https://github.com/ttrace/vscode-language-japanese-novel/pull/67)の適用  
+    Windows環境でのキャラクターカウントが動作するようになります。[kaito-yoshitate](https://github.com/kaito-yoshitate)さん、ありがとうございます。
+- Macで濁点、半濁点を含むファイルパスの文字数カウントが正常に動作していなかった問題を修正しています
+
 # 1.7.6
 
 - 新しいデフォルトカラーテーマに対応

@@ -5,6 +5,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { draftsObject } from "./compile";
 import TreeModel from "tree-model";
+import os from 'os';
 
 import {
   window,
@@ -13,6 +14,7 @@ import {
   StatusBarItem,
   TextDocument,
   workspace,
+  Uri
 } from "vscode";
 
 import { totalLength, draftRoot } from "./compile";
@@ -68,7 +70,7 @@ export class CharacterCounter {
     }
 
     const doc = editor.document;
-    const docPath = editor.document.uri.fsPath;
+    const docPath:string = editor.document.uri.fsPath.normalize();
     const characterCountNum = this._getCharacterCount(doc);
     const characterCount = Intl.NumberFormat().format(characterCountNum);
     const countingTarget = Intl.NumberFormat().format(this._countingTargetNum);
@@ -81,8 +83,11 @@ export class CharacterCounter {
         this._getCharacterCount(doc)
       )} 文字`;
     } else {
-      savedCharacterCountNum = this._lengthByPath(docPath);
+      savedCharacterCountNum = (os.platform() === "darwin")? this._lengthByPath(docPath.normalize('NFD')) : this._lengthByPath(docPath);
     }
+
+
+    console.log(os.platform(), docPath, savedCharacterCountNum, characterCountNum);
 
     const totalCharacterCountNum =
       projectCharacterCountNum - savedCharacterCountNum + characterCountNum;
@@ -245,8 +250,9 @@ export class CharacterCounter {
     const activeDocumentPath = window.activeTextEditor?.document.uri.fsPath;
     if (typeof activeDocumentPath != "string") return;
     this.projectPath = workspace.workspaceFolders[0].uri.fsPath;
-    const relatevePath = 
-      path.relative(this.projectPath, activeDocumentPath).replace(new RegExp('\\' + path.sep, 'g'), '/');
+    const relatevePath = path
+      .relative(this.projectPath, activeDocumentPath)
+      .replace(new RegExp("\\" + path.sep, "g"), "/");
 
     const git: SimpleGit = simpleGit(this.projectPath);
     console.log("git.revparse()", git.revparse(["--is-inside-work-tree"]));
