@@ -46,10 +46,6 @@
         "title": "Novel:縦書きプレビュー"
       },
       {
-        "command": "Novel.hide-morpheme",
-        "title": "Novel:品詞ハイライト停止"
-      },
-      {
         "command": "Novel.change-tenseAspect",
         "title": "Novel:文末辞入れ替え"
       },

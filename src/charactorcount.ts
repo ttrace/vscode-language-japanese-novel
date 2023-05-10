@@ -5,7 +5,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { draftsObject } from "./compile";
 import TreeModel from "tree-model";
-import os from 'os';
+import os from "os";
 
 import {
   window,
@@ -14,7 +14,7 @@ import {
   StatusBarItem,
   TextDocument,
   workspace,
-  Uri
+  Uri,
 } from "vscode";
 
 import { totalLength, draftRoot } from "./compile";
@@ -70,24 +70,39 @@ export class CharacterCounter {
     }
 
     const doc = editor.document;
-    const docPath:string = editor.document.uri.fsPath.normalize();
+    const docPath: string = editor.document.uri.fsPath.normalize();
     const characterCountNum = this._getCharacterCount(doc);
     const characterCount = Intl.NumberFormat().format(characterCountNum);
     const countingTarget = Intl.NumberFormat().format(this._countingTargetNum);
 
     let savedCharacterCountNum = 0;
 
+    // path.relative関数でbasePathからsubPathの相対パスを取得
+    const relativePath = path.relative(draftRoot(), docPath);
+
     if (draftRoot() == "") {
       //テキストファイルを直接開いているとき
       this._statusBarItem.text = `$(note) ${Intl.NumberFormat().format(
         this._getCharacterCount(doc)
       )} 文字`;
+    } else if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+      // 相対パスが'.'で始まっていない場合、subPathはbasePathに含まれる
+      
+      savedCharacterCountNum = characterCountNum;
+
     } else {
-      savedCharacterCountNum = (os.platform() === "darwin")? this._lengthByPath(docPath.normalize('NFD')) : this._lengthByPath(docPath);
+      savedCharacterCountNum =
+        os.platform() === "darwin"
+          ? this._lengthByPath(docPath.normalize("NFD"))
+          : this._lengthByPath(docPath);
     }
 
-
-    console.log(os.platform(), docPath, savedCharacterCountNum, characterCountNum);
+    // console.log(
+    //   draftRoot(),
+    //   docPath,
+    //   savedCharacterCountNum,
+    //   characterCountNum
+    // );
 
     const totalCharacterCountNum =
       projectCharacterCountNum - savedCharacterCountNum + characterCountNum;

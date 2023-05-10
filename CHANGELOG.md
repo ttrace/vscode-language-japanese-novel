@@ -1,5 +1,10 @@
 # Changelog
 
+# 1.7.8
+
+- 「品詞ハイライトの停止」コマンドを削除
+- 原稿フォルダー外のテキストファイルを選択しているときに、文字数カウントの総計が選択テキストを含む結果になっていたバグを修正
+
 # 1.7.7
 
 - [Fix relative path separator, and add a type suggestion.](https://github.com/ttrace/vscode-language-japanese-novel/pull/67)の適用  
