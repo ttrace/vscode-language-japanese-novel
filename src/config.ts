@@ -25,6 +25,15 @@ export function getConfig(): NovelSettings {
   const linesPerPage = config.get<number>("preview.linesPerPage", 10);
   const lineHeight = fontSize * lineHeightRate;
   const pageStarting = config.get<string>("preview.pageStarting", "左");
+  const originPageNumber = config.get<number>("preview.originPageNumber", 1);
+  const numberFormatR = config.get<string>(
+    "preview.numberFormatR",
+    "${projectTitle} ${typesettingInformation} ${pageNumber}"
+  );
+  const numberFormatL = config.get<string>(
+    "preview.numberFormatL",
+    "${pageNumber} ${projectTitle} ${typesettingInformation}"
+  );
   const userRegex = config.get<Array<[string, string]>>(
     "preview.userRegex",
     []
@@ -46,6 +55,9 @@ export function getConfig(): NovelSettings {
     linesPerPage,
     lineHeight,
     pageStarting,
+    originPageNumber,
+    numberFormatR,
+    numberFormatL,
     userRegex,
     separator,
     vscodeTheme,
