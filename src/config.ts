@@ -8,8 +8,12 @@ export type NovelSettings = {
   linesPerPage: number;
   lineHeight: number;
   pageStarting: string;
+  originPageNumber: number;
+  numberFormatR: string;
+  numberFormatL: string;
   userRegex: Array<[string, string]>;
   separator: string;
+  vscodeTheme: vscode.ColorTheme;
   sceneNav: boolean;
   previewAnimate: boolean;
   semanticHighligting: boolean;
@@ -47,7 +51,7 @@ export function getConfig(): NovelSettings {
     true
   );
 
-  const novelSettings = {
+  const novelSettings: NovelSettings = {
     lineHeightRate,
     fontFamily,
     fontSize,
