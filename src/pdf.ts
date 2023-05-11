@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { editorText } from "./editor";
-import { getConfig } from "./config";
+import { getConfig, NovelSettings } from "./config";
 import * as cp from "child_process";
 import exp = require("constants");
 import { draftRoot } from "./compile";
@@ -25,15 +25,13 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
       const pdfName = filePath
         ? path.basename(filePath).replace(/\.[a-zA-Z]+$/, "")
         : "名称未設定";
-      fileName = await vscode.window.showInputBox(
-        {
-          title: "ファイル名の設定",
-          prompt: `出力するPDFのファイル名を入力してください`,
-          placeHolder: pdfName,
-          value: pdfName,
-          ignoreFocusOut: false
-        }
-      );
+      fileName = await vscode.window.showInputBox({
+        title: "ファイル名の設定",
+        prompt: `出力するPDFのファイル名を入力してください`,
+        placeHolder: pdfName,
+        value: pdfName,
+        ignoreFocusOut: false,
+      });
     }
     const folderUri = vscode.workspace.workspaceFolders[0].uri;
     const myPath = vscode.Uri.joinPath(folderUri, "publish.html");
@@ -117,8 +115,11 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
 function getPrintContent() {
   //configuration 読み込み
 
-  const myText = editorText("active").replace(/<span id="cursor">(.*)<\/span>/g, "$1");
-  const previewSettings = getConfig();
+  const myText = editorText("active").replace(
+    /<span id="cursor">(.*)<\/span>/g,
+    "$1"
+  );
+  const previewSettings: NovelSettings = getConfig();
   const printBoxHeight = 168; // ドキュメント高さの80%(上下マージン10%を抜いた数)
   const printBoxWidth = 124.32; // ドキュメント幅の84%(左右マージン16%を抜いた数)
   const fontSize =
@@ -145,6 +146,8 @@ function getPrintContent() {
     "column",
     `${printBoxHeight} / (${typeSettingHeight} + ${fontSize} * 2)`
   );
+  const originPageNumber = previewSettings.originPageNumber;
+
   const noColumnGap = columnCount == 1 ? "2em" : "0";
   const columnCSS =
     columnCount > 1
@@ -179,21 +182,25 @@ function getPrintContent() {
       margin: 0;
       padding: 0;
       }
-  
+
       @page {
-      size: 148mm 210mm;
-      width: calc(${fontSizeWithUnit} * 1.75 * ${previewSettings.linesPerPage} + (${fontSizeWithUnit} * 0.4));
-      margin-top: 10%;
-      margin-bottom: 10%;
-      margin-left: 8%;
-      margin-right: 8%;
-      /* 以下、マージンボックスに継承される */
-      font-size: 6pt;
-      font-family: "游明朝", "YuMincho", serif;
-      /* 本来不要（<span class="smaller"><span class="smaller">ルート要素の指定が継承される</span></span>）だが、現時点のvivliostyle.jsの制限により必要 */
-      vertical-align: top;
+        size: 148mm 210mm;
+        width: calc(${fontSizeWithUnit} * 1.75 * ${previewSettings.linesPerPage} + (${fontSizeWithUnit} * 0.4));
+        margin-top: 10%;
+        margin-bottom: 10%;
+        margin-left: 8%;
+        margin-right: 8%;
+        /* 以下、マージンボックスに継承される */
+        font-size: 6pt;
+        font-family: "游明朝", "YuMincho", serif;
+        /* 本来不要（<span class="smaller"><span class="smaller">ルート要素の指定が継承される</span></span>）だが、現時点のvivliostyle.jsの制限により必要 */
+        vertical-align: top;
       }
-  
+
+      @page : first {
+        counter-reset: page ${originPageNumber - 1};
+      }
+
       @page :left {
         margin-right: 6%;
         margin-left: 10%;
@@ -204,7 +211,8 @@ function getPrintContent() {
           writing-mode: horizontal-tb;
           /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
       }
-      }
+    }
+      
       @page :right {
         margin-left: 6%;
         margin-right: 10%;
@@ -422,6 +430,10 @@ function getPrintContent() {
 
     p.blank {
         color:transparent;
+    }
+
+    span.blank{
+      display:none;
     }
     </style>
 
