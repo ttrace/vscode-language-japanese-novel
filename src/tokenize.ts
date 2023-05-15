@@ -136,7 +136,7 @@ export class DocumentSemanticTokensProvider
           for await (let mytoken of kuromojiToken) {
             let nextToken = [];
             mytoken = kuromojiToken[j];
-            if (j <= kuromojiToken.length - 1) {
+            if (j < kuromojiToken.length - 1) {
               nextToken = kuromojiToken[j + 1];
             }
 
@@ -215,9 +215,9 @@ export class DocumentSemanticTokensProvider
             if (
               kind == "noun" &&
               mytoken.pos_detail_1 == "サ変接続" &&
-              nextToken.conjugated_type.match(/^サ変/)
+              nextToken.length != 0
             ) {
-              kind = "verb";
+              kind = (nextToken.conjugated_type.match(/^サ変/))? "verb" : "noun";
             }
 
             let tokenModifireType = "";

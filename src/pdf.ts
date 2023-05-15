@@ -5,6 +5,7 @@ import { getConfig, NovelSettings } from "./config";
 import * as cp from "child_process";
 import exp = require("constants");
 import { draftRoot } from "./compile";
+import { parseGetRemotes } from "simple-git/dist/src/lib/responses/GetRemoteSummary";
 
 const output = vscode.window.createOutputChannel("Novel");
 let vivlioLaunching = false;
@@ -159,6 +160,12 @@ function getPrintContent() {
 
   const typesettingInformation = `${previewSettings.lineLength}字×${previewSettings.linesPerPage}行`;
 
+  const pageNumberFormatR = eval("`" + previewSettings.numberFormatR.replace(/\${pageNumber}/,"counter(page)").replace(/(.*)counter\(page\)(.*)/,"\"$1\"counter(page)\"$2\"") + ";`");
+  const pageNumberFormatL = eval("`" + previewSettings.numberFormatR.replace(/\${pageNumber}/,"counter(page)").replace(/(.*)counter\(page\)(.*)/,"\"$1\"counter(page)\"$2\"") + ";`");
+
+
+  console.log(pageNumberFormatR);
+
   return `<!DOCTYPE html>
   <html lang="ja">
   <head>
@@ -205,10 +212,11 @@ function getPrintContent() {
         margin-right: 6%;
         margin-left: 10%;
         @bottom-left {
-          content: counter(page) "  ${projectTitle} ${typesettingInformation}";
+          content: ${pageNumberFormatR}
           margin-left: 0mm;
-          margin-top: 50%;
+          margin-top: 5%;
           writing-mode: horizontal-tb;
+          font-size:10q;
           /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
       }
     }
@@ -219,10 +227,11 @@ function getPrintContent() {
         /* border-bottom: 1pt solid black; */
       /* 右下ノンブル */
       @bottom-right {
-          content: "${typesettingInformation} ${projectTitle}  "counter(page);
+          content: ${pageNumberFormatR}
           margin-right: 0mm;
-          margin-top: 50%;
+          margin-top: 5%;
           writing-mode: horizontal-tb;
+          font-size:10q;
           /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
       }
       }
