@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import simpleGit, { SimpleGit } from "simple-git";
-import { CharacterCounter, CharacterCounterController } from "./charactorcount";
+import { CharacterCounter } from "./charactorcount";
 
 //instruction: from https://github.com/steveukx/git-js#readme
 

@@ -1,8 +1,6 @@
 import * as vscode from "vscode";
 import { Position, Range } from "vscode";
 import { builder, IpadicFeatures, TokenizerBuilder, Tokenizer } from "kuromoji";
-import { prependListener } from "process";
-import config from "simple-git/dist/src/lib/tasks/config";
 import { getConfig } from "./config";
 
 const tokenTypes = new Map<string, number>();

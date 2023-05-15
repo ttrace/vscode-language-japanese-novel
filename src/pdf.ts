@@ -5,7 +5,6 @@ import { getConfig, NovelSettings } from "./config";
 import * as cp from "child_process";
 import exp = require("constants");
 import { draftRoot } from "./compile";
-import { parseGetRemotes } from "simple-git/dist/src/lib/responses/GetRemoteSummary";
 
 const output = vscode.window.createOutputChannel("Novel");
 let vivlioLaunching = false;

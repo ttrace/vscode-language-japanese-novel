@@ -2,7 +2,6 @@
 
 "use strict";
 import * as path from "path";
-import * as fs from "fs";
 import { draftsObject } from "./compile";
 import TreeModel from "tree-model";
 import os from "os";
@@ -15,6 +14,7 @@ import {
   TextDocument,
   workspace,
   Uri,
+  FileType,
 } from "vscode";
 
 import { totalLength, draftRoot } from "./compile";
@@ -172,11 +172,11 @@ export class CharacterCounter {
     this.updateCharacterCount();
   }
 
-  public _setCounterToFolder(
+  public async _setCounterToFolder(
     pathToFolder: string,
     targetCharacter: number
-  ): void {
-    if (!fs.existsSync(pathToFolder)) {
+  ): Promise<void> {
+    if (!((await workspace.fs.stat(Uri.file(pathToFolder))).type === FileType.Directory )) {
       this._countingFolder = "";
       this._countingTargetNum = 0;
       countingFolderPath = "";
