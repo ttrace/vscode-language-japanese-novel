@@ -116,7 +116,7 @@ contributed by [yasudaz](https://github.com/yasudaz)
 
 #### 版面指定
 
-1行の字数、1ページあたりの行数を指定できます。
+1行あたりの文字数、1ページあたりの行数を指定できます。
 
 #### 正規表現検索置換
 
@@ -134,11 +134,33 @@ npm install @vivliostyle/cli -g
 
 ![PDF出力](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/pdf-typesettings.png)
 
-PDFを保存するときは、Vivliostyleの印刷ダイアログでプリンターを「PDFに保存」に設定してください。
-
-![PDFを保存](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/print-dialogue.png)
+PDFを保存するときは、コマンドパレットから「Novel:PDF出力」を実行してください。
 
 * PDF出力にはワークスペースが必要です。フォルダを開いて利用してください。
+
+### PDF出力設定
+novel-writerのPDF出力は原稿のために開発していますが、簡単な冊子の本文作成にも利用できます。
+
+#### PDFページ番号フォーマット
+ページ下部のページ番号のフォーマットを指定できます。  
+初期値の```${projectTitle} ${typesettingInformation} ${pageNumber}```を用いると、
+
+作品名 22文字 x 13行 12
+
+とフッターに挿入されます。以下に例を示します。
+```
+page ${pageNumber}　→ page 12  
+- ${pageNumber}-　→ -12-
+${projectTitle} p${pageNumber}　→ 作品名 p12
+```
+
+
+#### PDF開始ページ番号
+PDFのページ番号の開始ページを指定できます。
+
+#### PDF開始ページの左右設定
+PDFの第一ページを左右どちらにするか設定できます。
+冊子の場合は「左」に、原稿提出の時は「右」にしておくといいでしょう。
 
 ## テキスト結合
 

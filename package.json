@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.7.7",
+  "version": "1.8.2",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -129,6 +129,22 @@
             "左"
           ],
           "description": "PDFがどちらのページから始まるか指定してください"
+        },
+        "Novel.preview.originPageNumber":{
+          "type": "number",
+          "default": 1,
+          "description": "ページ番号の開始番号を指定してください"
+        },
+        "Novel.preview.numberFormatR": {
+          "type": "string",
+          "default": "${projectTitle} ${typesettingInformation} ${pageNumber}"
+          
+        },
+        "Novel.preview.numberFormatL": {
+          "type": "string",
+          "default": "${pageNumber} ${projectTitle} ${typesettingInformation}",
+          "description": "左側ページのページ番号のフォーマットを指定してください",
+          "description": "ページ番号のフォーマットを指定してください\n利用できる変数は以下を参照してください\nページ数：${pageNumber}／組版情報：${typesettingInformation}／プロジェクト名：${projectTitle}　（フォルダーの名称）\np${pageNumber}と設定すると、p123のように表示されます"
         },
         "Novel.preview.animate": {
           "type": "boolean",
