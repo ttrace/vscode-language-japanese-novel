@@ -32,38 +32,30 @@ emptyPort(function (port: number) {
 function emptyPort(callback: any) {
   let port = 8080;
 
-  const socket = new net.Socket();
-  const server = new net.Server();
-
-  socket.on("error", function (e) {
-    console.log("try:", port);
-    server
-      .on("listening", () => {
-        server.close();
-        console.log("ok:", port);
-        callback(port);
-      })
-      .on("error", () => {
-        console.log("ng:", port);
-        loop();
-      })
-      .listen(port, "127.0.0.1");
-  });
-
-  function loop() {
-    port = port + 2;
-    if (port >= 20000) {
-      callback(new Error("empty port not found"));
-      return;
-    }
-
-    socket.connect(port, "127.0.0.1", function () {
-      socket.destroy();
-      loop();
+  function findEmptyPort() {
+    const server = net.createServer();
+    server.listen(port, "127.0.0.1");
+    server.on("listening", () => {
+      server.close();
+      callback(port);
+    });
+    server.on("error", (err) => {
+      if (err.name === "EADDRINUSE") {
+        port += 2;
+        if (port >= 20000) {
+          callback(new Error("empty port not found"));
+          return;
+        }
+        findEmptyPort();
+      } else {
+        callback(err);
+      }
     });
   }
-  loop();
+
+  findEmptyPort();
 }
+
 
 //コマンド登録
 export function activate(context: vscode.ExtensionContext): void {
