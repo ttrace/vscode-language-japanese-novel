@@ -199,8 +199,6 @@ p.blank {
 }
 
 body {
-  writing-mode: vertical-rl;
-  overflow-y: hidden;
   padding: 0;
 }
 
