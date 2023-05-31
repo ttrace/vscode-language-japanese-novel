@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 
 export type NovelSettings = {
+  writingDirection: string;
   lineHeightRate: number;
   fontFamily: string;
   fontSize: number;
@@ -24,6 +25,10 @@ export function getConfig(): NovelSettings {
 
   const lineHeightRate = 1.75;
   const fontFamily = config.get<string>("preview.fontFamily", "serif");
+  const writingDirection =
+    config.get<string>("preview.writingDirection", "縦") == "縦"
+      ? "vertical-rl"
+      : "horizontal-tb";
   const lineLength = config.get<number>("preview.lineLength", 40);
   const fontSize = 1 / lineLength; // フォントサイズは行長分の１
   const linesPerPage = config.get<number>("preview.linesPerPage", 10);
@@ -52,6 +57,7 @@ export function getConfig(): NovelSettings {
   );
 
   const novelSettings: NovelSettings = {
+    writingDirection,
     lineHeightRate,
     fontFamily,
     fontSize,

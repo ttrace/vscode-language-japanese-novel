@@ -1,14 +1,5 @@
 @charset "UTF-8";
 
-html {
-  /* 組み方向 */
-  -epub-writing-mode: vertical-rl;
-  -ms-writing-mode: tb-rl;
-  writing-mode: vertical-rl;
-  orphans: 1;
-  widows: 1;
-}
-
 * {
   margin: 0;
   padding: 0;
@@ -20,12 +11,12 @@ html {
   text-align: justify;
   hanging-punctuation: allow-end;
   text-spacing: none;
-  overflow-y: hidden;
+  overflow-inline: hidden;
 }
 
 #draft {
-  height: calc(100vh - 2rem);
-  margin-top: 1em;
+  inline-size: calc(100vh - 2rem);
+  margin-inline-start: 1em;
 }
 
 h1 {
@@ -69,7 +60,7 @@ h2 {
 }
 
 h2.part {
-  width: 80mm;
+  block-size: 80mm;
   padding: 0mm 35mm;
   font-weight: bold;
   font-size: 16Q;
@@ -95,7 +86,7 @@ p {
 }
 
 p.goth {
-  margin-top: 3em;
+  margin-inline-start: 3em;
   font-family: "游ゴシック", "YuGothic", san-serif;
   margin-block-start: 1em;
   margin-block-end: 1em;
@@ -131,12 +122,12 @@ p.star {
 hr {
   border: none;
   border-right: 1pt solid black;
-  height: 6em;
+  inline-size: 6em;
   margin: auto 8.5pt;
 }
 
 /* 縦中横 */
-.tcy {
+.tcy:dir(rtl) {
   -webkit-text-combine: horizontal;
   text-combine-upright: horizontal;
   -ms-text-combine-horizontal: all;
@@ -155,22 +146,22 @@ em.sesame_dot {
   position: absolute;
   bottom: 0;
   font-size: 8.5pt;
-  margin-top: 50pt;
+  margin-inline-start: 50pt;
   letter-spacing: normal;
 }
 
 /*画像＋キャプション*/
 figure {
   display: block;
-  width: 236pt;
+  block-size: 236pt;
   -ms-writing-mode: lr-tb;
   -webkit-writing-mode: horizontal-tb;
   writing-mode: horizontal-tb;
 }
 
 figure img {
-  width: 100%;
-  height: auto;
+  block-size: 100%;
+  inline-size: auto;
   vertical-align: bottom;
 }
 
@@ -188,10 +179,6 @@ figcaption {
 /* 級さげ */
 span.smaller {
   font-size: 6.5pt;
-}
-
-div.comment {
-  display: none;
 }
 
 p.blank {
@@ -294,10 +281,10 @@ div.comment {
   border: 1.5pt solid rgb(241, 189, 0);
   padding: 0 1em;
   position: absolute;
-  margin-right: -3em;
-  margin-top: 0.5em;
+  margin-block-start: -3em;
+  margin-inline-start: 0.5em;
   background-color: rgb(255, 123, 0);
-  width: 20em;
+  block-size: 20em;
   writing-mode: lr-tb;
   font-family: sans-serif;
   font-size: 0.5em;
@@ -310,17 +297,17 @@ div.comment::before {
   right: 1em;
   top: -15px;
   display: block;
-  width: 0;
-  height: 0;
-  border-right: 15px solid transparent;
-  border-bottom: 15px solid rgb(241, 189, 0);
-  border-left: 15px solid transparent;
+  block-size: 0;
+  inline-size: 0;
+  border-block-end: 15px solid transparent;
+  border-inline-end: 15px solid rgb(241, 189, 0);
+  border-block-start: 15px solid transparent;
 }
 
 .line-numbers {
   display: block;
   position: absolute;
-  top: 0px;
+  inset-inline-start: 0px;
 }
 
 .line-numbers span {

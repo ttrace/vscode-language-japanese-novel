@@ -106,6 +106,15 @@
     "configuration": {
       "title": "Novel-writer設定",
       "properties": {
+        "Novel.preview.writingDirection":{
+          "type":"string",
+          "default":"縦",
+          "enum":[
+            "縦",
+            "横"
+          ],
+          "description": "プレビューの行方向を指定できます"
+        },
         "Novel.preview.fontFamily": {
           "type": "string",
           "default": "serif",
