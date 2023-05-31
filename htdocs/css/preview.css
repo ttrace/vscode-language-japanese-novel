@@ -19,6 +19,10 @@ html {
   margin-inline-start: 1em;
 }
 
+.ltr #draft {
+  margin-inline-start: 2em;
+}
+
 h1 {
   /* フォント */
   font-weight: Extrabold;
@@ -197,7 +201,7 @@ body {
   display: inline-block;
 }
 
-#cursor.blank{
+#cursor.blank {
   margin-bottom: -1em;
   text-combine-upright: horizontal;
   -webkit-text-combine: horizontal;
@@ -237,15 +241,31 @@ body div#draft {
 
 .vscode-dark div#draft {
   background-image: linear-gradient(
-      to down,
-      rgba(70, 69, 69, 0.5) 0.5pt,
-      rgba(0, 0, 128, 0.05) 10em
-    ),
-    linear-gradient(to right, rgba(70, 69, 69, 0.5) 0.5pt, red);}
+    to down,
+    rgba(70, 69, 69, 0.5) 0.5pt,
+    rgba(0, 0, 128, 0.05) 10em
+  );
+}
 
 .vscode-light div#draft {
   background-image: linear-gradient(
     to down,
+    rgba(227, 227, 227, 0.5) 0.5pt,
+    rgba(255, 255, 255, 0.05) 10em
+  );
+}
+
+.vscode-dark.ltr div#draft {
+  background-image: linear-gradient(
+    to right,
+    rgba(70, 69, 69, 0.5) 0.5pt,
+    rgba(0, 0, 128, 0.05) 10em
+  );
+}
+
+.vscode-light.lrt div#draft {
+  background-image: linear-gradient(
+    to right,
     rgba(227, 227, 227, 0.5) 0.5pt,
     rgba(255, 255, 255, 0.05) 10em
   );
@@ -273,6 +293,30 @@ p {
 .vscode-dark p {
   background-image: linear-gradient(rgb(56, 56, 56) 0.5pt, transparent 1pt),
     linear-gradient(to right, rgb(56, 56, 56) 0.5pt, transparent 1pt);
+}
+
+.ltr p {
+  background-image: linear-gradient(
+      rgba(128, 128, 128, 1) 0.5pt,
+      transparent 1pt
+    ),
+    linear-gradient(
+      to down,
+      rgba(128, 128, 128, 1) 0.5pt,
+      rgba(0, 0, 50, 0.05) 1pt
+    );
+  background-repeat: repeat, repeat;
+  background-position: right 0px, right 0px;
+}
+
+.vscode-light.ltr p {
+  background-image: linear-gradient(rgb(214, 214, 214) 0.5pt, transparent 1pt),
+    linear-gradient(to down, rgb(217, 217, 217) 0.5pt, transparent 1pt);
+}
+
+.vscode-dark.ltr p {
+  background-image: linear-gradient(rgb(56, 56, 56) 0.5pt, transparent 1pt),
+    linear-gradient(to down, rgb(56, 56, 56) 0.5pt, transparent 1pt);
 }
 
 div.comment {
@@ -315,4 +359,9 @@ div.comment::before {
   font-size: 0.75em;
   text-combine-upright: all;
   font-family: serif;
+}
+
+.ltr .line-numbers span {
+  inline-size: 2em;
+  text-align: right;
 }
