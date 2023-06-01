@@ -41,7 +41,7 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
     const vivlioSubCommand = preview ? "preview" : "build";
     const execPath = draftRoot().match(/^[a-z]:\\/)
       ? myPath.path.replace(/^\//, "")
-      : myPath.path;
+      : myPath;
     const vivlioExportPath = !preview
       ? vscode.Uri.joinPath(myWorkingDirectory, `${fileName}.pdf`).fsPath
       : "";
@@ -53,7 +53,7 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
       "--no-sandbox",
       myPath.path,
       vivlioExportOption,
-      vivlioExportPath,
+      path.normalize(vivlioExportPath),
       // "-o",
       // vscode.Uri.joinPath(myWorkingDirectory, "output.pdf").fsPath,
     ];
