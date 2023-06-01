@@ -2,9 +2,9 @@
 
 Visual Studio Codeで小説を執筆するための機能拡張です。
 
-リアルタイム更新の縦書きプレビューで印刷時の組版に近い読み方を確かめつつ、会話と地の文、名詞や動詞、助詞などの品詞ハイライトを備えたエディターで執筆を行うことが可能です。句読点をぶら下げる縦書きプレビューでは1行当たりの文字数を指定できますので、13文字や15文字といった新聞のような短い段組の文字送りを確かめながら執筆できます。
+リアルタイム更新する原稿用紙プレビューで印刷時の組版に近い読み方を確かめつつ、会話と地の文、名詞や動詞、助詞などの品詞ハイライトを備えたエディターで執筆を行うことが可能です。句読点のぶら下げも行う原稿用紙プレビューは1行当たりの文字数を指定できますので、新聞原稿のように13文字や15文字といった短い行の文字送りを確かめながら執筆できます。
 
-CSS組版システムVivliostyleを用いることで、縦書きプレビューの字数行数を用いるのPDFも出力できます。
+CSS組版システムVivliostyleを用いることで、原稿用紙プレビューと同じ字数行数で組版されたPDFも出力できます。
 
 novel-writerは長編小説（ノベル）の執筆支援を行います。  
 単一のテキストファイルではなく、章や部を想定し、入れ子になったフォルダーに保存する複数のテキストファイルの文字数を表示したり、複数のテキストファイルを単一のファイルに結合したりする機能を備えています。  
@@ -90,10 +90,10 @@ novel-writerは、日本語の小説で使われる連体形文末辞（〜し�
 
 ![文末辞の切り替え](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/tense-aspect-change.gif)
 
-## 縦書きプレビュー
+## 原稿用紙プレビュー
 
-コマンドパレットの\[Novel:縦書きプレビュー\]で、現在使っているエディタのテキストを縦書きプレビューすることができます。  
-プレビューはlocalhost:8080に出力していますので、ブラウザーや同じLANの他コンピュターから閲覧することもできます。  
+コマンドパレットの\[Novel:縦書きプレビュー\]で、現在使っているエディタのテキストを、原稿用紙プレビューすることができます。原稿の表示方法は、縦書きと横書き、一行あたりの文字数を指定することができます。
+プレビュー画面はlocalhost:8080に出力していますので、ブラウザーや同じLANの他コンピュターから閲覧することもできます。  
 小さな画面で書く場合、またはVS Codeのウインドウを無駄に使いたくない場合には、\[Novel:プレビューサーバーを起動\]を実行して、別画面のブラウザーやブラウザーや他のコンピューター、スマートフォン、タブレットのブラウザーから縦書きプレビューを閲覧することもできます。
 
 縦書きプレビューでは、二桁のASCII数字を縦中横に組んで表示します。
@@ -108,11 +108,22 @@ Extension Settings で、文字サイズと一行あたりの文字数、ペー�
 正規表現による検索置換をカスタマイズすることで、オリジナルのタグを挿入することも可能です。
 
 ![プレビュー画像](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/preview-settings.png)
+![プレビュー画像](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/preview-settings.png)
+
+#### 組み方向の変更
+
+設定でプレビューの縦組と横組を選択できます。
+
+![組み方向の指定](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/writingdirection.png)
+
+![縦組み](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/vertical.png)
+![横組み](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/horizontal.png)
+
 
 #### プレビューフォントの設定
 プレビューフォントの設定が可能です。
 
-contributed by [yasudaz](https://github.com/yasudaz)
+Contributed by [yasudaz](https://github.com/yasudaz)](https://github.com/yasudaz)
 
 #### 版面指定
 
