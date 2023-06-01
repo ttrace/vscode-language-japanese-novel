@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.8.2",
+  "version": "1.9.0",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -106,6 +106,15 @@
     "configuration": {
       "title": "Novel-writer設定",
       "properties": {
+        "Novel.preview.writingDirection":{
+          "type":"string",
+          "default":"縦",
+          "enum":[
+            "縦",
+            "横"
+          ],
+          "description": "プレビューの行方向を指定できます"
+        },
         "Novel.preview.fontFamily": {
           "type": "string",
           "default": "serif",
@@ -143,7 +152,6 @@
         "Novel.preview.numberFormatL": {
           "type": "string",
           "default": "${pageNumber} ${projectTitle} ${typesettingInformation}",
-          "description": "左側ページのページ番号のフォーマットを指定してください",
           "description": "ページ番号のフォーマットを指定してください\n利用できる変数は以下を参照してください\nページ数：${pageNumber}／組版情報：${typesettingInformation}／プロジェクト名：${projectTitle}　（フォルダーの名称）\np${pageNumber}と設定すると、p123のように表示されます"
         },
         "Novel.preview.animate": {

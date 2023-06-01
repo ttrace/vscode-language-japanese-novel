@@ -1,14 +1,5 @@
 @charset "UTF-8";
 
-html {
-  /* 組み方向 */
-  -epub-writing-mode: vertical-rl;
-  -ms-writing-mode: tb-rl;
-  writing-mode: vertical-rl;
-  orphans: 1;
-  widows: 1;
-}
-
 * {
   margin: 0;
   padding: 0;
@@ -20,12 +11,16 @@ html {
   text-align: justify;
   hanging-punctuation: allow-end;
   text-spacing: none;
-  overflow-y: hidden;
+  overflow-inline: hidden;
 }
 
 #draft {
-  height: calc(100vh - 2rem);
-  margin-top: 1em;
+  inline-size: calc(100vh - 2rem);
+  margin-inline-start: 1em;
+}
+
+.ltr #draft {
+  margin-inline-start: 2em;
 }
 
 h1 {
@@ -69,7 +64,7 @@ h2 {
 }
 
 h2.part {
-  width: 80mm;
+  block-size: 80mm;
   padding: 0mm 35mm;
   font-weight: bold;
   font-size: 16Q;
@@ -95,7 +90,7 @@ p {
 }
 
 p.goth {
-  margin-top: 3em;
+  margin-inline-start: 3em;
   font-family: "游ゴシック", "YuGothic", san-serif;
   margin-block-start: 1em;
   margin-block-end: 1em;
@@ -131,12 +126,12 @@ p.star {
 hr {
   border: none;
   border-right: 1pt solid black;
-  height: 6em;
+  inline-size: 6em;
   margin: auto 8.5pt;
 }
 
 /* 縦中横 */
-.tcy {
+.tcy:dir(rtl) {
   -webkit-text-combine: horizontal;
   text-combine-upright: horizontal;
   -ms-text-combine-horizontal: all;
@@ -155,22 +150,22 @@ em.sesame_dot {
   position: absolute;
   bottom: 0;
   font-size: 8.5pt;
-  margin-top: 50pt;
+  margin-inline-start: 50pt;
   letter-spacing: normal;
 }
 
 /*画像＋キャプション*/
 figure {
   display: block;
-  width: 236pt;
+  block-size: 236pt;
   -ms-writing-mode: lr-tb;
   -webkit-writing-mode: horizontal-tb;
   writing-mode: horizontal-tb;
 }
 
 figure img {
-  width: 100%;
-  height: auto;
+  block-size: 100%;
+  inline-size: auto;
   vertical-align: bottom;
 }
 
@@ -190,17 +185,11 @@ span.smaller {
   font-size: 6.5pt;
 }
 
-div.comment {
-  display: none;
-}
-
 p.blank {
   color: transparent;
 }
 
 body {
-  writing-mode: vertical-rl;
-  overflow-y: hidden;
   padding: 0;
 }
 
@@ -212,7 +201,7 @@ body {
   display: inline-block;
 }
 
-#cursor.blank{
+#cursor.blank {
   margin-bottom: -1em;
   text-combine-upright: horizontal;
   -webkit-text-combine: horizontal;
@@ -252,15 +241,31 @@ body div#draft {
 
 .vscode-dark div#draft {
   background-image: linear-gradient(
-      to down,
-      rgba(70, 69, 69, 0.5) 0.5pt,
-      rgba(0, 0, 128, 0.05) 10em
-    ),
-    linear-gradient(to right, rgba(70, 69, 69, 0.5) 0.5pt, red);}
+    to down,
+    rgba(70, 69, 69, 0.5) 0.5pt,
+    rgba(0, 0, 128, 0.05) 10em
+  );
+}
 
 .vscode-light div#draft {
   background-image: linear-gradient(
     to down,
+    rgba(227, 227, 227, 0.5) 0.5pt,
+    rgba(255, 255, 255, 0.05) 10em
+  );
+}
+
+.vscode-dark.ltr div#draft {
+  background-image: linear-gradient(
+    to right,
+    rgba(70, 69, 69, 0.5) 0.5pt,
+    rgba(0, 0, 128, 0.05) 10em
+  );
+}
+
+.vscode-light.lrt div#draft {
+  background-image: linear-gradient(
+    to right,
     rgba(227, 227, 227, 0.5) 0.5pt,
     rgba(255, 255, 255, 0.05) 10em
   );
@@ -290,16 +295,40 @@ p {
     linear-gradient(to right, rgb(56, 56, 56) 0.5pt, transparent 1pt);
 }
 
+.ltr p {
+  background-image: linear-gradient(
+      rgba(128, 128, 128, 1) 0.5pt,
+      transparent 1pt
+    ),
+    linear-gradient(
+      to down,
+      rgba(128, 128, 128, 1) 0.5pt,
+      rgba(0, 0, 50, 0.05) 1pt
+    );
+  background-repeat: repeat, repeat;
+  background-position: right 0px, right 0px;
+}
+
+.vscode-light.ltr p {
+  background-image: linear-gradient(rgb(214, 214, 214) 0.5pt, transparent 1pt),
+    linear-gradient(to down, rgb(217, 217, 217) 0.5pt, transparent 1pt);
+}
+
+.vscode-dark.ltr p {
+  background-image: linear-gradient(rgb(56, 56, 56) 0.5pt, transparent 1pt),
+    linear-gradient(to down, rgb(56, 56, 56) 0.5pt, transparent 1pt);
+}
+
 div.comment {
   display: block;
   border-radius: 1em;
   border: 1.5pt solid rgb(241, 189, 0);
   padding: 0 1em;
   position: absolute;
-  margin-right: -3em;
-  margin-top: 0.5em;
+  margin-block-start: -3em;
+  margin-inline-start: 0.5em;
   background-color: rgb(255, 123, 0);
-  width: 20em;
+  block-size: 20em;
   writing-mode: lr-tb;
   font-family: sans-serif;
   font-size: 0.5em;
@@ -312,17 +341,17 @@ div.comment::before {
   right: 1em;
   top: -15px;
   display: block;
-  width: 0;
-  height: 0;
-  border-right: 15px solid transparent;
-  border-bottom: 15px solid rgb(241, 189, 0);
-  border-left: 15px solid transparent;
+  block-size: 0;
+  inline-size: 0;
+  border-block-end: 15px solid transparent;
+  border-inline-end: 15px solid rgb(241, 189, 0);
+  border-block-start: 15px solid transparent;
 }
 
 .line-numbers {
   display: block;
   position: absolute;
-  top: 0px;
+  inset-inline-start: 0px;
 }
 
 .line-numbers span {
@@ -330,4 +359,9 @@ div.comment::before {
   font-size: 0.75em;
   text-combine-upright: all;
   font-family: serif;
+}
+
+.ltr .line-numbers span {
+  inline-size: 2em;
+  text-align: right;
 }

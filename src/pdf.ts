@@ -121,13 +121,14 @@ function getPrintContent() {
     "$1"
   );
   const previewSettings: NovelSettings = getConfig();
-  const printBoxHeight = 168; // ドキュメント高さの80%(上下マージン10%を抜いた数)
-  const printBoxWidth = 124.32; // ドキュメント幅の84%(左右マージン16%を抜いた数)
+  const writingDirection = previewSettings.writingDirection;
+  const printBoxInlineLength = (writingDirection === 'vertical-rl')? 168: 124.32; // ドキュメント高さの80%(上下マージン10%を抜いた数)
+  const printBoxBlockSize = (writingDirection === 'vertical-rl')? 124.32: 168; // ドキュメント幅の84%(左右マージン16%を抜いた数)
   const fontSize =
     previewSettings.lineLength >
-    previewSettings.linesPerPage * 1.75 * (printBoxHeight / printBoxWidth)
-      ? printBoxHeight / previewSettings.lineLength
-      : printBoxWidth / (previewSettings.linesPerPage * 1.75);
+    previewSettings.linesPerPage * 1.75 * (printBoxInlineLength / printBoxBlockSize)
+      ? printBoxInlineLength / previewSettings.lineLength
+      : printBoxBlockSize / (previewSettings.linesPerPage * 1.75);
   // フォントサイズ in mm
   const fontSizeWithUnit = fontSize + "mm";
   const lineHeightWithUnit = fontSize * 1.75 + "mm";
@@ -137,7 +138,7 @@ function getPrintContent() {
   const typeSettingWidth = fontSize * 1.75 * previewSettings.linesPerPage;
   const typeSettingWidthUnit = typeSettingWidth + "mm";
   const columnCount = Math.floor(
-    printBoxHeight / (typeSettingHeight + fontSize * 2)
+    printBoxInlineLength / (typeSettingHeight + fontSize * 2)
   );
   const pageStartingCss =
     previewSettings.pageStarting == "左"
@@ -145,7 +146,7 @@ function getPrintContent() {
       : "break-before: right;\n";
   console.log(
     "column",
-    `${printBoxHeight} / (${typeSettingHeight} + ${fontSize} * 2)`
+    `${printBoxInlineLength} / (${typeSettingHeight} + ${fontSize} * 2)`
   );
   const originPageNumber = previewSettings.originPageNumber;
 
@@ -160,9 +161,20 @@ function getPrintContent() {
 
   const typesettingInformation = `${previewSettings.lineLength}字×${previewSettings.linesPerPage}行`;
 
-  const pageNumberFormatR = eval("`" + previewSettings.numberFormatR.replace(/\${pageNumber}/,"counter(page)").replace(/(.*)counter\(page\)(.*)/,"\"$1\"counter(page)\"$2\"") + ";`");
-  const pageNumberFormatL = eval("`" + previewSettings.numberFormatR.replace(/\${pageNumber}/,"counter(page)").replace(/(.*)counter\(page\)(.*)/,"\"$1\"counter(page)\"$2\"") + ";`");
-
+  const pageNumberFormatR = eval(
+    "`" +
+      previewSettings.numberFormatR
+        .replace(/\${pageNumber}/, "counter(page)")
+        .replace(/(.*)counter\(page\)(.*)/, '"$1"counter(page)"$2"') +
+      ";`"
+  );
+  const pageNumberFormatL = eval(
+    "`" +
+      previewSettings.numberFormatR
+        .replace(/\${pageNumber}/, "counter(page)")
+        .replace(/(.*)counter\(page\)(.*)/, '"$1"counter(page)"$2"') +
+      ";`"
+  );
 
   console.log(pageNumberFormatR);
 
@@ -176,15 +188,14 @@ function getPrintContent() {
       <style>
       @charset "UTF-8";
       html {
-      /* 組み方向 */
-      -epub-writing-mode: vertical-rl;
-      -ms-writing-mode: tb-rl;
-      writing-mode: vertical-rl;
-  
       orphans: 1;
       widows: 1;
       }
-  
+
+      body{
+        writing-mode: ${previewSettings.writingDirection};
+      }
+
       * {
       margin: 0;
       padding: 0;
@@ -192,7 +203,9 @@ function getPrintContent() {
 
       @page {
         size: 148mm 210mm;
-        width: calc(${fontSizeWithUnit} * 1.75 * ${previewSettings.linesPerPage} + (${fontSizeWithUnit} * 0.4));
+        block-size: calc(${fontSizeWithUnit} * 1.75 * ${
+    previewSettings.linesPerPage
+  } + (${fontSizeWithUnit} * 0.4));
         margin-top: 10%;
         margin-bottom: 10%;
         margin-left: 8%;
@@ -214,7 +227,7 @@ function getPrintContent() {
         @bottom-left {
           content: ${pageNumberFormatR}
           margin-left: 0mm;
-          margin-top: 5%;
+          margin-bottom: 5%;
           writing-mode: horizontal-tb;
           font-size:10q;
           /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
@@ -229,7 +242,7 @@ function getPrintContent() {
       @bottom-right {
           content: ${pageNumberFormatR}
           margin-right: 0mm;
-          margin-top: 5%;
+          margin-bottom: 5%;
           writing-mode: horizontal-tb;
           font-size:10q;
           /* CSS仕様上は@pageルール内に書けばよいが、現時点のvivliostyle.jsの制限によりここに書く */
@@ -250,7 +263,9 @@ function getPrintContent() {
       }
   
       div#draft{
-
+        inline-size: ${columnHeitghtRate};
+        margin-inline-start: auto;
+        margin-inline-end: auto;
       }
 
       h1 {
@@ -284,17 +299,17 @@ function getPrintContent() {
       }
   
       h2.part {
-      width: 80mm;
+      block-size: 80mm;
       padding: 0mm 35mm;
       font-weight: bold;
       font-size: 16q;
       page-break-before: always;
       page-break-after: always;
-      margin-left: 4em;
+      margin-block-end: 4em;
       }
   
       h1 + h2 {
-      margin-right: 16pt;
+      margin-block-start: 16pt;
       }
   
       ruby > rt {
@@ -304,7 +319,7 @@ function getPrintContent() {
       p {
         font-size: ${fontSizeWithUnit};
         line-height: 1.75;
-        height: ${columnHeitghtRate};
+        inline-size: ${columnHeitghtRate};
         text-indent: 0em;
         hanging-punctuation: allow-end;
         line-break:strict;
@@ -312,38 +327,42 @@ function getPrintContent() {
       }
 
     div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
-      padding-block-start: calc( ${fontSizeWithUnit} * ${previewSettings.lineHeightRate});
+      padding-block-start: calc( ${fontSizeWithUnit} * ${
+    previewSettings.lineHeightRate
+  });
       }
 
       div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
-      padding-block-end: calc( ${fontSizeWithUnit} * ${previewSettings.lineHeightRate});
+      padding-block-end: calc( ${fontSizeWithUnit} * ${
+    previewSettings.lineHeightRate
+  });
       }
 
     
     div.indent-1 p{
     height: calc( ${columnHeitghtRate} - ${fontSizeWithUnit});
-    padding-top: calc( ${fontSizeWithUnit});
+    padding-inline-start: calc( ${fontSizeWithUnit});
     }
 
     div.indent-2 p{
     height: calc( ${columnHeitghtRate} - (${fontSizeWithUnit} * 2));
-    padding-top: calc(${fontSizeWithUnit} * 2);
+    padding-inline-start: calc(${fontSizeWithUnit} * 2);
     }
 
     div.indent-3 p{
     height: calc( ${columnHeitghtRate} - (${fontSizeWithUnit} * 3));
-    padding-top: calc(${fontSizeWithUnit} * 3);
+    padding-inline-start: calc(${fontSizeWithUnit} * 3);
     }
 
     p.goth {
-    margin-top: 3em;
+    margin-inline-start: 3em;
     font-family: "游ゴシック", "YuGothic", san-serif;
     margin-block-start: 1em;
     margin-block-end: 1em;
     }
 
     p.align-rb {
-    text-align: right;
+    text-align: end;
     }
 
     p.goth + p.goth {
@@ -377,7 +396,7 @@ function getPrintContent() {
     }
 
     /* 縦中横 */
-    .tcy {
+    .tcy:dir(rtl) {
     -webkit-text-combine: horizontal;
     text-combine: horizontal;
     -ms-text-combine-horizontal: all;
@@ -390,7 +409,7 @@ function getPrintContent() {
     font-style: normal;
     -webkit-text-emphasis-style: sesame;
     text-emphasis-style: sesame;
-    margin-right: -1em;
+    margin-block-start: -1em;
     display: inline-block;
     }
 
@@ -399,7 +418,7 @@ function getPrintContent() {
     position: absolute;
     bottom: 0;
     font-size: 8.5pt;
-    margin-top: 50pt;
+    margin-inline-start: 50pt;
     letter-spacing: normal;
     }
 
@@ -419,7 +438,7 @@ function getPrintContent() {
     }
 
     figcaption {
-    text-align: left;
+    text-align: start;
     font-size: 7pt;
     }
 

@@ -24,27 +24,48 @@
 
       // オブザーバーの作成
       const observer = new MutationObserver((records) => {
-        const scrollPrevious = $("#draft p").scrollLeft();
-        var width = $("#draft")[0].clientWidth;
+        const writingMode = previewsettings.writingDirection;
+        const scrollPrevious =
+          writingMode === "vertical-rl"
+            ? $("#draft p").scrollLeft()
+            : $("#draft p").scrollTop();
+        const blockSize =
+          writingMode === "vertical-rl"
+            ? $("#draft")[0].clientWidth
+            : $("#draft")[0].clientHeight;
         const cursor = document.getElementById("cursor");
-        const panelWidth = window.innerWidth;
-        const scrollEnd = cursor.offsetLeft - width + panelWidth / 2;
+        const windowBlockSize =
+          writingMode === "vertical-rl"
+            ? window.innerWidth
+            : window.innerHeight;
+        const scrollEnd =
+          writingMode === "vertical-rl"
+            ? cursor.offsetLeft - blockSize + windowBlockSize / 2
+            : cursor.offsetTop - (windowBlockSize / 2);
         lineNumber();
         const lineHeight = getComputedStyle($("#draft p")[0]).getPropertyValue(
           "line-height"
         );
-        console.log(scrollPrevious, scrollEnd, lineHeight);
+        console.log("スクロール",cursor.offsetTop,scrollPrevious, scrollEnd);
         if (
           Math.abs(scrollPrevious - scrollEnd) * 2 > parseInt(lineHeight) &&
           !scrolling
         ) {
           scrolling = true;
           if (previewsettings.previewAnimate) {
-            $("html,body").animate({ scrollLeft: scrollEnd }, 250, function () {
-              scrolling = false;
-              // 描画終了
-              sock.send("redrawFinished");
-            });
+            if(writingMode === "vertical-rl"){
+              $("html,body").animate({ scrollLeft: scrollEnd }, 250, function () {
+                scrolling = false;
+                // 描画終了
+                sock.send("redrawFinished");
+              });
+            } else {
+              $("html,body").animate({ scrollTop: scrollEnd }, 250, function () {
+                scrolling = false;
+                // 描画終了
+                sock.send("redrawFinished");
+              });
+            }
           } else {
             window.scrollTo(scrollEnd, scrollEnd);
             scrolling = false;
@@ -77,7 +98,7 @@
           $(paragraph).prepend('<div class="line-numbers"></div>');
           const lineNumberBlock = $(paragraph).find(".line-numbers");
           const paragraphWidth =
-            getComputedStyle(paragraph).getPropertyValue("width");
+            getComputedStyle(paragraph).getPropertyValue("block-size");
           const numbersOfLines = Math.round(
             parseInt(paragraphWidth) / parseInt(computedLineHeight)
           );
@@ -180,11 +201,23 @@
           styleSheet.deleteRule(0);
         }
 
+        if (previewsettings.writingDirection == "horizontal-tb") {
+          $("body").addClass("ltr");
+          $("body").removeClass("rtl");
+        } else {
+          $("body").addClass("rtl");
+          $("body").removeClass("ltr");
+        }
+
         styleSheet.insertRule(`@media screen{
-                                  div#draft{
+                                  .rtl div#draft{
                                           font-family:   ${previewsettings.fontFamily};
                                           font-size: calc((100vh - 15px) / (${previewsettings.lineLength} + 2));
-                                          `);
+                                  }
+                                  .ltr div#draft{
+                                          font-family:   ${previewsettings.fontFamily};
+                                          font-size: calc((100vw - 15px) / (${previewsettings.lineLength} + 2));
+                                  }}`);
 
         const computedFontSize = getComputedStyle(
           document.documentElement.getElementsByTagName("p")[0]
@@ -198,44 +231,60 @@
         const clientPageWidth = clientLineHeight * previewsettings.linesPerPage;
 
         styleSheet.deleteRule(0);
-
+        styleSheet.insertRule(`@media screen{
+            body{
+              writing-mode: ${previewsettings.writingDirection};
+            }
+        }`);
         styleSheet.insertRule(`@media screen{
                                   div#draft{
-                                          font-family:   ${previewsettings.fontFamily};
+                                          font-family:    ${previewsettings.fontFamily};
                                           font-size:      ${pixelFontSize}px;
-                                          height:        ${clientPageHeight}px;
+                                          inline-size:        ${clientPageHeight}px;
                                           background-image: linear-gradient(
                                               225deg,
                                               rgba(70, 69, 69, 0.0) calc( ${clientPageWidth}px - 2em),
                                               rgba(70, 69, 69, 0.3)
                                           );
-                                          background-size:    ${clientPageWidth}px ${clientPageHeight}px;}}`);
+                                          background-size:    ${clientPageWidth}px ${clientPageHeight}px;}
+                                          
+                                  .ltr div#draft{
+                                          background-image: linear-gradient(
+                                              135deg,
+                                              rgba(70, 69, 69, 0.0) calc( ${clientPageWidth}px - 2em),
+                                              rgba(70, 69, 69, 0.3)
+                                          );
+                                          background-size:    ${clientPageWidth}px ${clientPageHeight}px;}}
+                                          `);
 
         styleSheet.insertRule(`@media screen{
-                                  p{  height:         ${clientPageHeight}px;
+                                  p{  inline-size:    ${clientPageHeight}px;
                                       font-family:    ${previewsettings.fontFamily};
                                       font-size:      ${pixelFontSize}px;
                                       line-height:    ${clientLineHeight}px;
                                       line-height-step:    ${clientLineHeight}px;
                                       background-size:    ${clientLineHeight}px ${pixelFontSize}px,
-                                                          ${clientLineHeight}px ${pixelFontSize}px}}`);
+                                                          ${clientLineHeight}px ${pixelFontSize}px}
+                                  .ltr p{
+                                    background-size:    ${pixelFontSize}px ${clientLineHeight}px,
+                                                          ${pixelFontSize}px ${clientLineHeight}px}}`);
         styleSheet.insertRule(`@media screen{
                                   div.comment{
-                                      top: calc( ${clientPageHeight}px + 1.5em);
+                                      start: calc( ${clientPageHeight}px + 1.5em);
                                   }
                               }`);
 
         styleSheet.insertRule(`@media screen{
                                   div.indent-1 p{
-                                  padding-top: ${previewsettings.fontSize};
+                                  padding-inline-start: ${previewsettings.fontSize};
                                   }
 
                                   div.indent-2 p{
-                                  padding-top:calc(${pixelFontSize}px * 2);
+                                  padding-inline-start:calc(${pixelFontSize}px * 2);
                                   }
 
                                   div.indent-3 p{
-                                  padding-top: calc(${pixelFontSize}px * 3);
+                                  padding-inline-start: calc(${pixelFontSize}px * 3);
                                   }
                               }`);
 
