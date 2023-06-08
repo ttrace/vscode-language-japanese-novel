@@ -14,8 +14,8 @@ import {
   StatusBarItem,
   TextDocument,
   workspace,
-  Uri,
 } from "vscode";
+import * as vscode from "vscode";
 
 import { totalLength, draftRoot } from "./compile";
 import simpleGit, { SimpleGit } from "simple-git";
@@ -47,9 +47,22 @@ export class CharacterCounter {
     label: "",
     amountLengthNum: 0,
   };
+  public totalCountPrevious = totalLength(draftRoot());
+  public writingDate = new Date();
+  public deadlineCountPrevious = 0;
+  public totalCountPreviousDate = new Date();
+  public deadlineCountPreviousDate = 0;
+  public totalWritingProgress = 0;
+  public deadlineWritingProgress = 0;
+  private workspaceState: vscode.Memento;
 
   private _isEditorChildOfTargetFolder = false;
   timeoutID: unknown;
+
+  constructor(private readonly context: vscode.ExtensionContext) {
+    this.workspaceState= context.workspaceState;
+  }
+  
 
   public updateCharacterCount(): void {
     if (!this._statusBarItem) {
@@ -96,13 +109,6 @@ export class CharacterCounter {
           : this._lengthByPath(docPath);
     }
 
-    // console.log(
-    //   draftRoot(),
-    //   docPath,
-    //   savedCharacterCountNum,
-    //   characterCountNum
-    // );
-
     const totalCharacterCountNum =
       projectCharacterCountNum - savedCharacterCountNum + characterCountNum;
     const totalCharacterCount = Intl.NumberFormat().format(
@@ -112,7 +118,11 @@ export class CharacterCounter {
     let editDistance = "";
     let writingProgressString = "";
     if (this.ifEditDistance) {
-      const progressIndex = this.writingProgress > 0 ? "+" : "";
+      // 増減分のプラス記号、±記号を定義
+      let progressIndex = this.writingProgress > 0 ? "+" : "";
+      progressIndex = this.writingProgress == 0 ? "±" : progressIndex;
+
+      // 増減分のテキストを定義
       writingProgressString =
         "(" +
         progressIndex +
@@ -132,6 +142,33 @@ export class CharacterCounter {
       }
     }
 
+    // 執筆日またぎ処理
+    const launchDay = new Date(this.writingDate).getDate();
+    const today = new Date().getDate();
+    if (launchDay != today) {
+      console.log("日跨ぎ発生！");
+      this.workspaceState.update("totalCountPrevious", totalCharacterCountNum);
+      this.workspaceState.update("totalCountPreviousDate", this.writingDate);
+
+      this.totalCountPreviousDate = this.writingDate;
+      this.totalCountPrevious = totalCharacterCountNum;
+    }
+
+    // 総量：増減分のプラス記号、±記号を定義
+    let totalWritingProgressString = "";
+    this.totalWritingProgress =
+      totalCharacterCountNum - this.totalCountPrevious;
+    let progressTotalIndex = this.totalWritingProgress > 0 ? "+" : "";
+    progressTotalIndex =
+      this.totalWritingProgress == 0 ? "±" : progressTotalIndex;
+
+    // 増減分のテキストを定義
+    totalWritingProgressString =
+      "(" +
+      progressTotalIndex +
+      Intl.NumberFormat().format(this.totalWritingProgress) +
+      ")";
+
     if (this._countingFolder != "") {
       //締め切りフォルダーが設定されている時_countingTargetNum
       let targetNumberTextNum = this._folderCount.amountLengthNum;
@@ -144,9 +181,9 @@ export class CharacterCounter {
       if (this._countingTargetNum != 0) {
         targetNumberText += "/" + countingTarget;
       }
-      this._statusBarItem.text = ` ${totalCharacterCount}文字  $(folder-opened) ${this._folderCount.label} ${targetNumberText}文字  $(note) ${characterCount}${writingProgressString} 文字 ${editDistance}`;
+      this._statusBarItem.text = ` ${totalCharacterCount}${totalWritingProgressString}文字  $(folder-opened) ${this._folderCount.label} ${targetNumberText}文字  $(note) ${characterCount}${writingProgressString} 文字 ${editDistance}`;
     } else {
-      this._statusBarItem.text = `$(book) ${totalCharacterCount}文字／$(note) ${characterCount} ${writingProgressString}文字${editDistance}`;
+      this._statusBarItem.text = `$(book) ${totalCharacterCount}${totalWritingProgressString}文字／$(note) ${characterCount} ${writingProgressString}文字${editDistance}`;
     }
     this._statusBarItem.show();
   }
@@ -204,7 +241,6 @@ export class CharacterCounter {
     }
     const tree = new TreeModel();
     const draftTree = tree.parse({ dir: draftRoot(), name: "root", length: 0 });
-    //console.log('rootだけ',draftsObject(draftRoot()));
 
     draftsObject(draftRoot()).forEach((element) => {
       const draftNode = tree.parse(element);

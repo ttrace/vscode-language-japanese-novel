@@ -6,7 +6,7 @@
     "type": "git",
     "url": "git+https://github.com/ttrace/vscode-language-japanese-novel.git"
   },
-  "icon": "resource/icon.png",
+  "icon": "https://github.com/ttrace/vscode-language-japanese-novel/blob/b403fa24555aed5004841c44b8f02c917a546083/resource/icon.png",
   "engines": {
     "vscode": "^1.78.0"
   },
