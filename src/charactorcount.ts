@@ -54,13 +54,15 @@ export class CharacterCounter {
   public deadlineCountPreviousDate = 0;
   public totalWritingProgress = 0;
   public deadlineWritingProgress = 0;
-  private workspaceState: vscode.Memento;
+  private workspaceState: vscode.Memento | undefined;
 
   private _isEditorChildOfTargetFolder = false;
   timeoutID: unknown;
 
-  constructor(private readonly context: vscode.ExtensionContext) {
-    this.workspaceState= context.workspaceState;
+  constructor(private readonly context?: vscode.ExtensionContext) {
+    if(context){
+      this.workspaceState= context.workspaceState;
+    }
   }
   
 
@@ -146,10 +148,10 @@ export class CharacterCounter {
     const launchDay = new Date(this.writingDate).getDate();
     const today = new Date().getDate();
     if (launchDay != today) {
-      console.log("日跨ぎ発生！");
-      this.workspaceState.update("totalCountPrevious", totalCharacterCountNum);
-      this.workspaceState.update("totalCountPreviousDate", this.writingDate);
-
+      console.log("日跨ぎ発生！", launchDay, today);
+      this.workspaceState?.update("totalCountPrevious", totalCharacterCountNum);
+      this.workspaceState?.update("totalCountPreviousDate", new Date());
+      this.writingDate = new Date();
       this.totalCountPreviousDate = this.writingDate;
       this.totalCountPrevious = totalCharacterCountNum;
     }
