@@ -62,6 +62,8 @@ export class CharacterCounter {
   constructor(private readonly context?: vscode.ExtensionContext) {
     if(context){
       this.workspaceState= context.workspaceState;
+      this.totalCountPrevious = totalLength(draftRoot());
+      console.log("文字数カウンター初期化",totalLength(draftRoot()));
     }
   }
   

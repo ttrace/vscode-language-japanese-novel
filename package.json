@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.9.3",
+  "version": "1.9.4",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -16,7 +16,7 @@
     "fastest-levenshtein": "^1.0.16",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
-    "kuromoji": "git+https://github.com/ttrace/kuromoji.js.git",
+    "kuromoji": "github:ttrace/kuromoji.js",
     "simple-git": "^3.18.0",
     "tree-model": "^1.0.7",
     "ws": "^8.13.0"
@@ -106,10 +106,10 @@
     "configuration": {
       "title": "Novel-writer設定",
       "properties": {
-        "Novel.preview.writingDirection":{
-          "type":"string",
-          "default":"縦",
-          "enum":[
+        "Novel.preview.writingDirection": {
+          "type": "string",
+          "default": "縦",
+          "enum": [
             "縦",
             "横"
           ],
@@ -139,7 +139,7 @@
           ],
           "description": "PDFがどちらのページから始まるか指定してください"
         },
-        "Novel.preview.originPageNumber":{
+        "Novel.preview.originPageNumber": {
           "type": "number",
           "default": 1,
           "description": "ページ番号の開始番号を指定してください"
@@ -147,7 +147,6 @@
         "Novel.preview.numberFormatR": {
           "type": "string",
           "default": "${projectTitle} ${typesettingInformation} ${pageNumber}"
-          
         },
         "Novel.preview.numberFormatL": {
           "type": "string",
