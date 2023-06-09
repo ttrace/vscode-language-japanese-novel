@@ -119,7 +119,7 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(controller);
   context.subscriptions.push(characterCounter);
 
-  const ifTest = true;
+  const ifTest = false;
   //テスト用
   if (ifTest) {
     context.workspaceState.update("totalCountPrevious", undefined);
