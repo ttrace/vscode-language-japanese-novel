@@ -14,8 +14,8 @@ import {
   StatusBarItem,
   TextDocument,
   workspace,
-  Uri,
 } from "vscode";
+import * as vscode from "vscode";
 
 import { totalLength, draftRoot } from "./compile";
 import simpleGit, { SimpleGit } from "simple-git";
@@ -47,9 +47,26 @@ export class CharacterCounter {
     label: "",
     amountLengthNum: 0,
   };
+  public totalCountPrevious = totalLength(draftRoot());
+  public writingDate = new Date();
+  public deadlineCountPrevious = 0;
+  public totalCountPreviousDate = new Date();
+  public deadlineCountPreviousDate = 0;
+  public totalWritingProgress = 0;
+  public deadlineWritingProgress = 0;
+  private workspaceState: vscode.Memento | undefined;
 
   private _isEditorChildOfTargetFolder = false;
   timeoutID: unknown;
+
+  constructor(private readonly context?: vscode.ExtensionContext) {
+    if(context){
+      this.workspaceState= context.workspaceState;
+      this.totalCountPrevious = totalLength(draftRoot());
+      console.log("文字数カウンター初期化",totalLength(draftRoot()));
+    }
+  }
+  
 
   public updateCharacterCount(): void {
     if (!this._statusBarItem) {
@@ -87,22 +104,14 @@ export class CharacterCounter {
       )} 文字`;
     } else if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
       // 相対パスが'.'で始まっていない場合、subPathはbasePathに含まれる
-      
-      savedCharacterCountNum = characterCountNum;
 
+      savedCharacterCountNum = characterCountNum;
     } else {
       savedCharacterCountNum =
         os.platform() === "darwin"
           ? this._lengthByPath(docPath.normalize("NFD"))
           : this._lengthByPath(docPath);
     }
-
-    // console.log(
-    //   draftRoot(),
-    //   docPath,
-    //   savedCharacterCountNum,
-    //   characterCountNum
-    // );
 
     const totalCharacterCountNum =
       projectCharacterCountNum - savedCharacterCountNum + characterCountNum;
@@ -111,7 +120,18 @@ export class CharacterCounter {
     );
 
     let editDistance = "";
+    let writingProgressString = "";
     if (this.ifEditDistance) {
+      // 増減分のプラス記号、±記号を定義
+      let progressIndex = this.writingProgress > 0 ? "+" : "";
+      progressIndex = this.writingProgress == 0 ? "±" : progressIndex;
+
+      // 増減分のテキストを定義
+      writingProgressString =
+        "(" +
+        progressIndex +
+        Intl.NumberFormat().format(this.writingProgress) +
+        ")";
       if (this.editDistance == -1) {
         editDistance = `／$(compare-changes)$(sync)文字`;
         this._updateEditDistanceDelay();
@@ -126,6 +146,33 @@ export class CharacterCounter {
       }
     }
 
+    // 執筆日またぎ処理
+    const launchDay = new Date(this.writingDate).getDate();
+    const today = new Date().getDate();
+    if (launchDay != today) {
+      console.log("日跨ぎ発生！", launchDay, today);
+      this.workspaceState?.update("totalCountPrevious", totalCharacterCountNum);
+      this.workspaceState?.update("totalCountPreviousDate", new Date());
+      this.writingDate = new Date();
+      this.totalCountPreviousDate = this.writingDate;
+      this.totalCountPrevious = totalCharacterCountNum;
+    }
+
+    // 総量：増減分のプラス記号、±記号を定義
+    let totalWritingProgressString = "";
+    this.totalWritingProgress =
+      totalCharacterCountNum - this.totalCountPrevious;
+    let progressTotalIndex = this.totalWritingProgress > 0 ? "+" : "";
+    progressTotalIndex =
+      this.totalWritingProgress == 0 ? "±" : progressTotalIndex;
+
+    // 増減分のテキストを定義
+    totalWritingProgressString =
+      "(" +
+      progressTotalIndex +
+      Intl.NumberFormat().format(this.totalWritingProgress) +
+      ")";
+
     if (this._countingFolder != "") {
       //締め切りフォルダーが設定されている時_countingTargetNum
       let targetNumberTextNum = this._folderCount.amountLengthNum;
@@ -138,9 +185,9 @@ export class CharacterCounter {
       if (this._countingTargetNum != 0) {
         targetNumberText += "/" + countingTarget;
       }
-      this._statusBarItem.text = ` ${totalCharacterCount}文字  $(folder-opened) ${this._folderCount.label} ${targetNumberText}文字  $(note) ${characterCount} 文字${editDistance}`;
+      this._statusBarItem.text = ` ${totalCharacterCount}${totalWritingProgressString}文字  $(folder-opened) ${this._folderCount.label} ${targetNumberText}文字  $(note) ${characterCount}${writingProgressString} 文字 ${editDistance}`;
     } else {
-      this._statusBarItem.text = `$(book) ${totalCharacterCount}文字／$(note) ${characterCount} 文字${editDistance}`;
+      this._statusBarItem.text = `$(book) ${totalCharacterCount}${totalWritingProgressString}文字／$(note) ${characterCount} ${writingProgressString}文字${editDistance}`;
     }
     this._statusBarItem.show();
   }
@@ -198,7 +245,6 @@ export class CharacterCounter {
     }
     const tree = new TreeModel();
     const draftTree = tree.parse({ dir: draftRoot(), name: "root", length: 0 });
-    //console.log('rootだけ',draftsObject(draftRoot()));
 
     draftsObject(draftRoot()).forEach((element) => {
       const draftNode = tree.parse(element);
@@ -254,11 +300,12 @@ export class CharacterCounter {
   }
 
   public editDistance = -1;
-  public latestText = "";
+  public writingProgress = 0;
+  public latestText: null | string = null;
   private projectPath = "";
   public ifEditDistance = false;
 
-  public _setEditDistance(): void {
+  public async _setEditDistance(): Promise<void> {
     if (workspace.workspaceFolders == undefined) {
       return;
     }
@@ -268,92 +315,93 @@ export class CharacterCounter {
     const relatevePath = path
       .relative(this.projectPath, activeDocumentPath)
       .replace(new RegExp("\\" + path.sep, "g"), "/");
-
     const git: SimpleGit = simpleGit(this.projectPath);
-    console.log("git.revparse()", git.revparse(["--is-inside-work-tree"]));
-    git
-      .revparse("--is-inside-work-tree")
-      .then(() => {
-        let latestHash = "";
-        const logOption = {
-          file: relatevePath,
-          "--until": "today00:00:00",
-          n: 1,
-        };
-        let showString = "";
-        git
-          .log(logOption)
-          .then((logs) => {
-            //console.log(logs);
-            if (logs.total === 0) {
-              //昨日以前のコミットがなかった場合、当日中に作られた最古のコミットを比較対象に設定する。
-              const logOptionLatest = {
-                file: relatevePath,
-                "--reverse": null,
-                "--max-count": "10",
-              };
-              git
-                .log(logOptionLatest)
-                .then((logsLatest) => {
-                  if (logsLatest?.total === 0) {
-                    window.showInformationMessage(
-                      `比較対象になるファイルがGitにコミットされていないようです`
-                    );
-                    this.ifEditDistance = false;
-                    this.latestText = "";
-                    this.updateCharacterCount();
-                  } else {
-                    latestHash = logsLatest.all[0].hash;
-                    showString = latestHash + ":" + relatevePath;
-                    console.log("最終更新: ", showString);
-                    git
-                      .show(showString)
-                      .then((showLog) => {
-                        console.log(
-                          "最終更新テキスト: ",
-                          typeof showLog,
-                          showLog
-                        );
-                        if (typeof showLog === "string") {
-                          if (showLog == "") showLog = " ";
-                          this.latestText = showLog;
-                          this.ifEditDistance = true;
-                          this.updateCharacterCount();
-                        }
-                      })
-                      .catch((err) =>
-                        console.error("failed to git show:", err)
+
+    const isRepo = await git.checkIsRepo();
+    if (isRepo) {
+      git
+        .revparse("--is-inside-work-tree")
+        .then(() => {
+          let latestHash = "";
+          const logOption = {
+            file: relatevePath,
+            "--until": "today00:00:00",
+            n: 1,
+          };
+          let showString = "";
+          git
+            .log(logOption)
+            .then((logs) => {
+              //console.log(logs);
+              if (logs.total === 0) {
+                //昨日以前のコミットがなかった場合、当日中に作られた最古のコミットを比較対象に設定する。
+                const logOptionLatest = {
+                  file: relatevePath,
+                  "--reverse": null,
+                  "--max-count": "10",
+                };
+                git
+                  .log(logOptionLatest)
+                  .then((logsLatest) => {
+                    if (logsLatest?.total === 0) {
+                      window.showInformationMessage(
+                        `このファイルはまだコミットされていないようです`
                       );
-                  }
-                })
-                .catch((err) => console.error("failed to git show:", err));
-            } else {
-              latestHash = logs.all[0].hash;
-              showString = latestHash + ":" + relatevePath;
-              //console.log('showString: ',showString);
-              git
-                .show(showString)
-                .then((showLog) => {
-                  if (typeof showLog === "string") {
-                    this.latestText = showLog;
-                    this.ifEditDistance = true;
-                    this.updateCharacterCount();
-                  }
-                })
-                .catch((err) => console.error("failed to git show:", err));
-            }
-          })
-          .catch((err) => {
-            console.error("failed:", err);
-            // window.showInformationMessage(`Gitのレポジトリを確かめてください`);
-            this.ifEditDistance = false;
-            this.latestText = "";
-            this.updateCharacterCount();
-          });
-      })
-      .catch((err) => {
-        console.error("git.revparse:", err);
-      });
+                      this.ifEditDistance = false;
+                      this.latestText = null;
+                      this.updateCharacterCount();
+                    } else {
+                      latestHash = logsLatest.all[0].hash;
+                      showString = latestHash + ":" + relatevePath;
+                      console.log("最終更新: ", showString);
+                      git
+                        .show(showString)
+                        .then((showLog) => {
+                          console.log(
+                            "最終更新テキスト: ",
+                            typeof showLog,
+                            showLog
+                          );
+                          if (typeof showLog === "string") {
+                            if (showLog == "") showLog = " ";
+                            this.latestText = showLog;
+                            this.ifEditDistance = true;
+                            this.updateCharacterCount();
+                          }
+                        })
+                        .catch((err) =>
+                          console.error("failed to git show:", err)
+                        );
+                    }
+                  })
+                  .catch((err) => console.error("failed to git show:", err));
+              } else {
+                latestHash = logs.all[0].hash;
+                showString = latestHash + ":" + relatevePath;
+                //console.log('showString: ',showString);
+                git
+                  .show(showString)
+                  .then((showLog) => {
+                    if (typeof showLog === "string") {
+                      this.latestText = showLog;
+                      this.ifEditDistance = true;
+                      this.updateCharacterCount();
+                    }
+                  })
+                  .catch((err) => console.error("failed to git show:", err));
+              }
+            })
+            .catch((err) => {
+              console.error("failed:", err);
+              this.ifEditDistance = false;
+              this.latestText = null;
+              this.updateCharacterCount();
+            });
+        })
+        .catch((err) => {
+          console.error("git.revparse:", err);
+        });
+    }
   }
 
   public _setLatestUpdate(latestGitText: string): void {
@@ -367,8 +415,9 @@ export class CharacterCounter {
   public _updateEditDistanceActual(): void {
     const currentText = window.activeTextEditor?.document.getText();
 
-    if (this.latestText != "" && typeof currentText == "string") {
+    if (this.latestText != null && typeof currentText == "string") {
       this.editDistance = distance(this.latestText, currentText);
+      this.writingProgress = currentText.length - this.latestText.length;
       this.keyPressFlag = false;
       this.updateCharacterCount();
     }
@@ -429,8 +478,10 @@ export class CharacterCounterController {
 
   private _onEvent() {
     this._characterCounter.updateCharacterCount();
-    if (this._characterCounter.ifEditDistance)
+    if (this._characterCounter.ifEditDistance) {
+      console.log("TEST");
       this._characterCounter._updateEditDistanceDelay();
+    }
   }
 
   private _onFocusChanged() {
