@@ -396,7 +396,7 @@ function getPrintContent() {
     }
 
     /* 縦中横 */
-    .tcy:dir(rtl) {
+    .tcy {
     -webkit-text-combine: horizontal;
     text-combine: horizontal;
     -ms-text-combine-horizontal: all;
