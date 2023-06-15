@@ -119,46 +119,6 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(controller);
   context.subscriptions.push(characterCounter);
 
-  const ifTest = false;
-  //テスト用
-  if (ifTest) {
-    context.workspaceState.update("totalCountPrevious", undefined);
-    context.workspaceState.update("totalCountPreviousDate", undefined);
-  }
-
-  // 前回記録したテキスト総数と記録日
-
-  // 前日までの進捗が存在しなかった時の処理
-  // 進捗がなかった場合、現在の文字数を前日分として比較対象にする。
-  if (typeof context.workspaceState.get("totalCountPrevious") != "number") {
-    console.log("ステータス初回保存");
-    //現在の文字総数を保存
-    context.workspaceState.update(
-      "totalCountPrevious",
-      characterCounter.totalCountPrevious
-    );
-    //前日の日付を保存
-    const now = new Date();
-    const yesterday = new Date(now.getTime() - 86400000);
-
-    context.workspaceState.update("totalCountPreviousDate", yesterday);
-
-  } else {
-    const storedTotalCount = context.workspaceState.get("totalCountPrevious");
-    characterCounter.totalCountPrevious =
-      typeof storedTotalCount == "number"
-        ? storedTotalCount
-        : characterCounter.totalCountPrevious;
-
-    const storedTotalCountDate = context.workspaceState.get(
-      "totalCountPreviousDate"
-    );
-    characterCounter.totalCountPreviousDate =
-      typeof storedTotalCountDate == "number"
-        ? new Date(storedTotalCountDate)
-        : new Date(new Date());
-  }
-
   // console.log("前日の執筆数", context.workspaceState.get("totalCountPrevious"));
   // console.log("前日", context.workspaceState.get("totalCountPreviousDate"));
 

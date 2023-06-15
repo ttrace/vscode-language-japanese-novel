@@ -64,6 +64,48 @@ export class CharacterCounter {
       this.workspaceState= context.workspaceState;
       this.totalCountPrevious = totalLength(draftRoot());
       console.log("文字数カウンター初期化",totalLength(draftRoot()));
+
+      const ifTest = true;
+      //テスト用
+      if (ifTest) {
+        context.workspaceState.update("totalCountPrevious", undefined);
+        context.workspaceState.update("totalCountPreviousDate", undefined);
+      }
+    
+      // 前回記録したテキスト総数と記録日
+    
+      // 前日までの進捗が存在しなかった時の処理
+      // 進捗がなかった場合、現在の文字数を前日分として比較対象にする。
+      if (typeof context.workspaceState.get("totalCountPrevious") != "number") {
+        console.log("ステータス初回保存");
+        //現在の文字総数を保存
+        context.workspaceState.update(
+          "totalCountPrevious",
+          this.totalCountPrevious
+        );
+        //前日の日付を保存
+        const now = new Date();
+        const yesterday = new Date(now.getTime() - 86400000);
+    
+        context.workspaceState.update("totalCountPreviousDate", yesterday);
+      } else {
+        const storedTotalCount = context.workspaceState.get("totalCountPrevious");
+        this.totalCountPrevious =
+          typeof storedTotalCount == "number"
+            ? storedTotalCount
+            : this.totalCountPrevious;
+    
+        const storedTotalCountDate = context.workspaceState.get(
+          "totalCountPreviousDate"
+        );
+        console.log(storedTotalCountDate, typeof storedTotalCountDate);
+        this.totalCountPreviousDate =
+          typeof storedTotalCountDate == "string"
+            ? new Date(storedTotalCountDate)
+            : new Date(new Date());
+            console.log("ステータス日", storedTotalCountDate);
+      }
+    
     }
   }
   
@@ -147,8 +189,9 @@ export class CharacterCounter {
     }
 
     // 執筆日またぎ処理
-    const launchDay = new Date(this.writingDate).getDate();
+    const launchDay = this.totalCountPreviousDate.getDate();
     const today = new Date().getDate();
+    console.log(this.totalCountPreviousDate, launchDay, today);
     if (launchDay != today) {
       console.log("日跨ぎ発生！", launchDay, today);
       this.workspaceState?.update("totalCountPrevious", totalCharacterCountNum);
