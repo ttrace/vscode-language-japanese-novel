@@ -10,7 +10,7 @@ type TreeFileNode = {
   dir: string;
   name: string;
   length: number;
-  children?: [];
+  children?: FileNode[];
 };
 
 type FileNode = {
@@ -59,7 +59,7 @@ export class draftTreeProvider
     return element;
   }
 
-  getChildren(element?: any): draftTreeItem[] {
+  getChildren(element?: draftTreeItem): draftTreeItem[] {
     if (draftRoot() == "") {
       vscode.window.showInformationMessage("No dependency in empty workspace");
       return [];
@@ -69,7 +69,7 @@ export class draftTreeProvider
       const draftTreeOrign: FileNode[] = draftsObject(draftRoot());
       return this.buildDraftTree(draftTreeOrign);
     }
-    return this.buildDraftTree(element.children);
+    return this.buildDraftTree(element.children as FileNode[]);
   }
 
   private buildDraftTree(draftObj: FileNode[]): draftTreeItem[] {
@@ -89,8 +89,8 @@ export class draftTreeProvider
 }
 
 class draftTreeItem extends vscode.TreeItem {
-  children: vscode.TreeItem;
-  constructor(draftItem: any) {
+  children?: vscode.TreeItem[] | TreeFileNode[];
+  constructor(draftItem: TreeFileNode) {
     super(
       draftItem.name,
       draftItem.children === undefined
@@ -101,7 +101,7 @@ class draftTreeItem extends vscode.TreeItem {
     const filePath = vscode.Uri.file(draftItem.dir.split('\\').join('/'));
 
     this.label = draftItem.name.replace(
-      /^([0-9]+[-_\s]){0,1}(.+)(.txt)$/,
+      /^([0-9]+[-_\s]){0,1}(.+)(\.txt)$/,
       "$2"
     );
     this.description = `:${Intl.NumberFormat().format(draftItem.length)}文字`;
