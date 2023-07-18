@@ -60,20 +60,20 @@ export class CharacterCounter {
   timeoutID: unknown;
 
   constructor(private readonly context?: vscode.ExtensionContext) {
-    if(context){
-      this.workspaceState= context.workspaceState;
+    if (context) {
+      this.workspaceState = context.workspaceState;
       this.totalCountPrevious = totalLength(draftRoot());
-      console.log("文字数カウンター初期化",totalLength(draftRoot()));
+      console.log("文字数カウンター初期化", totalLength(draftRoot()));
 
-      const ifTest = true;
       //テスト用
+      const ifTest = false;
       if (ifTest) {
         context.workspaceState.update("totalCountPrevious", undefined);
         context.workspaceState.update("totalCountPreviousDate", undefined);
       }
-    
+
       // 前回記録したテキスト総数と記録日
-    
+
       // 前日までの進捗が存在しなかった時の処理
       // 進捗がなかった場合、現在の文字数を前日分として比較対象にする。
       if (typeof context.workspaceState.get("totalCountPrevious") != "number") {
@@ -86,15 +86,16 @@ export class CharacterCounter {
         //前日の日付を保存
         const now = new Date();
         const yesterday = new Date(now.getTime() - 86400000);
-    
+
         context.workspaceState.update("totalCountPreviousDate", yesterday);
       } else {
-        const storedTotalCount = context.workspaceState.get("totalCountPrevious");
+        const storedTotalCount =
+          context.workspaceState.get("totalCountPrevious");
         this.totalCountPrevious =
           typeof storedTotalCount == "number"
             ? storedTotalCount
             : this.totalCountPrevious;
-    
+
         const storedTotalCountDate = context.workspaceState.get(
           "totalCountPreviousDate"
         );
@@ -103,12 +104,10 @@ export class CharacterCounter {
           typeof storedTotalCountDate == "string"
             ? new Date(storedTotalCountDate)
             : new Date(new Date());
-            console.log("ステータス日", storedTotalCountDate);
+        console.log("ステータス日", storedTotalCountDate);
       }
-    
     }
   }
-  
 
   public updateCharacterCount(): void {
     if (!this._statusBarItem) {
