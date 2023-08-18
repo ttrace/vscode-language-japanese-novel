@@ -148,10 +148,7 @@ export class CharacterCounter {
 
       savedCharacterCountNum = characterCountNum;
     } else {
-      savedCharacterCountNum =
-        os.platform() === "darwin"
-          ? this._lengthByPath(docPath.normalize("NFD"))
-          : this._lengthByPath(docPath);
+      savedCharacterCountNum = this._lengthByPath(docPath);
     }
 
     const totalCharacterCountNum =
