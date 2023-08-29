@@ -43,20 +43,11 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
       ? myPath.path.replace(/^\//, "")
       : myPath;
     const vivlioExportPath = !preview
-      ? vscode.Uri.joinPath(myWorkingDirectory, `${fileName}.pdf`).fsPath
+      ? path.normalize(vscode.Uri.joinPath(myWorkingDirectory, `${fileName}.pdf`).fsPath)
       : "";
-    const vivlioExportOption = !preview ? "-o" : "";
+    const vivlioExportOption = !preview ? "-f pdf -o" : "";
 
     output.appendLine(`starting to publish: ${myPath}`);
-    const vivlioParams = [
-      vivlioSubCommand,
-      "--no-sandbox",
-      myPath.path,
-      vivlioExportOption,
-      path.normalize(vivlioExportPath),
-      // "-o",
-      // vscode.Uri.joinPath(myWorkingDirectory, "output.pdf").fsPath,
-    ];
 
     const myHtmlBinary = Buffer.from(myHtml, "utf8");
 
@@ -75,7 +66,7 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
           );
         }
         const vivlioProcess = cp.exec(
-          `${vivlioCommand} ${vivlioSubCommand} ${execPath} ${vivlioExportOption} ${vivlioExportPath}`,
+          `${vivlioCommand} ${vivlioSubCommand} ${execPath} ${vivlioExportOption} "${vivlioExportPath}"`,
           (err, stdout, stderr) => {
             if (err) {
               output.appendLine(`Vivlioエラー: ${err.message}`);
