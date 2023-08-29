@@ -133,6 +133,8 @@ export class DocumentSemanticTokensProvider
           let isMarkedProperNoun = false;
           let isRuby = false;
           let isComment = false;
+          let currentTokenModifire = ""; //現在（直前）のトークンモディファイア
+
           for await (let mytoken of kuromojiToken) {
             let nextToken = [];
             mytoken = kuromojiToken[j];
@@ -233,7 +235,9 @@ export class DocumentSemanticTokensProvider
               mytoken.surface_form == "」" ||
               mytoken.surface_form.match(/」$/)
             ) {
-              isDialogue = false;
+              if(currentTokenModifire != "aozora"){
+                isDialogue = false;
+              }
               kind = "bracket";
             }
 
@@ -296,6 +300,7 @@ export class DocumentSemanticTokensProvider
             const tokenModifierNum = encodeTokenModifiers([tokenModifireType]);
 
             if (tokenActivity == true) {
+              currentTokenModifire = tokenModifireType;
               builder.push(
                 i,
                 openOffset,
@@ -307,7 +312,7 @@ export class DocumentSemanticTokensProvider
             }
             openOffset = closeOffset;
             if (j == kuromojiToken.length - 1) {
-              const endTime = performance.now();
+              //const endTime = performance.now();
 
               resolve(builder.build());
               //const builder = new vscode.SemanticTokensBuilder();
