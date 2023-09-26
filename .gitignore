@@ -12,3 +12,5 @@ test/testForNestedDirectory/-Draft
 dist
 secret.md
 package-lock.json
+.envrc
+.nvmrc
