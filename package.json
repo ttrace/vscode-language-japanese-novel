@@ -509,13 +509,13 @@
               "foreground": "#29ff9b"
             },
             "particle": {
-              "foreground": "#03cccf"
+              "foreground": "#00e3c1"
             },
             "particle.dialogue": {
               "foreground": "#b7f0bc"
             },
             "adjective": {
-              "foreground": "#0771a7"
+              "foreground": "#8d68ff"
             },
             "adjective.dialogue": {
               "foreground": "#07a74c"
@@ -615,13 +615,13 @@
               "foreground": "#29ff9b"
             },
             "particle": {
-              "foreground": "#03cccf"
+              "foreground": "#00e3c1"
             },
             "particle.dialogue": {
               "foreground": "#b7f0bc"
             },
             "adjective": {
-              "foreground": "#0771a7"
+              "foreground": "#8d68ff"
             },
             "adjective.dialogue": {
               "foreground": "#07a74c"
