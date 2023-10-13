@@ -3,9 +3,7 @@ import * as path from "path";
 import { editorText } from "./editor";
 import { getConfig, NovelSettings } from "./config";
 import * as cp from "child_process";
-import exp = require("constants");
 import { draftRoot } from "./compile";
-import { parseGetRemotes } from "simple-git/dist/src/lib/responses/GetRemoteSummary";
 
 const output = vscode.window.createOutputChannel("Novel");
 let vivlioLaunching = false;
@@ -122,12 +120,12 @@ function getPrintContent() {
       : printBoxBlockSize / (previewSettings.linesPerPage * 1.75);
   // フォントサイズ in mm
   const fontSizeWithUnit = fontSize + "mm";
-  const lineHeightWithUnit = fontSize * 1.75 + "mm";
+  // const lineHeightWithUnit = fontSize * 1.75 + "mm";
   const projectTitle = vscode.workspace.workspaceFolders![0].name;
   const typeSettingHeight = fontSize * previewSettings.lineLength;
-  const typeSettingHeightUnit = typeSettingHeight + "mm";
-  const typeSettingWidth = fontSize * 1.75 * previewSettings.linesPerPage;
-  const typeSettingWidthUnit = typeSettingWidth + "mm";
+  // const typeSettingHeightUnit = typeSettingHeight + "mm";
+  // const typeSettingWidth = fontSize * 1.75 * previewSettings.linesPerPage;
+  // const typeSettingWidthUnit = typeSettingWidth + "mm";
   const columnCount = Math.floor(
     printBoxInlineLength / (typeSettingHeight + fontSize * 2)
   );
@@ -141,7 +139,7 @@ function getPrintContent() {
   );
   const originPageNumber = previewSettings.originPageNumber;
 
-  const noColumnGap = columnCount == 1 ? "2em" : "0";
+  // const noColumnGap = columnCount == 1 ? "2em" : "0";
   const columnCSS =
     columnCount > 1
       ? `column-count: ${columnCount};
@@ -150,7 +148,7 @@ function getPrintContent() {
   const columnHeitghtRate =
     "calc(" + fontSize * previewSettings.lineLength + "mm + 0.5em)";
 
-  const typesettingInformation = `${previewSettings.lineLength}字×${previewSettings.linesPerPage}行`;
+  // const typesettingInformation = `${previewSettings.lineLength}字×${previewSettings.linesPerPage}行`;
 
   const pageNumberFormatR = eval(
     "`" +
@@ -159,13 +157,13 @@ function getPrintContent() {
         .replace(/(.*)counter\(page\)(.*)/, '"$1"counter(page)"$2"') +
       ";`"
   );
-  const pageNumberFormatL = eval(
-    "`" +
-      previewSettings.numberFormatR
-        .replace(/\${pageNumber}/, "counter(page)")
-        .replace(/(.*)counter\(page\)(.*)/, '"$1"counter(page)"$2"') +
-      ";`"
-  );
+  // const pageNumberFormatL = eval(
+  //   "`" +
+  //     previewSettings.numberFormatR
+  //       .replace(/\${pageNumber}/, "counter(page)")
+  //       .replace(/(.*)counter\(page\)(.*)/, '"$1"counter(page)"$2"') +
+  //     ";`"
+  // );
 
   console.log(pageNumberFormatR);
 

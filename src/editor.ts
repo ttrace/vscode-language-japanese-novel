@@ -95,7 +95,7 @@ export function markUpHtml(myHtml: string) {
     '<div class="comment">$1</div>'
   );
   taggedHTML = taggedHTML.replace(
-    /｜([^｜\n]+?)《([^《]+?)》/g,
+    /[｜|]([^｜|\n]+?)《([^《]+?)》/g,
     "<ruby>$1<rt>$2</rt></ruby>"
   );
   taggedHTML = taggedHTML.replace(
@@ -194,7 +194,7 @@ export class MyCodelensProvider implements vscode.CodeLensProvider {
   async provideCodeLenses(
     document: vscode.TextDocument
   ): Promise<vscode.CodeLens[]> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if(!getConfig().sceneNav) return;
       const editor = vscode.window.activeTextEditor;
 
@@ -258,7 +258,7 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
 }> {
   const myFileList = fileList(draftRoot());
   const docIndex = myFileList.files.findIndex(
-    (e: any) => e.dir == document.fileName
+    (e) => e.dir == document.fileName
   );
   let prevDocIndex = null;
   let nextDocIndex = null;
