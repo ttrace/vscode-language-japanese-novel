@@ -442,7 +442,7 @@ function publishwebsockets(socketServer: { clients: WebSocket[] }) {
   });
 }
 
-function sendsettingwebsockets(socketServer: Server<WebSocket>) {
+function sendsettingwebsockets(socketServer: Server) {
   socketServer.clients.forEach((client: WebSocket) => {
     client.send(JSON.stringify(getConfig()));
   });

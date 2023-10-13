@@ -1,5 +1,10 @@
 # Changelog
 
+# 1.9.11
+
+- update modules.
+- change type of WebSocket
+
 # 1.9.10
 
 - 会話の品詞ハイライトが青空文庫の注記でキャンセルされてしまうバグの修正
