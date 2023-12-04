@@ -31,7 +31,7 @@ export function editorText(originEditor: OriginEditor): string {
       text.slice(cursorOffset + 1);
   }
 
-  const paragraphs = cursorTaggedHtml.split("\n");
+  const paragraphs = cursorTaggedHtml.split(/\r?\n/);
   //console.log(paragraphs);
   let lineNumber = 0;
   paragraphs.forEach((paragraph) => {
