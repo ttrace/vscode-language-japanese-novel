@@ -41,7 +41,9 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
       ? myPath.path.replace(/^\//, "")
       : myPath;
     const vivlioExportPath = !preview
-      ? path.normalize(vscode.Uri.joinPath(myWorkingDirectory, `${fileName}.pdf`).fsPath)
+      ? path.normalize(
+          vscode.Uri.joinPath(myWorkingDirectory, `${fileName}.pdf`).fsPath
+        )
       : "";
     const vivlioExportOption = !preview ? "-f pdf -o" : "";
 
@@ -111,11 +113,14 @@ function getPrintContent() {
   );
   const previewSettings: NovelSettings = getConfig();
   const writingDirection = previewSettings.writingDirection;
-  const printBoxInlineLength = (writingDirection === 'vertical-rl')? 168: 124.32; // ドキュメント高さの80%(上下マージン10%を抜いた数)
-  const printBoxBlockSize = (writingDirection === 'vertical-rl')? 124.32: 168; // ドキュメント幅の84%(左右マージン16%を抜いた数)
+  const printBoxInlineLength =
+    writingDirection === "vertical-rl" ? 168 : 124.32; // ドキュメント高さの80%(上下マージン10%を抜いた数)
+  const printBoxBlockSize = writingDirection === "vertical-rl" ? 124.32 : 168; // ドキュメント幅の84%(左右マージン16%を抜いた数)
   const fontSize =
     previewSettings.lineLength >
-    previewSettings.linesPerPage * 1.75 * (printBoxInlineLength / printBoxBlockSize)
+    previewSettings.linesPerPage *
+      1.75 *
+      (printBoxInlineLength / printBoxBlockSize)
       ? printBoxInlineLength / previewSettings.lineLength
       : printBoxBlockSize / (previewSettings.linesPerPage * 1.75);
   // フォントサイズ in mm
@@ -148,7 +153,8 @@ function getPrintContent() {
   const columnHeitghtRate =
     "calc(" + fontSize * previewSettings.lineLength + "mm + 0.5em)";
 
-  // const typesettingInformation = `${previewSettings.lineLength}字×${previewSettings.linesPerPage}行`;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const typesettingInformation = `${previewSettings.lineLength}字×${previewSettings.linesPerPage}行`;
 
   const pageNumberFormatR = eval(
     "`" +

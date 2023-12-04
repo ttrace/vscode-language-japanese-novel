@@ -8,7 +8,7 @@
   },
   "icon": "resource/icon.png",
   "engines": {
-    "vscode": "^1.78.0"
+    "vscode": "^1.83.0"
   },
   "main": "dist/extension.js",
   "dependencies": {
@@ -439,29 +439,29 @@
           "enabled": true,
           "rules": {
             "noun": {
-              "foreground": "#77c4fc"
+              "foreground": "#bbdfff"
             },
             "noun.dialogue": {
-              "foreground": "#1dfcbd"
+              "foreground": "#62fbcf"
             },
             "proper_noun": {
-              "foreground": "#5d8ffb"
+              "foreground": "#3aa3ff"
             },
             "proper_noun.dialogue": {
-              "foreground": "#0efd52",
+              "foreground": "#02d69a",
               "fontStyle": ""
             },
             "enum": {
-              "foreground": "#8fa4e9"
+              "foreground": "#72a6ff"
             },
             "enum.dialogue": {
-              "foreground": "#02d4c6"
+              "foreground": "#00d6c8"
             },
             "suffix": {
-              "foreground": "#9489db"
+              "foreground": "#9c8cff"
             },
             "suffix.dialogue": {
-              "foreground": "#4efab0"
+              "foreground": "#46c28c"
             },
             "personal_pronoun": {
               "foreground": "#83c1ff"
@@ -470,7 +470,7 @@
               "foreground": "#00aade"
             },
             "pronoun": {
-              "foreground": "#6767ff"
+              "foreground": "#9071ff"
             },
             "pronoun.dialogue": {
               "foreground": "#00c0f0"

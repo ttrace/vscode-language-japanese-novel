@@ -1,14 +1,10 @@
 # Changelog
 
-# 1.9.11
-
-- update modules.
-- change type of WebSocket
-
 # 1.9.10
 
 - 会話の品詞ハイライトが青空文庫の注記でキャンセルされてしまうバグの修正
 – 出力するPDFやプロジェクトのファイルパスに空白文字が含まれている場合にPDFが作成されなかったバグの修正
+- Issue 72[WIndowで字下げが動作しない](https://github.com/ttrace/vscode-language-japanese-novel/issues/72)の原因の一つに対処
 
 # 1.9.9
 

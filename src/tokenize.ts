@@ -133,7 +133,7 @@ export class DocumentSemanticTokensProvider
             let isMarkedProperNoun = false;
             let isRuby = false;
             let isComment = false;
-            let currentTokenModifire = ""; //現在（直前）のトークンモディファイア
+            // let currentTokenModifire = ""; //現在（直前）のトークンモディファイア
 
             for await (let mytoken of kuromojiToken) {
               let nextToken: IpadicFeatures = {
@@ -251,7 +251,7 @@ export class DocumentSemanticTokensProvider
                 mytoken.surface_form == "」" ||
                 mytoken.surface_form.match(/」$/)
               ) {
-                if (currentTokenModifire != "aozora") {
+                if (!isRuby) {
                   isDialogue = false;
                 }
                 kind = "bracket";
@@ -318,7 +318,7 @@ export class DocumentSemanticTokensProvider
               ]);
 
               if (tokenActivity == true) {
-                currentTokenModifire = tokenModifireType;
+                // currentTokenModifire = tokenModifireType;
                 builder.push(
                   i,
                   openOffset,
@@ -417,24 +417,6 @@ export class DocumentSemanticTokensProvider
     };
   }
 }
-
-// export class DocumentRangeSemanticTokensProvider implements vscode.DocumentRangeSemanticTokensProvider {
-// 	provideDocumentRangeSemanticTokens(document: vscode.TextDocument, range: vscode.Range, token: vscode.CancellationToken): vscode.ProviderResult<vscode.SemanticTokens> {
-// 		throw new Error('Method not implemented.');
-// 	}
-
-// }
-
-// function parseTextToken(text: string): {
-//   tokenType: string;
-//   tokenModifiers: string[];
-// } {
-//   const parts = text.split(".");
-//   return {
-//     tokenType: parts[0],
-//     tokenModifiers: parts.slice(1),
-//   };
-// }
 
 function encodeTokenModifiers(strTokenModifiers: string[]): number {
   let result = 0;
