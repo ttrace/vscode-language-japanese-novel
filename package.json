@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.9.11",
+  "version": "1.9.13",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -122,12 +122,12 @@
         },
         "Novel.preview.lineLength": {
           "type": "number",
-          "default": "40",
+          "default": 40,
           "description": "一行の文字数を指定してください\n行数はプレビュー、印刷どちらも有効です"
         },
         "Novel.preview.linesPerPage": {
           "type": "number",
-          "default": "16",
+          "default": 20,
           "description": "PDF作成時の印刷時の1ページの行数を指定してください"
         },
         "Novel.preview.pageStarting": {

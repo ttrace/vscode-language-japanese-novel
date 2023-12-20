@@ -1,5 +1,14 @@
 # Changelog
 
+# 1.9.13
+
+- 青空文庫注記［＃地付き］に対応しました
+- 青空文庫注記［＃地からn文字上げ］に、3文字まで対応しました
+
+# 1.9.12
+
+- プレビューの字数・行数の初期設定が動作していなかったのを修正
+
 # 1.9.11
 
 - Issue 72[WIndowで字下げが動作しない](https://github.com/ttrace/vscode-language-japanese-novel/issues/72)の原因の一つに対処

@@ -399,6 +399,30 @@ function getPrintContent() {
     text-combine-upright: digit 2;
     }
 
+    span.bottom {
+      display: block;
+      float: right;
+    }
+    
+    span.bottom-1 {
+      display: block;
+      float: right;
+      padding-inline-end: 1em;
+    }
+    
+    span.bottom-2 {
+      display: block;
+      float: right;
+      padding-inline-end: 2em;
+    }
+    
+    span.bottom-3 {
+      display: block;
+      float: right;
+      padding-inline-end: 3em;
+    }
+        
+
     /* 圏点（<span class="smaller">ゴマ</span>） */
     em.side-dot, em.sesame_dot {
     font-style: normal;

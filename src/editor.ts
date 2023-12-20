@@ -91,6 +91,27 @@ export function markUpHtml(myHtml: string) {
     "</div>"
   );
   taggedHTML = taggedHTML.replace(
+    /［＃地付き］(.+)<\/p>/g,
+    '<span class="bottom">$1</span></p>'
+  );
+  taggedHTML = taggedHTML.replace(
+    /［＃地から[1１]字上げ］(.+)<\/p>/g,
+    '<span class="bottom-1">$1</span></p>'
+  );
+  taggedHTML = taggedHTML.replace(
+    /［＃地から[2２]字上げ］(.+)<\/p>/g,
+    '<span class="bottom-2">$1</span></p>'
+  );
+  taggedHTML = taggedHTML.replace(
+    /［＃地から[3３]字上げ］(.+)<\/p>/g,
+    '<span class="bottom-3">$1</span></p>'
+  );
+
+  taggedHTML = taggedHTML.replace(
+    /<p id="l-[0-9]+">［＃ここで字下げ終わり］<\/p>/g,
+    "</div>"
+  );
+  taggedHTML = taggedHTML.replace(
     /<!-- (.+?) -->/g,
     '<div class="comment">$1</div>'
   );

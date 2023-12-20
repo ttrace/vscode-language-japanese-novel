@@ -225,6 +225,30 @@ span.tcy {
   -webkit-text-combine: horizontal;
 }
 
+span.bottom {
+  display: block;
+  float: right;
+}
+
+span.bottom-1 {
+  display: block;
+  float: right;
+  padding-inline-end: 1em;
+}
+
+span.bottom-2 {
+  display: block;
+  float: right;
+  padding-inline-end: 2em;
+}
+
+span.bottom-3 {
+  display: block;
+  float: right;
+  padding-inline-end: 3em;
+}
+
+
 @keyframes cursorAnimation {
   from {
     background-color: rgba(66, 66, 66, 0);
