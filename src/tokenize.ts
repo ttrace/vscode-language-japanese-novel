@@ -231,7 +231,7 @@ export class DocumentSemanticTokensProvider
               if (
                 kind == "noun" &&
                 mytoken.pos_detail_1 == "サ変接続" &&
-                nextToken.word_id == 0
+                nextToken.word_id != 0
               ) {
                 kind = nextToken.conjugated_type.match(/^サ変/)
                   ? "verb"
