@@ -272,12 +272,26 @@ export class DocumentSemanticTokensProvider
               if (mytoken.surface_form == "〉") isMarkedProperNoun = false;
 
               //ルビモディファイア
-              if (mytoken.surface_form == "《") isRuby = true;
+              if (mytoken.surface_form == "《") {
+                kind = "bracket";
+                
+                if (openOffset == 0 ){
+                  isDialogue = true;
+                  tokenModifireType = "dialogue";
+                } else {
+                  isRuby = true;
+                  tokenModifireType = "aozora";
+                }
+              }
               if (isRuby == true) {
                 tokenModifireType = "aozora";
               }
               if (mytoken.surface_form == "》") {
-                isRuby = false;
+                if(isRuby){
+                  isRuby = false
+                } else if(isDialogue) {
+                  isDialogue = false;
+                }
                 kind = "bracket";
               }
 
