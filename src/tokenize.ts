@@ -134,6 +134,22 @@ export class DocumentSemanticTokensProvider
             let isRuby = false;
             let isComment = false;
             // let currentTokenModifire = ""; //現在（直前）のトークンモディファイア
+            let debugNum = {debug: false};
+            let previousToken: IpadicFeatures = {
+              word_id: 0,
+              word_type: "",
+              word_position: 0,
+              surface_form: "",
+              pos: "",
+              pos_detail_1: "",
+              pos_detail_2: "",
+              pos_detail_3: "",
+              conjugated_type: "",
+              conjugated_form: "",
+              basic_form: "",
+              reading: undefined,
+              pronunciation: undefined,
+            };
 
             for await (let mytoken of kuromojiToken) {
               let nextToken: IpadicFeatures = {
@@ -272,27 +288,31 @@ export class DocumentSemanticTokensProvider
               if (mytoken.surface_form == "〉") isMarkedProperNoun = false;
 
               //ルビモディファイア
-              if (mytoken.surface_form == "《") {
+              if (mytoken.surface_form === "《") {
                 kind = "bracket";
-                
-                if (openOffset == 0 ){
+                //  debugNum = {debug:true};
+                console.log("debug",previousToken, mytoken);
+                if (openOffset === 0 || previousToken.surface_form === "。" ){
                   isDialogue = true;
                   tokenModifireType = "dialogue";
                 } else {
                   isRuby = true;
                   tokenModifireType = "aozora";
                 }
-              }
+              }//else {
+                 debugNum = {debug:false};
+              // }
+              
               if (isRuby == true) {
                 tokenModifireType = "aozora";
               }
-              if (mytoken.surface_form == "》") {
+              if (mytoken.surface_form === "》") {
+                kind = "bracket";
                 if(isRuby){
                   isRuby = false
                 } else if(isDialogue) {
                   isDialogue = false;
                 }
-                kind = "bracket";
               }
 
               //青空注記モディファイア
@@ -324,6 +344,7 @@ export class DocumentSemanticTokensProvider
               }
 
               closeOffset = openOffset + wordLength;
+              previousToken = mytoken;
               // const tokenData = parseTextToken(
               //   document.getText().substring(openOffset, closeOffset)
               // );
@@ -340,6 +361,12 @@ export class DocumentSemanticTokensProvider
                   encodeTokenType(kind),
                   tokenModifierNum
                 );
+                // if(debugNum.debug){
+                //   console.log(
+                //     "debug",
+                //     previousToken
+                //   );
+                // }
                 //	console.log(i + ':' + j + '/' + openOffset + ':' + mytoken.surface_form);
               }
               openOffset = closeOffset;
