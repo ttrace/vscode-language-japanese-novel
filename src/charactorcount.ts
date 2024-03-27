@@ -5,7 +5,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { draftsObject } from "./compile";
 import TreeModel from "tree-model";
-import os from "os";
+// import os from "os";
 
 import {
   window,
@@ -152,9 +152,9 @@ export class CharacterCounter {
     }
 
     const totalCharacterCountNum =
-      projectCharacterCountNum - savedCharacterCountNum + characterCountNum;
+      projectCharacterCountNum - savedCharacterCountNum;
     const totalCharacterCount = Intl.NumberFormat().format(
-      totalCharacterCountNum
+      totalCharacterCountNum + characterCountNum
     );
 
     let editDistance = "";
@@ -200,7 +200,7 @@ export class CharacterCounter {
     // 総量：増減分のプラス記号、±記号を定義
     let totalWritingProgressString = "";
     this.totalWritingProgress =
-      totalCharacterCountNum - this.totalCountPrevious;
+      totalCharacterCountNum + characterCountNum - this.totalCountPrevious;
     let progressTotalIndex = this.totalWritingProgress > 0 ? "+" : "";
     progressTotalIndex =
       this.totalWritingProgress == 0 ? "±" : progressTotalIndex;
@@ -279,6 +279,8 @@ export class CharacterCounter {
   }
 
   private _lengthByPath(dirPath: string): number {
+    // パスを正規化する
+    dirPath = dirPath.normalize("NFC"); // NFCに正規化
     if (draftRoot() == "") {
       return 0;
     }
@@ -290,8 +292,15 @@ export class CharacterCounter {
       draftTree.addChild(draftNode);
     });
     const targetFileNode = draftTree.first(
-      (node) => node.model.dir === dirPath
+      // {strategy: 'breadth'},
+      function (node) {
+        // return node.model.dir === dirPath;
+        return node.model.dir.normalize("NFC") === dirPath;
+      }
     );
+    // (node) => node.model.dir === dirPath
+    // );
+
     if (targetFileNode) {
       return targetFileNode.model.length;
     } else {
@@ -450,6 +459,13 @@ export class CharacterCounter {
   }
 
   private keyPressFlag = false;
+
+  public _resetWritingProtgress(): void {
+    this.totalCountPrevious = totalLength(draftRoot());
+    this.updateCharacterCount();
+    this.workspaceState?.update("totalCountPrevious", this.totalCountPrevious);
+    vscode.window.showInformationMessage(`今日の総合進捗をリセットしました`);
+  }
 
   public _updateEditDistanceActual(): void {
     const currentText = window.activeTextEditor?.document.getText();
