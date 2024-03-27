@@ -119,9 +119,6 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(controller);
   context.subscriptions.push(characterCounter);
 
-  // console.log("前日の執筆数", context.workspaceState.get("totalCountPrevious"));
-  // console.log("前日", context.workspaceState.get("totalCountPreviousDate"));
-
   // 前回記録した締切テキスト総数と記録日
   const storedDeadlineCount = context.workspaceState.get("totacCountDeadline");
   characterCounter.deadlineCountPrevious =
@@ -136,7 +133,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
   const deadLineFolderPath = context.workspaceState.get("deadlineFolderPath");
   const deadLineTextCount = context.workspaceState.get("deadlineTextCount");
-  console.log("memento", deadLineFolderPath, deadLineTextCount);
+  //console.log("memento", deadLineFolderPath, deadLineTextCount);
   if (
     typeof deadLineFolderPath == "string" &&
     typeof deadLineTextCount == "string"
@@ -196,6 +193,13 @@ export function activate(context: vscode.ExtensionContext): void {
       }
       //ツリービュー更新
       vscode.commands.executeCommand("draftTree.refresh");
+    })
+  );
+
+  // 進捗のリセット
+  context.subscriptions.push(
+    vscode.commands.registerCommand("Novel.reset-progress", async () => {
+      characterCounter._resetWritingProtgress(); 
     })
   );
 

@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.9.15",
+  "version": "1.9.16",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -72,6 +72,10 @@
       {
         "command": "Novel.set-counter",
         "title": "Novel:締め切りフォルダー"
+      },
+      {
+        "command": "Novel.reset-progress",
+        "title": "Novel:進捗をリセット"
       },
       {
         "command": "draftTree.refresh",
