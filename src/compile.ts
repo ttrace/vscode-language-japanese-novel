@@ -132,7 +132,7 @@ export function fileList(dirPath: string): FileList {
         .replace(/[|｜]/g, "") // ルビ開始記号
         .replace(/<!--(.+?)-->/, ""); // コメントアウト
       files.push({
-        dir: path.join(dirPath, dirent.name),
+        dir: path.join(dirPath, dirent.name).normalize('NFC'),
         name: dirent.name,
         length: readingFile.length,
       });
