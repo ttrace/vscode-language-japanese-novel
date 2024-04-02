@@ -279,7 +279,8 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
 }> {
   const myFileList = fileList(draftRoot());
   const docIndex = myFileList.files.findIndex(
-    (e) => e.dir == document.fileName
+    // (e) => e.dir == document.fileName
+    (e) => e.dir?.normalize('NFC') == document.fileName.normalize('NFC')
   );
   let prevDocIndex = null;
   let nextDocIndex = null;

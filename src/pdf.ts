@@ -108,7 +108,7 @@ function getPrintContent() {
   //configuration 読み込み
 
   const myText = editorText("active").replace(
-    /<span id="cursor">(.*)<\/span>/g,
+    /<span id="cursor">(.*?)<\/span>/g,
     "$1"
   );
   const previewSettings: NovelSettings = getConfig();

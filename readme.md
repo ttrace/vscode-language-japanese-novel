@@ -183,6 +183,12 @@ novel-writerは階層化されたフォルダーの中のテキストも結合�
 
 資料などをワークスペースに保存している場合には、テキストファイルを「原稿（あるいはDraft」フォルダーに入れておいてください。
 
+## FAQ
+
+### vscode-textlintとの併用
+novel-writerはnovelというファイル形式を用いますので、VS CodeのsettingsでのTextlint: Languagesにnovelを追加してください。
+
+
 ## 参考にした文献
 
 novel-writerはさまざまなWeb文書を参考にさせていただきました。特に参考になったのは以下の二つのウェブサイトです。
