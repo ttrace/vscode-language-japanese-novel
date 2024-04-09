@@ -118,7 +118,7 @@ export function fileList(dirPath: string): FileList {
       files.push(containerFiles.files);
     } else if (
       dirent.isFile() &&
-      [".txt",".md"].includes(path.extname(dirent.name))
+      [getConfig().draftFileType].includes(path.extname(dirent.name))
     ) {
       //文字数カウントテスト
       let readingFile = fs.readFileSync(
@@ -193,7 +193,7 @@ export function draftsObject(dirPath: string): FileNode[] {
       results.push(directory);
     } else if (
       dirent.isFile() &&
-      [".txt",".md"].includes(path.extname(dirent.name))
+      [getConfig().draftFileType].includes(path.extname(dirent.name))
     ) {
       //文字数カウントテスト
       let readingFile = fs.readFileSync(
