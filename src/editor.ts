@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { getConfig } from "./config";
-import { draftRoot, fileList } from "./compile";
+import { draftRoot, fileList, ifFileInDraft } from "./compile";
 
 export type OriginEditor = vscode.TextEditor | "active" | undefined;
 
@@ -277,6 +277,16 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
   nextTitle: string;
   nextText: string;
 }> {
+  if(!ifFileInDraft(document.fileName)){
+    return {
+      prevUrl: null,
+      prevTitle: "",
+      prevText: "",
+      nextUrl: null,
+      nextTitle: "",
+      nextText: "",
+    }
+  }
   const myFileList = fileList(draftRoot());
   const docIndex = myFileList.files.findIndex(
     // (e) => e.dir == document.fileName

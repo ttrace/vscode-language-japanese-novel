@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { getConfig } from "./config";
 import { deadLineFolderPath } from "./extension";
+import TreeModel from "tree-model";
 
 //fsモジュールの使い方 https://qiita.com/oblivion/items/2725a4b3ca3a99f8d1a3
 export default function compileDocs(): void {
@@ -225,4 +226,22 @@ export function totalLength(dirPath: string): number {
     result += element.length;
   });
   return result;
+}
+
+export function ifFileInDraft(DocumentPath: string|undefined): boolean {
+  if (draftRoot() == "") {
+    return false;
+  }
+  //Treeモデル構築
+  const tree = new TreeModel();
+  const draftTree = tree.parse({ dir: draftRoot(), name: "root", length: 0 });
+  //const activeDocumentPath = window.activeTextEditor?.document.uri.fsPath;
+  draftsObject(draftRoot()).forEach((element) => {
+    const draftNode = tree.parse(element);
+    draftTree.addChild(draftNode);
+  });
+  const activeDocumentObject = draftTree.first(
+    (node) => node.model.dir === DocumentPath
+  );
+  return activeDocumentObject ? true : false;
 }

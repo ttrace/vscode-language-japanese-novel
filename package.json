@@ -95,7 +95,8 @@
       {
         "id": "novel",
         "extensions": [
-          ".txt"
+          ".txt",
+          ".md"
         ],
         "configuration": "./novel.language-configuration.json"
       }
