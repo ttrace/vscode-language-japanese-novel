@@ -28,7 +28,8 @@ export default function compileDocs(): void {
   }
 
   //  空のファイルをつくる
-  const compiledTextFilePath = projectPath + "/publish/" + projectName + ".txt";
+  const fileExtension = config.draftFileType;
+  const compiledTextFilePath = projectPath + "/publish/" + projectName + fileExtension;
   try {
     fs.writeFileSync(compiledTextFilePath, "");
   } catch (err) {
