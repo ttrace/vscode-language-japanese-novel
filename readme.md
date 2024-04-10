@@ -12,6 +12,7 @@ novel-writerは.txt、.mdなどのテキストファイルで長編小説（ノ�
 
 ![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/highlight-and-vertical.png)
 
+
 ##　ハイライト
 
 novel-writerは小説で用いる会話文や青空文庫注記法などをハイライトします。
