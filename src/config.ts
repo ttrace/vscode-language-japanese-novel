@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 
 export type NovelSettings = {
+  draftFileType: string;
   writingDirection: string;
   lineHeightRate: number;
   fontFamily: string;
@@ -23,6 +24,7 @@ export type NovelSettings = {
 export function getConfig(): NovelSettings {
   const config = vscode.workspace.getConfiguration("Novel");
 
+  const draftFileType = config.get<string>("general.filetype", ".txt");
   const lineHeightRate = 1.75;
   const fontFamily = config.get<string>("preview.fontFamily", "serif");
   const writingDirection =
@@ -33,8 +35,8 @@ export function getConfig(): NovelSettings {
   const fontSize = 1 / lineLength; // フォントサイズは行長分の１
   const linesPerPage = config.get<number>("preview.linesPerPage", 10);
   const lineHeight = fontSize * lineHeightRate;
-  const pageStarting = config.get<string>("preview.pageStarting", "左");
-  const originPageNumber = config.get<number>("preview.originPageNumber", 1);
+  const pageStarting = config.get<string>("pdf.pageStarting", "左");
+  const originPageNumber = config.get<number>("pdf.originPageNumber", 1);
   const numberFormatR = config.get<string>(
     "preview.numberFormatR",
     "${projectTitle} ${typesettingInformation} ${pageNumber}"
@@ -52,11 +54,12 @@ export function getConfig(): NovelSettings {
   const sceneNav = config.get<boolean>("editor.sceneNavigator", true);
   const previewAnimate = config.get<boolean>("preview.animate", true);
   const semanticHighligting = config.get<boolean>(
-    "preview.semanticHighligting",
+    "editor.semanticHighligting",
     true
   );
 
   const novelSettings: NovelSettings = {
+    draftFileType,
     writingDirection,
     lineHeightRate,
     fontFamily,

@@ -120,7 +120,7 @@ export class DocumentSemanticTokensProvider
             //const line = lines[i];
 
             // tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
-            const kuromojiToken = tokenizer.tokenize(document.getText());
+            const kuromojiToken = tokenizer.tokenize(document.getText().replace(/\n\x20/g, "\n→"));
 
             // console.dir(kuromojiToken);
             let lineOffset = 0;
@@ -133,6 +133,7 @@ export class DocumentSemanticTokensProvider
             let isMarkedProperNoun = false;
             let isRuby = false;
             let isComment = false;
+            let indentIndex = 0;
             // let currentTokenModifire = ""; //現在（直前）のトークンモディファイア
             let debugNum = {debug: false};
             let previousToken: IpadicFeatures = {
@@ -151,6 +152,7 @@ export class DocumentSemanticTokensProvider
               pronunciation: undefined,
             };
 
+            console.log(kuromojiToken);
             for await (let mytoken of kuromojiToken) {
               let nextToken: IpadicFeatures = {
                 word_id: 0,
@@ -186,6 +188,9 @@ export class DocumentSemanticTokensProvider
                 isRuby = false;
                 isQuote = false;
                 isComment = false;
+                if(nextToken.surface_form == "→"){
+                  //lineOffset++;
+                }
                 //	console.log('line-feed:' + i + ": " + lineOffset);
               } else {
                 openOffset = mytoken.word_position - lineOffset - 1;

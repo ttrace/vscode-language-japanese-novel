@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "1.9.19",
+  "version": "2.0.0-beta",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -95,7 +95,8 @@
       {
         "id": "novel",
         "extensions": [
-          ".txt"
+          ".txt",
+          ".md"
         ],
         "configuration": "./novel.language-configuration.json"
       }
@@ -110,6 +111,15 @@
     "configuration": {
       "title": "Novel-writer設定",
       "properties": {
+        "Novel.general.filetype": {
+          "type": "string",
+          "default": ".txt",
+          "enum": [
+            ".txt",
+            ".md"
+          ],
+          "description": "原稿のファイルの拡張子を指定してください\n原稿ツリーや文字数カウントは再読み込みを行うまで反映されません"
+        },
         "Novel.preview.writingDirection": {
           "type": "string",
           "default": "縦",
@@ -134,7 +144,7 @@
           "default": 20,
           "description": "PDF作成時の印刷時の1ページの行数を指定してください"
         },
-        "Novel.preview.pageStarting": {
+        "Novel.pdf.pageStarting": {
           "type": "string",
           "default": "左",
           "enum": [
@@ -143,16 +153,16 @@
           ],
           "description": "PDFがどちらのページから始まるか指定してください"
         },
-        "Novel.preview.originPageNumber": {
+        "Novel.pdf.originPageNumber": {
           "type": "number",
           "default": 1,
           "description": "ページ番号の開始番号を指定してください"
         },
-        "Novel.preview.numberFormatR": {
+        "Novel.pdf.numberFormatR": {
           "type": "string",
           "default": "${projectTitle} ${typesettingInformation} ${pageNumber}"
         },
-        "Novel.preview.numberFormatL": {
+        "Novel.pdf.numberFormatL": {
           "type": "string",
           "default": "${pageNumber} ${projectTitle} ${typesettingInformation}",
           "description": "ページ番号のフォーマットを指定してください\n利用できる変数は以下を参照してください\nページ数：${pageNumber}／組版情報：${typesettingInformation}／プロジェクト名：${projectTitle}　（フォルダーの名称）\np${pageNumber}と設定すると、p123のように表示されます"
@@ -162,7 +172,7 @@
           "default": true,
           "description": "縦書きプレビューのスクロールをアニメーション表示する"
         },
-        "Novel.preview.semanticHighligting": {
+        "Novel.editor.semanticHighligting": {
           "type": "boolean",
           "default": true,
           "description": "品詞ハイライトを行う\n設定は再読み込み後に有効になります"
@@ -178,7 +188,7 @@
           "enum": [
             "*"
           ],
-          "description": "テキストファイルを結合する際に、フォルダーの区切り文字を指定してください（実装中）"
+          "description": "ファイルを結合する際に、フォルダーの区切り文字を指定してください（実装中）"
         },
         "Novel.preview.userRegex": {
           "type": "array",

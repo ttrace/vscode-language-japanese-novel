@@ -3,7 +3,7 @@
 "use strict";
 import * as path from "path";
 import * as fs from "fs";
-import { draftsObject } from "./compile";
+import { draftsObject, ifFileInDraft } from "./compile";
 import TreeModel from "tree-model";
 // import os from "os";
 
@@ -151,11 +151,15 @@ export class CharacterCounter {
       savedCharacterCountNum = this._lengthByPath(docPath);
     }
 
-    const totalCharacterCountNum =
-      projectCharacterCountNum - savedCharacterCountNum;
-    const totalCharacterCount = Intl.NumberFormat().format(
-      totalCharacterCountNum + characterCountNum
-    );
+    // 合計の計算
+    // activeファイルが原稿フォルダにあるかどうか
+    const ifActiveDocInDraft = ifFileInDraft(window.activeTextEditor?.document.uri.fsPath);
+    const totalCharacterCountNum = ifActiveDocInDraft
+      ? projectCharacterCountNum - savedCharacterCountNum
+      : projectCharacterCountNum;
+    const totalCharacterCount = ifActiveDocInDraft
+      ? Intl.NumberFormat().format(totalCharacterCountNum + characterCountNum)
+      : Intl.NumberFormat().format(totalCharacterCountNum);
 
     let editDistance = "";
     let writingProgressString = "";
@@ -199,8 +203,9 @@ export class CharacterCounter {
 
     // 総量：増減分のプラス記号、±記号を定義
     let totalWritingProgressString = "";
-    this.totalWritingProgress =
-      totalCharacterCountNum + characterCountNum - this.totalCountPrevious;
+    this.totalWritingProgress = ifActiveDocInDraft
+      ? totalCharacterCountNum + characterCountNum - this.totalCountPrevious
+      : totalCharacterCountNum - this.totalCountPrevious;
     let progressTotalIndex = this.totalWritingProgress > 0 ? "+" : "";
     progressTotalIndex =
       this.totalWritingProgress == 0 ? "±" : progressTotalIndex;
@@ -307,6 +312,24 @@ export class CharacterCounter {
       return 0;
     }
   }
+
+  // private _ifFileInDraft(): boolean {
+  //   if (draftRoot() == "") {
+  //     return false;
+  //   }
+  //   //Treeモデル構築
+  //   const tree = new TreeModel();
+  //   const draftTree = tree.parse({ dir: draftRoot(), name: "root", length: 0 });
+  //   const activeDocumentPath = window.activeTextEditor?.document.uri.fsPath;
+  //   draftsObject(draftRoot()).forEach((element) => {
+  //     const draftNode = tree.parse(element);
+  //     draftTree.addChild(draftNode);
+  //   });
+  //   const activeDocumentObject = draftTree.first(
+  //     (node) => node.model.dir === activeDocumentPath
+  //   );
+  //   return activeDocumentObject ? true : false;
+  // }
 
   public _setIfChildOfTarget(): boolean {
     if (draftRoot() == "") {

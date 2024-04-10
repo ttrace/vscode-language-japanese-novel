@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { getConfig } from "./config";
 import { deadLineFolderPath } from "./extension";
+import TreeModel from "tree-model";
 
 //fsモジュールの使い方 https://qiita.com/oblivion/items/2725a4b3ca3a99f8d1a3
 export default function compileDocs(): void {
@@ -27,7 +28,8 @@ export default function compileDocs(): void {
   }
 
   //  空のファイルをつくる
-  const compiledTextFilePath = projectPath + "/publish/" + projectName + ".txt";
+  const fileExtension = config.draftFileType;
+  const compiledTextFilePath = projectPath + "/publish/" + projectName + fileExtension;
   try {
     fs.writeFileSync(compiledTextFilePath, "");
   } catch (err) {
@@ -118,7 +120,7 @@ export function fileList(dirPath: string): FileList {
       files.push(containerFiles.files);
     } else if (
       dirent.isFile() &&
-      [".txt"].includes(path.extname(dirent.name))
+      [getConfig().draftFileType].includes(path.extname(dirent.name))
     ) {
       //文字数カウントテスト
       let readingFile = fs.readFileSync(
@@ -193,7 +195,7 @@ export function draftsObject(dirPath: string): FileNode[] {
       results.push(directory);
     } else if (
       dirent.isFile() &&
-      [".txt"].includes(path.extname(dirent.name))
+      [getConfig().draftFileType].includes(path.extname(dirent.name))
     ) {
       //文字数カウントテスト
       let readingFile = fs.readFileSync(
@@ -225,4 +227,22 @@ export function totalLength(dirPath: string): number {
     result += element.length;
   });
   return result;
+}
+
+export function ifFileInDraft(DocumentPath: string|undefined): boolean {
+  if (draftRoot() == "") {
+    return false;
+  }
+  //Treeモデル構築
+  const tree = new TreeModel();
+  const draftTree = tree.parse({ dir: draftRoot(), name: "root", length: 0 });
+  //const activeDocumentPath = window.activeTextEditor?.document.uri.fsPath;
+  draftsObject(draftRoot()).forEach((element) => {
+    const draftNode = tree.parse(element);
+    draftTree.addChild(draftNode);
+  });
+  const activeDocumentObject = draftTree.first(
+    (node) => node.model.dir === DocumentPath
+  );
+  return activeDocumentObject ? true : false;
 }

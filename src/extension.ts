@@ -14,6 +14,7 @@ export * from "./charactorcount";
 import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
 import { activateTokenizer, changeTenseAspect, addRuby } from "./tokenize";
 import { exportpdf, previewpdf } from "./pdf";
+import {MarkdownFoldingProvider} from "./markdown";
 
 //リソースとなるhtmlファイル
 //let html: Buffer;
@@ -211,6 +212,10 @@ export function activate(context: vscode.ExtensionContext): void {
       vscode.commands.executeCommand("vscode.open", args);
     })
   );
+
+  const provider = new MarkdownFoldingProvider();
+  vscode.languages.registerFoldingRangeProvider({ language: 'novel' }, provider);
+
   const codeLensProviderDisposable = vscode.languages.registerCodeLensProvider(
     { language: "novel", scheme: "file" },
     new MyCodelensProvider()
