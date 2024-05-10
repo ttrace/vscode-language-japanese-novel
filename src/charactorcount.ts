@@ -485,8 +485,9 @@ export class CharacterCounter {
 
   public _resetWritingProtgress(): void {
     this.totalCountPrevious = totalLength(draftRoot());
-    this.updateCharacterCount();
     this.workspaceState?.update("totalCountPrevious", this.totalCountPrevious);
+    this.workspaceState?.update("totalCountPreviousDate", new Date());
+    this.updateCharacterCount();
     vscode.window.showInformationMessage(`今日の総合進捗をリセットしました`);
   }
 

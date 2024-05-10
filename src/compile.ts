@@ -27,6 +27,7 @@ export default function compileDocs(): void {
     fs.mkdirSync(projectPath + "/publish");
   }
 
+  //#region BLANK
   //  空のファイルをつくる
   const fileExtension = config.draftFileType;
   const compiledTextFilePath = projectPath + "/publish/" + projectName + fileExtension;
