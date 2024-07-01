@@ -80,7 +80,7 @@ export function activateTokenizer(
   );
 
   const tokenizeSetting = getConfig().semanticHighligting;
-  console.log("ハイライト！", tokenizeSetting);
+  // console.log("ハイライト！", tokenizeSetting);
   tokenizeFlag = typeof tokenizeSetting == "boolean" ? tokenizeSetting : true;
 }
 
@@ -152,7 +152,7 @@ export class DocumentSemanticTokensProvider
               pronunciation: undefined,
             };
 
-            console.log(kuromojiToken);
+            // console.log(kuromojiToken);
             for await (let mytoken of kuromojiToken) {
               let nextToken: IpadicFeatures = {
                 word_id: 0,
@@ -296,7 +296,7 @@ export class DocumentSemanticTokensProvider
               if (mytoken.surface_form === "《") {
                 kind = "bracket";
                 //  debugNum = {debug:true};
-                console.log("debug",previousToken, mytoken);
+                // console.log("debug",previousToken, mytoken);
                 if (openOffset === 0 || previousToken.surface_form === "。" ){
                   isDialogue = true;
                   tokenModifireType = "dialogue";
@@ -401,7 +401,7 @@ export class DocumentSemanticTokensProvider
     token: vscode.CancellationToken
   ): Promise<vscode.SemanticTokens | vscode.SemanticTokensEdits> {
     //return new Promise((resolve, reject) => {
-    console.log("edit");
+    // console.log("edit");
     console.dir("previousResultId" + previousResultId);
     // const resultTokensId = {
     //   start: 0,
@@ -444,11 +444,11 @@ export class DocumentSemanticTokensProvider
       typeof lineText?.lineNumber == "number" &&
       lineTokenCaching == false
     ) {
-      console.log(lineText);
+      // console.log(lineText);
       morphemeBuilder(lineText.text);
     }
 
-    console.log("parse_text");
+    // console.log("parse_text");
     return chachedToken;
   }
 
@@ -510,8 +510,8 @@ export function morphemeBuilder(text: string) {
         regexString += "(" + mytoken.surface_form + ")|";
         i++;
       }
-      const wordPatternRegex = new RegExp(regexString);
-      console.log("Regex" + wordPatternRegex);
+      // const wordPatternRegex = new RegExp(regexString);
+      // console.log("Regex" + wordPatternRegex);
       return regexString;
     }
   );

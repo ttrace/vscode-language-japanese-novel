@@ -1,0 +1,302 @@
+@charset "UTF-8";
+html {
+  orphans: 1;
+  widows: 1;
+}
+
+body {
+  writing-mode: vertical-rl;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+@page {
+  /* PDFサイズ指定 */
+  size: 148mm 210mm;
+  /* 版面（本文が組版される領域）の幅（文字数×行幅×行数＋約物用のアキ） */
+  block-size: calc(16Q * 1.75 * 18 + (16Q * 0.4));
+  /* ページ端から版面までの上アキ　左右は@page :left/rightで指定します */
+  margin-top: 15mm;
+  margin-left: auto;
+  margin-right: auto;
+
+  /* 以下、マージンボックスに継承される */
+  font-size: 16Q;
+  font-family: "游明朝", "YuMincho", serif;
+  vertical-align: top;
+}
+
+@page : first {
+  /* 開始ページ */
+  counter-reset: page 0;
+}
+
+@page :left {
+  /* ページの小口アキ。ノド側でも指定できます */
+  margin-left: 10mm;
+  /* ページの柱。下部に */
+  @bottom-left {
+    content: "p -" counter(page);
+    margin-left: 12Q;
+    margin-bottom: 10mm;
+    width: calc(16Q * 1.75 * 18);
+    writing-mode: horizontal-tb;
+    font-size: 10Q;
+  }
+}
+
+@page :right {
+  /* ページのノドアキ。小口側でも指定できます */
+  margin-right: 10mm;
+  /* border-bottom: 1pt solid black; */
+  /* 右下ノンブル */
+  @bottom-right {
+    content: "p -" counter(page);
+    margin-right: 8Q;
+    margin-bottom: 10mm;
+    width: calc(16Q * 1.75 * 18);
+    writing-mode: horizontal-tb;
+    font-size: 10Q;
+  }
+}
+
+html {
+  font-family: "游明朝", "YuMincho", serif;
+  font-weight: Medium;
+  text-align: justify;
+  hanging-punctuation: allow-end;
+  text-spacing: none;
+}
+
+body {
+  break-before: left;
+  column-count: 1;
+}
+
+div#draft {
+  inline-size: calc((16Q * 42) + 0.5em);
+  margin-inline-start: auto;
+  margin-inline-end: auto;
+}
+
+h1 {
+  /* フォント */
+  font-weight: Extrabold;
+  /* フォントサイズ */
+  font-size: 24Q;
+  /* 字下げ */
+  text-indent: 0;
+  /* 直後の改ページ・改段禁止 */
+  page-break-before: always;
+  page-break-after: always;
+  line-height: 42Q;
+  letter-spacing: 0.25em;
+  display: flex;
+  align-items: center;
+}
+
+h2 {
+  /* フォント */
+  font-weight: Demibold;
+  /* フォントサイズ */
+  font-size: 16Q;
+  /* 字下げ */
+  text-indent: 3em;
+  /* 直後の改ページ・改段禁止 */
+  page-break-before: always;
+  page-break-after: avoid;
+  line-height: 42Q;
+  margin-left: 2em;
+}
+
+h2.part {
+  block-size: 80mm;
+  padding: 0mm 35mm;
+  font-weight: bold;
+  font-size: 16Q;
+  page-break-before: always;
+  page-break-after: always;
+  margin-block-end: 4em;
+}
+
+h1 + h2 {
+  margin-block-start: 16pt;
+}
+
+ruby > rt {
+  font-size: 6.5Q;
+}
+
+p {
+  font-size: 16Q;
+  line-height: 1.75;
+  inline-size: calc((16Q * 42) + 0.5em);
+  text-indent: 0em;
+  hanging-punctuation: allow-end;
+  line-break: strict;
+  page-break-inside: auto;
+}
+
+div.indent-1 p:first-of-type,
+div.indent-2 p:first-of-type,
+div.indent-3 p:first-of-type {
+  padding-block-start: calc(16Q * 1.75);
+}
+
+div.indent-1 p:last-of-type,
+div.indent-2 p:last-of-type,
+div.indent-3 p:last-of-type {
+  padding-block-end: calc(16Q * 1.75);
+}
+
+div.indent-1 p {
+  height: calc((16Q * 42) - 16Q);
+  padding-inline-start: calc(16Q);
+}
+
+div.indent-2 p {
+  height: calc((16Q * 42) - (16Q * 2));
+  padding-inline-start: calc(16Q * 2);
+}
+
+div.indent-3 p {
+  height: calc((16Q * 42) - (16Q * 3));
+  padding-inline-start: calc(16Q * 3);
+}
+
+p.goth {
+  margin-inline-start: 3em;
+  font-family: "游ゴシック", "YuGothic", san-serif;
+  margin-block-start: 1em;
+  margin-block-end: 1em;
+}
+
+p.align-rb {
+  text-align: end;
+}
+
+p.goth + p.goth {
+  margin-block-start: -1em;
+}
+
+div.codes {
+  display: inline-block;
+  margin: 3em 1em;
+  writing-mode: horizontal-tb;
+  padding: 1em;
+  font-family: "Courier", monospace;
+  font-size: 0.8em;
+}
+
+div.codes p {
+  text-orientation: sideways;
+}
+
+p.star {
+  text-indent: 3em;
+  margin-right: 16pt;
+  margin-left: 16pt;
+}
+
+hr {
+  border: none;
+  border-right: 1pt solid black;
+  height: 6em;
+  margin: auto 8.5pt;
+}
+
+/* 縦中横 */
+.tcy {
+  -webkit-text-combine: horizontal;
+  text-combine: horizontal;
+  -ms-text-combine-horizontal: all;
+  text-combine-horizontal: digit 2;
+  text-combine-upright: digit 2;
+}
+
+span.bottom {
+  display: block;
+  float: right;
+}
+
+span.bottom-1 {
+  display: block;
+  float: right;
+  padding-inline-end: 1em;
+}
+
+span.bottom-2 {
+  display: block;
+  float: right;
+  padding-inline-end: 2em;
+}
+
+span.bottom-3 {
+  display: block;
+  float: right;
+  padding-inline-end: 3em;
+}
+
+/* 圏点（<span class="smaller">ゴマ</span>） */
+em.side-dot,
+em.sesame_dot {
+  font-style: normal;
+  -webkit-text-emphasis-style: sesame;
+  text-emphasis-style: sesame;
+  margin-block-start: -1em;
+  display: inline-block;
+}
+
+/*著作者*/
+.author {
+  position: absolute;
+  bottom: 0;
+  font-size: 8.5pt;
+  margin-inline-start: 50pt;
+  letter-spacing: normal;
+}
+
+/*画像＋キャプション*/
+figure {
+  display: block;
+  width: 236pt;
+  -ms-writing-mode: lr-tb;
+  -webkit-writing-mode: horizontal-tb;
+  writing-mode: horizontal-tb;
+}
+
+figure img {
+  width: 100%;
+  height: auto;
+  vertical-align: bottom;
+}
+
+figcaption {
+  text-align: start;
+  font-size: 7pt;
+}
+
+/*奥付*/
+.colophon {
+  font-size: 7pt;
+  margin-right: 48pt;
+}
+/* 級さげ */
+span.smaller {
+  font-size: 6.5pt;
+}
+
+div.comment {
+  display: none;
+}
+
+p.blank {
+  color: transparent;
+}
+
+span.blank {
+  display: none;
+}

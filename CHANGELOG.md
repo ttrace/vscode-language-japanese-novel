@@ -1,5 +1,22 @@
 # Changelog
 
+# 2.1.0
+
+- カスタムCSS対応
+    - プロジェクトフォルダーにcssというフォルダーがあり、その中にprint.cssがある場合、PDF生成はそちらを優先するようになりました。
+    - レイアウトを固定して、異なる版面や上下・ノド・小口の空き、新たなスタイルシートを導入いただけます。印刷物を作成する場合にご利用ください
+    - いくつかの変数を利用できます
+        - ${writingDirection}: 縦書き、横書きの組み方向をnovel-writerの設定で指定できます
+        - ${fontSizeWithUnit}: 文字サイズをnovel-writerの設定で指定できます
+        - ${originPageNumber}: ノンブルの開始ページをnovel-writerの設定で指定できます
+        - ${pageNumberFormatR}: ページの柱をnovel-writerの設定で指定できます
+        - ${pageStartingCss}: PDFが右ページ開始か、左ページ開始かをnovel-writerの設定で指定できます
+        - ${columnCSS}: 段数をnovel-writerの自動計算で指定できます
+        - ${columnHeitghtRate}: 一段の高さをnovel-writerの自動計算で指定できます
+    - novel-writerの標準的なprintCssは、以下で閲覧できます
+        - [GitHub repository](https://github.com/ttrace/vscode-language-japanese-novel/blob/main/htdocs/css/print.css)
+- デフォルトの組版を、行42文字、ページあたり18行に変更しました
+
 # 2.0.2
 
 - 進捗リセットを行うと日跨ぎ処理ができなくなっていたバグを修正しました
