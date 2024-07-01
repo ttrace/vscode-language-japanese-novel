@@ -20,8 +20,16 @@ export function editorText(originEditor: OriginEditor): string {
   // カーソル位置
   if (text.slice(cursorOffset, cursorOffset + 1) == "\n") {
     cursorTaggedHtml =
-    text.slice(0, cursorOffset) +
-    '<span id="cursor" class="blank">↩︎</span>' + text.slice(cursorOffset);
+      text.slice(0, cursorOffset) +
+      '<span id="cursor" class="blank">↩︎</span>' +
+      text.slice(cursorOffset);
+  } else if ((text.slice(cursorOffset, cursorOffset + 1)).match(/(》］)/)) {
+    cursorTaggedHtml =
+      text.slice(0, cursorOffset) +
+      '<span id="cursor">' +
+      text.slice(cursorOffset, cursorOffset - 1) +
+      "</span>" +
+      text.slice(cursorOffset + 0);
   } else {
     cursorTaggedHtml =
       text.slice(0, cursorOffset) +
@@ -135,7 +143,7 @@ let prevSectionStyle = vscode.window.createTextEditorDecorationType({});
 let nextSectionStyle = vscode.window.createTextEditorDecorationType({});
 
 export async function previewBesideSection(editor: vscode.TextEditor) {
-  if(!getConfig().sceneNav) return;
+  if (!getConfig().sceneNav) return;
   //console.log("decoration");
   const decorationsArrayPrev: vscode.DecorationOptions[] = [];
   const decorationsArrayNext: vscode.DecorationOptions[] = [];
@@ -162,7 +170,8 @@ export async function previewBesideSection(editor: vscode.TextEditor) {
     const nextDocText = nextText
       .substring(0, 300)
       .replace(/(.{0,30})/g, "$1\\a")
-      .replace(/\\a\\a/g, "\\a").replace(/\\a$/, "");
+      .replace(/\\a\\a/g, "\\a")
+      .replace(/\\a$/, "");
 
     const prevDecorationCss = `;
     display: block;
@@ -216,7 +225,7 @@ export class MyCodelensProvider implements vscode.CodeLensProvider {
     document: vscode.TextDocument
   ): Promise<vscode.CodeLens[]> {
     return new Promise((resolve) => {
-      if(!getConfig().sceneNav) return;
+      if (!getConfig().sceneNav) return;
       const editor = vscode.window.activeTextEditor;
 
       //const besides = getBesideText(document);
@@ -229,7 +238,7 @@ export class MyCodelensProvider implements vscode.CodeLensProvider {
 
         const prevLens = {
           command: "Novel.openfile",
-          title: prevTitle + " ……"+ prevText,
+          title: prevTitle + " ……" + prevText,
           tooltip: "前のシーンのファイルを開く",
           arguments: [prevUrl],
         };
@@ -246,7 +255,10 @@ export class MyCodelensProvider implements vscode.CodeLensProvider {
         if (!lastLine?.isEmptyOrWhitespace && nextTitle != "") {
           editor?.edit((edit) => {
             edit.insert(
-              new vscode.Position(editor.document.lineCount, lastLine!.range.contains.length),
+              new vscode.Position(
+                editor.document.lineCount,
+                lastLine!.range.contains.length
+              ),
               "\n"
             );
             lastLine = editor?.document.lineAt(editor.document.lineCount - 1);
@@ -256,7 +268,7 @@ export class MyCodelensProvider implements vscode.CodeLensProvider {
           lastLine!.range.end,
           lastLine!.range.end
         );
-  
+
         const CodeLenses = [];
         if (prevTitle != "")
           CodeLenses.push(new vscode.CodeLens(topOfDocument, prevLens));
@@ -277,7 +289,7 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
   nextTitle: string;
   nextText: string;
 }> {
-  if(!ifFileInDraft(document.fileName)){
+  if (!ifFileInDraft(document.fileName)) {
     return {
       prevUrl: null,
       prevTitle: "",
@@ -285,12 +297,12 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
       nextUrl: null,
       nextTitle: "",
       nextText: "",
-    }
+    };
   }
   const myFileList = fileList(draftRoot());
   const docIndex = myFileList.files.findIndex(
     // (e) => e.dir == document.fileName
-    (e) => e.dir?.normalize('NFC') == document.fileName.normalize('NFC')
+    (e) => e.dir?.normalize("NFC") == document.fileName.normalize("NFC")
   );
   let prevDocIndex = null;
   let nextDocIndex = null;

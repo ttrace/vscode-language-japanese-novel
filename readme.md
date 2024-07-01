@@ -2,13 +2,13 @@
 
 Visual Studio Codeで小説を執筆するための機能拡張です。
 
-リアルタイム更新する原稿用紙プレビューで印刷時の組版に近い読み方を確かめつつ、会話と地の文、名詞や動詞、助詞などの品詞ハイライトを備えたエディターで執筆を行うことが可能です。句読点のぶら下げも行う原稿用紙プレビューは1行当たりの文字数を指定できますので、新聞原稿のように13文字や15文字といった短い行の文字送りを確かめながら執筆できます。
-
-CSS組版システムVivliostyleを用いることで、原稿用紙プレビューと同じ字数行数で組版されたPDFも出力できます。
+リアルタイム更新する原稿用紙プレビューで読み方を確かめつつ、会話と地の文、名詞や動詞、助詞などの品詞ハイライトを備えたエディターで執筆を行うことが可能です。原稿用紙プレビューは1行当たりの文字数を指定できるので、新聞のように段組される、13文字や15文字の短い行の文字送りを確かめながら執筆できます。
 
 novel-writerは.txt、.mdなどのテキストファイルで長編小説（ノベル）を執筆支援する機能拡張です。
 単一のテキストファイルではなく、章や部を想定し、入れ子になったフォルダーに保存する複数のテキストファイルの文字数を表示したり、複数のテキストファイルを単一のファイルに結合したりする機能を備えています。  
 また、特定のフォルダーを「締め切りフォルダー」に指定することで、そのフォルダーが含む複数のテキストファイルの文字数を表示することも可能です。
+
+また、novel-writerでは、CSSからPDFを作成する組版システムVivliostyleを用いることで、A5サイズの用紙に、原稿用紙プレビューと同じ字数行数で組版されたPDFを出力できます。CSSを個別に指定することで、A5版以外のPDFや任意のアキやフォント、スタイルシートを指定したPDFを生成することも可能です。
 
 ![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/highlight-and-vertical.png)
 
@@ -172,13 +172,27 @@ page ${pageNumber}　→ page 12
 ${projectTitle} p${pageNumber}　→ 作品名 p12
 ```
 
-
 #### PDF開始ページ番号
 PDFのページ番号の開始ページを指定できます。
 
 #### PDF開始ページの左右設定
 PDFの第一ページを左右どちらにするか設定できます。
 冊子の場合は「左」に、原稿提出の時は「右」にしておくといいでしょう。
+
+#### カスタムCSS
+
+レイアウトを固定して、異なる版面や上下・ノド・小口の空き、新たなスタイルシートを導入いただけます。印刷物を作成する場合にご利用ください。またカスタムCSSでは、いくつかのnovel-writer変数を利用できます。
+
+- ${writingDirection}: 縦書き、横書きの組み方向をnovel-writerの設定で指定できます
+- ${fontSizeWithUnit}: 文字サイズをnovel-writerの設定で指定できます
+- ${originPageNumber}: ノンブルの開始ページをnovel-writerの設定で指定できます
+- ${pageNumberFormatR}: ページの柱をnovel-writerの設定で指定できます
+- ${pageStartingCss}: PDFが右ページ開始か、左ページ開始かをnovel-writerの設定で指定できます
+- ${columnCSS}: 段数をnovel-writerの自動計算で指定できます
+- ${columnHeitghtRate}: 一段の高さをnovel-writerの自動計算で指定できます
+
+novel-writerの標準的なprint.cssは、以下で閲覧できます
+    - [GitHub ttrace/vscode-language-japanese-novel/blob/main/htdocs/css/print.css](https://github.com/ttrace/vscode-language-japanese-novel/blob/main/htdocs/css/print.css)
 
 ## テキスト結合
 

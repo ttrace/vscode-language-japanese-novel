@@ -136,12 +136,12 @@
         },
         "Novel.preview.lineLength": {
           "type": "number",
-          "default": 40,
+          "default": 42,
           "description": "一行の文字数を指定してください\n行数はプレビュー、印刷どちらも有効です"
         },
         "Novel.preview.linesPerPage": {
           "type": "number",
-          "default": 20,
+          "default": 18,
           "description": "PDF作成時の印刷時の1ページの行数を指定してください"
         },
         "Novel.pdf.pageStarting": {
@@ -193,7 +193,7 @@
         "Novel.preview.userRegex": {
           "type": "array",
           "default": [],
-          "description": "正規表現でHTML出力を調整することができます。複数の処理を行う場合は配列を増やしてください。\n（例） [\"い\", \"<span class='small'>ゐ</span>]\",[\"<p>[^「](.+?)</p>\",\"<p>　$1</p>\"], [ RegExp , Str ]）"
+          "description": "正規表現でHTML出力を調整することができます。複数の処理を行う場合は配列を増やしてください。\n（例） [\"い\", \"<span class='small'>ゐ</span>\"],[\"<p>[^「](.+?)</p>\",\"<p>　$1</p>\"], [ RegExp , Str ]）"
         }
       }
     },

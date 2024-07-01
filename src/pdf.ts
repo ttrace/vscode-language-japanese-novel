@@ -13,7 +13,7 @@ export function previewpdf() {
 }
 
 export async function exportpdf(preview: boolean | undefined): Promise<void> {
-  const myHtml = getPrintContent();
+  const myHtml = await getPrintContent();
   if (!vscode.workspace.workspaceFolders) {
     vscode.window.showWarningMessage(`ワークスペースが見つかりません`);
     return;
@@ -49,7 +49,7 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
 
     output.appendLine(`starting to publish: ${myPath}`);
 
-    const myHtmlBinary = Buffer.from(myHtml, "utf8");
+    const myHtmlBinary = Buffer.from(myHtml, "utf-8");
 
     vscode.workspace.fs.writeFile(myPath, myHtmlBinary).then(() => {
       output.appendLine(`saving pdf to ${vivlioCommand}`);
@@ -104,7 +104,7 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
   }
 }
 
-function getPrintContent() {
+async function getPrintContent(): Promise<string> {
   //configuration 読み込み
 
   const myText = editorText("active").replace(
@@ -113,23 +113,22 @@ function getPrintContent() {
   );
   const previewSettings: NovelSettings = getConfig();
   const writingDirection = previewSettings.writingDirection;
+  const linesPerPage = previewSettings.linesPerPage;
   const printBoxInlineLength =
     writingDirection === "vertical-rl" ? 168 : 124.32; // ドキュメント高さの80%(上下マージン10%を抜いた数)
   const printBoxBlockSize = writingDirection === "vertical-rl" ? 124.32 : 168; // ドキュメント幅の84%(左右マージン16%を抜いた数)
   const fontSize =
     previewSettings.lineLength >
-    previewSettings.linesPerPage *
-      1.75 *
-      (printBoxInlineLength / printBoxBlockSize)
+    linesPerPage * 1.75 * (printBoxInlineLength / printBoxBlockSize)
       ? printBoxInlineLength / previewSettings.lineLength
-      : printBoxBlockSize / (previewSettings.linesPerPage * 1.75);
+      : printBoxBlockSize / (linesPerPage * 1.75);
   // フォントサイズ in mm
   const fontSizeWithUnit = fontSize + "mm";
   // const lineHeightWithUnit = fontSize * 1.75 + "mm";
   const projectTitle = vscode.workspace.workspaceFolders![0].name;
   const typeSettingHeight = fontSize * previewSettings.lineLength;
   // const typeSettingHeightUnit = typeSettingHeight + "mm";
-  // const typeSettingWidth = fontSize * 1.75 * previewSettings.linesPerPage;
+  // const typeSettingWidth = fontSize * 1.75 * plinesPerPage;
   // const typeSettingWidthUnit = typeSettingWidth + "mm";
   const columnCount = Math.floor(
     printBoxInlineLength / (typeSettingHeight + fontSize * 2)
@@ -154,7 +153,7 @@ function getPrintContent() {
     "calc(" + fontSize * previewSettings.lineLength + "mm + 0.5em)";
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const typesettingInformation = `${previewSettings.lineLength}字×${previewSettings.linesPerPage}行`;
+  const typesettingInformation = `${previewSettings.lineLength}字×${linesPerPage}行`;
 
   const pageNumberFormatR = eval(
     "`" +
@@ -171,16 +170,9 @@ function getPrintContent() {
   //     ";`"
   // );
 
-  console.log(pageNumberFormatR);
+  // console.log(pageNumberFormatR);
 
-  return `<!DOCTYPE html>
-  <html lang="ja">
-  <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${projectTitle}</title>
-
-      <style>
+  let printCss = `<style>
       @charset "UTF-8";
       html {
       orphans: 1;
@@ -198,9 +190,7 @@ function getPrintContent() {
 
       @page {
         size: 148mm 210mm;
-        block-size: calc(${fontSizeWithUnit} * 1.75 * ${
-    previewSettings.linesPerPage
-  } + (${fontSizeWithUnit} * 0.4));
+        block-size: calc(${fontSizeWithUnit} * 1.75 * ${linesPerPage} + (${fontSizeWithUnit} * 0.4));
         margin-top: 10%;
         margin-bottom: 10%;
         margin-left: 8%;
@@ -482,8 +472,41 @@ function getPrintContent() {
     span.blank{
       display:none;
     }
-    </style>
+    </style>`;
 
+  const folderUri = vscode.workspace.workspaceFolders![0].uri;
+  const cssUri = vscode.Uri.joinPath(folderUri, "css", "print.css");
+
+  try {
+    await vscode.workspace.fs.stat(cssUri);
+    const cssContent = await vscode.workspace.fs.readFile(cssUri);
+    let cssString = cssContent.toString();
+    console.log(cssString);
+
+    const variables: Record<string, string> = {
+      writingDirection,
+      fontSizeWithUnit,
+      linesPerPage: String(linesPerPage),
+      originPageNumber: String(originPageNumber),
+      pageNumberFormatR,
+      pageStartingCss,
+      columnCSS,
+      columnHeitghtRate,
+    };
+
+    cssString = evaluateTemplate(cssString, variables);
+    printCss = `<style>${cssString}</style>`;
+  } catch (error) {
+    console.log("css/print.css not found, using default printCss.", cssUri);
+  }
+
+  return `<!DOCTYPE html>
+  <html lang="ja">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${projectTitle}</title>
+      ${printCss}
   </head>
   <body>
   <div id="draft">
@@ -491,4 +514,11 @@ function getPrintContent() {
   </div>
   </body>
   </html>`;
+}
+
+function evaluateTemplate(
+  template: string,
+  variables: Record<string, string>
+): string {
+  return template.replace(/\$\{(.*?)\}/g, (_, v) => variables[v] ?? "");
 }
