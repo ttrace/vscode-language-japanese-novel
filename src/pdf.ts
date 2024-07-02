@@ -6,6 +6,8 @@ import * as cp from "child_process";
 import { draftRoot } from "./compile";
 
 const output = vscode.window.createOutputChannel("Novel");
+
+let vivlioProcess: cp.ChildProcess | null = null;
 let vivlioLaunching = false;
 
 export function previewpdf() {
@@ -13,12 +15,23 @@ export function previewpdf() {
 }
 
 export async function exportpdf(preview: boolean | undefined): Promise<void> {
-  const myHtml = await getPrintContent();
   if (!vscode.workspace.workspaceFolders) {
     vscode.window.showWarningMessage(`ワークスペースが見つかりません`);
     return;
   } else {
+    // vivliostyle実行準備
     let fileName: string | undefined;
+    const folderUri = vscode.workspace.workspaceFolders[0].uri;
+    const myPath = vscode.Uri.joinPath(folderUri, "publish.html");
+    const myWorkingDirectory = folderUri;
+    const vivlioCommand = "vivliostyle";
+    const vivlioSubCommand = preview ? "preview" : "build";
+    const execPath = draftRoot().match(/^[a-z]:\\/)
+      ? myPath.path.replace(/^\//, "")
+      : myPath;
+    const vivlioExportOption = !preview ? "-f pdf -o" : "";
+
+    // PDF保存するためのファイルパス作成
     if (!preview) {
       const filePath = vscode.window.activeTextEditor?.document.fileName;
       const pdfName = filePath
@@ -32,44 +45,33 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
         ignoreFocusOut: false,
       });
     }
-    const folderUri = vscode.workspace.workspaceFolders[0].uri;
-    const myPath = vscode.Uri.joinPath(folderUri, "publish.html");
-    const myWorkingDirectory = folderUri;
-    const vivlioCommand = "vivliostyle";
-    const vivlioSubCommand = preview ? "preview" : "build";
-    const execPath = draftRoot().match(/^[a-z]:\\/)
-      ? myPath.path.replace(/^\//, "")
-      : myPath;
     const vivlioExportPath = !preview
       ? path.normalize(
           vscode.Uri.joinPath(myWorkingDirectory, `${fileName}.pdf`).fsPath
         )
       : "";
-    const vivlioExportOption = !preview ? "-f pdf -o" : "";
 
-    output.appendLine(`starting to publish: ${myPath}`);
+    output.appendLine(`PDF処理を実行します: ${myPath}`);
 
+    //HTMLの抽出
+    const myHtml = await getPrintContent();
     const myHtmlBinary = Buffer.from(myHtml, "utf-8");
 
-    vscode.workspace.fs.writeFile(myPath, myHtmlBinary).then(() => {
-      output.appendLine(`saving pdf to ${vivlioCommand}`);
+    try {
+      await vscode.workspace.fs.writeFile(myPath, myHtmlBinary);
 
-      if (!vivlioLaunching || !preview) {
-        vivlioLaunching = preview ? true : false;
-        if (preview) {
-          vscode.window.showInformationMessage(
-            `プレビュー起動中……\n初回起動には少々時間がかかります`
-          );
-        } else {
-          vscode.window.showInformationMessage(
-            `Vivliostyle起動中……\n初回起動には少々時間がかかります`
-          );
-        }
-        const vivlioProcess = cp.exec(
+      if (!preview) {
+        // PDF保存
+        vscode.window.showInformationMessage(
+          `Vivliostyle起動中……\n初回起動には少々時間がかかります`
+        );
+        cp.exec(
           `${vivlioCommand} ${vivlioSubCommand} ${execPath} ${vivlioExportOption} "${vivlioExportPath}"`,
           (err, stdout, stderr) => {
             if (err) {
-              output.appendLine(`Vivlioエラー: ${err.message}`);
+              output.appendLine(
+                `VivlioStyleの処理でエラーが発生しました: ${err.message}`
+              );
               vivlioLaunching = false;
               return;
             }
@@ -87,20 +89,57 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
             vivlioLaunching = false;
           }
         );
+      } else {
+        vscode.window.showInformationMessage(
+          `プレビュー起動中……\n初回起動には少々時間がかかります`
+        );
 
-        vivlioProcess.on("close", (code, signal) => {
-          if (vivlioProcess.killed) {
-            //exportpdf(true);
+        if (vivlioProcess !== null) {
+          console.log(vivlioProcess);
+          vivlioProcess.kill(vivlioProcess.pid);
+          console.log("前回のプロセスを終了しました。");
+        }
+        vivlioLaunching = true;
+
+        cp.exec(
+          `${vivlioCommand} ${vivlioSubCommand} ${execPath}`,
+          (err, stdout, stderr) => {
+            if (err) {
+              output.appendLine(
+                `VivlioStyleの処理でエラーが発生しました: ${err.message}`
+              );
+              vivlioLaunching = false;
+              return;
+            }
+            if (stdout) {
+              console.log(`Vivlio出力： ${stdout}`);
+            }
+            if (stderr) {
+              console.log(`Vivlioエラー出力： ${stderr}`);
+            }
+            vscode.window.showInformationMessage(`プレビューが終わりました`);
             vivlioLaunching = false;
           }
-          console.log(
-            `ERROR: child terminated. Exit code: ${code}, signal: ${signal}`
-          );
-        });
-      } else {
-        vscode.window.showInformationMessage(`プレビューが作成されました`);
+        );
       }
-    });
+    } catch (err) {
+      //HTML保存エラー
+      output.appendLine(`HTMLの保存時にエラーが発生しました: ${err}`);
+      console.error(`HTMLの保存時にエラーが発生しました: ${err}`);
+    }
+
+    //   vivlioProcess.on("close", (code, signal) => {
+    //     if (vivlioProcess.killed) {
+    //       console.log("Vivlistyleプレビューが終了しました");
+    //       vivlioLaunching = false;
+    //     }
+    //     console.log(
+    //       `ERROR: child terminated. Exit code: ${code}, signal: ${signal}`
+    //     );
+    //   });
+    // } else {
+    //   vscode.window.showInformationMessage(`プレビューが再表示されました`);
+    // }
   }
 }
 
@@ -481,7 +520,6 @@ async function getPrintContent(): Promise<string> {
     await vscode.workspace.fs.stat(cssUri);
     const cssContent = await vscode.workspace.fs.readFile(cssUri);
     let cssString = cssContent.toString();
-    console.log(cssString);
 
     const variables: Record<string, string> = {
       writingDirection,
