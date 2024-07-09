@@ -39,11 +39,14 @@ export function editorText(originEditor: OriginEditor): string {
       text.slice(cursorOffset + 1);
   }
 
+  // 段落分割
   const paragraphs = cursorTaggedHtml.split(/\r?\n/);
   //console.log(paragraphs);
   let lineNumber = 0;
   paragraphs.forEach((paragraph) => {
-    //console.log(paragraph);
+    // インラインのHTML変換
+    paragraph = inline_tagggedHTML(paragraph);
+
     if (paragraph.match(/^\s*$/)) {
       myHTML += `<p id="l-${lineNumber}" class="blank">_${paragraph}</p>`;
     } else if (
@@ -74,14 +77,47 @@ export function markUpHtml(myHtml: string) {
     });
   }
 
+  // region: Block変換
+  // Markdown見出し
   taggedHTML = taggedHTML.replace(
-    /(?<![0-9\sa-zA-Z"'():])([0-9][0-9])(?![0-9\sa-zA-Z"'():])/g,
-    '<span class="tcy">$1</span>'
+    /<p (id="l-[0-9]+")># (.+?)<\/p>/g,
+    '<h1 $1>$2</h1>'
   );
   taggedHTML = taggedHTML.replace(
-    /(.+?)［＃「\1」は縦中横］/g,
-    '<span class="tcy">$1</span>'
+    /<p (id="l-[0-9]+")>## (.+?)<\/p>/g,
+    '<h2 $1>$2</h2>'
   );
+  taggedHTML = taggedHTML.replace(
+    /<p (id="l-[0-9]+")>### (.+?)<\/p>/g,
+    '<h3 $1>$2</h3>'
+  );
+  taggedHTML = taggedHTML.replace(
+    /<p (id="l-[0-9]+")>#### (.+?)<\/p>/g,
+    '<h4 $1>$2</h4>'
+  );
+  taggedHTML = taggedHTML.replace(
+    /<p (id="l-[0-9]+")>##### (.+?)<\/p>/g,
+    '<h5 $1>$2</h5>'
+  );
+  taggedHTML = taggedHTML.replace(
+    /<p (id="l-[0-9]+")>###### (.+?)<\/p>/g,
+    '<h6 $1>$2</h6>'
+  );
+  // 青空文庫注記法通常見出し
+  taggedHTML = taggedHTML.replace(
+    /<p (id="l-[0-9]+")>(.+?)［＃「\2」は大見出し］<\/p>/g,
+    '<h1 $1>$2</h1>'
+  );
+  taggedHTML = taggedHTML.replace(
+    /<p (id="l-[0-9]+")>(.+?)［＃「\2」は中見出し］<\/p>/g,
+    '<h2 $1>$2</h2>'
+  );
+  taggedHTML = taggedHTML.replace(
+    /<p (id="l-[0-9]+")>(.+?)［＃「\2」は小見出し］<\/p>/g,
+    '<h3 $1>$2</h3>'
+  );
+
+
   taggedHTML = taggedHTML.replace(
     /<p id="l-[0-9]+">［＃ここから[１1一]文字下げ］<\/p>/g,
     '<div class="indent-1">'
@@ -98,22 +134,6 @@ export function markUpHtml(myHtml: string) {
     /<p id="l-[0-9]+">［＃ここで字下げ終わり］<\/p>/g,
     "</div>"
   );
-  taggedHTML = taggedHTML.replace(
-    /［＃地付き］(.+)<\/p>/g,
-    '<span class="bottom">$1</span></p>'
-  );
-  taggedHTML = taggedHTML.replace(
-    /［＃地から[1１]字上げ］(.+)<\/p>/g,
-    '<span class="bottom-1">$1</span></p>'
-  );
-  taggedHTML = taggedHTML.replace(
-    /［＃地から[2２]字上げ］(.+)<\/p>/g,
-    '<span class="bottom-2">$1</span></p>'
-  );
-  taggedHTML = taggedHTML.replace(
-    /［＃地から[3３]字上げ］(.+)<\/p>/g,
-    '<span class="bottom-3">$1</span></p>'
-  );
 
   taggedHTML = taggedHTML.replace(
     /<p id="l-[0-9]+">［＃ここで字下げ終わり］<\/p>/g,
@@ -123,20 +143,56 @@ export function markUpHtml(myHtml: string) {
     /<!-- (.+?) -->/g,
     '<div class="comment">$1</div>'
   );
-  taggedHTML = taggedHTML.replace(
-    /[｜|]([^｜|\n]+?)《([^《]+?)》/g,
-    "<ruby>$1<rt>$2</rt></ruby>"
-  );
-  taggedHTML = taggedHTML.replace(
-    /([一-鿏々-〇]+?)《(.+?)》/g,
-    "<ruby>$1<rt>$2</rt></ruby>"
-  );
-  taggedHTML = taggedHTML.replace(
-    /(.+?)［＃「\1」に傍点］/g,
-    '<em class="side-dot">$1</em>'
-  );
+
 
   return taggedHTML;
+}
+
+// region: インライン変換
+function inline_tagggedHTML(paragraph: string){
+  let lineText = paragraph;
+
+    // 自動縦中横
+    lineText = lineText.replace(
+      /(?<![0-9\sa-zA-Z"'():])([0-9][0-9])(?![0-9\sa-zA-Z"'():])/g,
+      '<span class="tcy">$1</span>'
+    );
+    // 青空縦中横
+    lineText = lineText.replace(
+      /(.+?)［＃「\1」は縦中横］/g,
+      '<span class="tcy">$1</span>'
+    );
+
+    lineText = lineText.replace(
+      /[｜|]([^｜|\n]+?)《([^《]+?)》/g,
+      "<ruby>$1<rt>$2</rt></ruby>"
+    );
+    lineText = lineText.replace(
+      /([一-鿏々-〇]+?)《(.+?)》/g,
+      "<ruby>$1<rt>$2</rt></ruby>"
+    );
+    lineText = lineText.replace(
+      /(.+?)［＃「\1」に傍点］/g,
+      '<em class="side-dot">$1</em>'
+    );
+    // 地付き、字上げ処理
+    lineText = lineText.replace(
+      /［＃地付き］(.+)$/g,
+      '<span class="bottom">$1</span>'
+    );
+    lineText = lineText.replace(
+      /［＃地から[1１]字上げ］(.+)$/g,
+      '<span class="bottom-1">$1</span>'
+    );
+    lineText = lineText.replace(
+      /［＃地から[2２]字上げ］(.+)$/g,
+      '<span class="bottom-2">$1</span>'
+    );
+    lineText = lineText.replace(
+      /［＃地から[3３]字上げ］(.+)$/g,
+      '<span class="bottom-3">$1</span>'
+    );
+  return lineText;
 }
 
 let prevSectionStyle = vscode.window.createTextEditorDecorationType({});

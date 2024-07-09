@@ -212,10 +212,19 @@ p {
   vertical-align: middle;
 }
 
-em.side-dot {
+/* MARK: 圏点 */
+body.vscode-dark em.side-dot {
   font-style: normal;
-  text-emphasis: filled sesame rgb(128, 128, 128);
-  -webkit-text-emphasis: filled sesame rgb(128, 128, 128);
+  text-emphasis: filled sesame white;
+  -webkit-text-emphasis: filled sesame white;
+  margin-right: -1em;
+  display: inline-block;
+}
+
+body.vscode-light em.side-dot{
+  font-style: normal;
+  text-emphasis: filled sesame black;
+  -webkit-text-emphasis: filled sesame black;
   margin-right: -1em;
   display: inline-block;
 }
