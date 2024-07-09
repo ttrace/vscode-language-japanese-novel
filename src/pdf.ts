@@ -157,20 +157,26 @@ async function getPrintContent(): Promise<string> {
   const linesPerPage = previewSettings.linesPerPage;
   const printBoxInlineLength =
     writingDirection === "vertical-rl" ? 168 : 124.32; // ドキュメント高さの80%(上下マージン10%を抜いた数)
-  const printBoxBlockSize = writingDirection === "vertical-rl" ? 124.32 : 168; // ドキュメント幅の84%(左右マージン16%を抜いた数)
+  // ドキュメント幅の84%(左右マージン16%を抜いた数)
+  const printBoxBlockSize = writingDirection === "vertical-rl" ? 124.32 : 168;
   const fontSize =
     previewSettings.lineLength >
     linesPerPage * 1.75 * (printBoxInlineLength / printBoxBlockSize)
       ? printBoxInlineLength / previewSettings.lineLength
       : printBoxBlockSize / (linesPerPage * 1.75);
+  //フォントサイズの計算式のためのコメント
+  // console.log(
+  //   "fontsize:",
+  //   fontSize,
+  //   "BoxInlineLength:",
+  //   printBoxInlineLength,
+  //   "printBoxBlockSize:",
+  //   printBoxBlockSize
+  // );
   // フォントサイズ in mm
   const fontSizeWithUnit = fontSize + "mm";
-  // const lineHeightWithUnit = fontSize * 1.75 + "mm";
   const projectTitle = vscode.workspace.workspaceFolders![0].name;
   const typeSettingHeight = fontSize * previewSettings.lineLength;
-  // const typeSettingHeightUnit = typeSettingHeight + "mm";
-  // const typeSettingWidth = fontSize * 1.75 * plinesPerPage;
-  // const typeSettingWidthUnit = typeSettingWidth + "mm";
   const columnCount = Math.floor(
     printBoxInlineLength / (typeSettingHeight + fontSize * 2)
   );
@@ -295,45 +301,68 @@ async function getPrintContent(): Promise<string> {
       }
 
       h1 {
-      /* フォント */
-      font-weight: Extrabold;
-      /* フォントサイズ */
-      font-size: 24q;
-      /* 字下げ */
-      text-indent: 0;
-      /* 直後の改ページ・改段禁止 */
-      line-height: 42q;
-      letter-spacing: 0.25em;
-      display: flex;
-      align-items: center;
+        /* 五行トリ2倍角 */
+        display:flex;
+        align-items: center;
+        block-size: calc(${fontSizeWithUnit} * 1.75 * 5);
+        /* フォント */
+        font-weight: Extrabold;
+        letter-spacing: 0.25em;
+        font-size: calc(${fontSizeWithUnit} * 2);
+        /* 字下げ */
+        text-indent: 0;
+        /* 直後の改ページ・改段禁止 */
       }
   
       h2 {
-      /* フォント */
-      font-weight: Demibold;
-      /* フォントサイズ */
-      font-size: 16q;
-      /* 字下げ */
-      text-indent: 3em;
-      /* 直後の改ページ・改段禁止 */
-      line-height: 42q;
-      margin-left: 2em;
+        /* 二行トリ1.6倍角 */
+        display:flex;
+        align-items: center;
+        block-size: calc(${fontSizeWithUnit} * 1.75 * 2);
+        /* フォント */
+        font-weight: Extrabold;
+        font-size: calc(${fontSizeWithUnit} * 1.6);
+        /* 字下げ */
+        text-indent: calc(${fontSizeWithUnit} * 1 * ${previewSettings.writingDirection == 'horizontal-tb' ? 0 : 1});
+        /* 直後の改ページ・改段禁止 */
       }
-  
-      h2.part {
-      block-size: 80mm;
-      padding: 0mm 35mm;
-      font-weight: bold;
-      font-size: 16q;
-      page-break-before: always;
-      page-break-after: always;
-      margin-block-end: 4em;
+
+      h3 {
+        /* 一行トリ1.2倍角 */
+        display:flex;
+        align-items: center;
+        block-size: calc(${fontSizeWithUnit} * 1.75);
+        /* フォント */
+        font-weight: demi-bold;
+        font-size: calc(${fontSizeWithUnit} * 1.2);
+        /* 字下げ */
+        text-indent: calc(${fontSizeWithUnit} * 1 * ${previewSettings.writingDirection == 'horizontal-tb' ? 0 : 1});
+        /* 直後の改ページ・改段禁止 */
+        page-break-after:avoid;
       }
-  
+
+      h4,h5,h6 {
+        /* 一行トリ1.2倍角 */
+        display:flex;
+        align-items: center;
+        block-size: calc(${fontSizeWithUnit} * 1.75);
+        /* フォント */
+        font-weight: demi-bold;
+        font-size: calc(${fontSizeWithUnit} * 1);
+        /* 字下げ */
+        text-indent: calc(${fontSizeWithUnit} * 1 * ${previewSettings.writingDirection == 'horizontal-tb' ? 0 : 1});
+        /* 直後の改ページ・改段禁止 */
+        page-break-after:avoid;
+      }
+
       h1 + h2 {
       margin-block-start: 16pt;
       }
-  
+
+      p + h3 {
+        margin-block-start: calc(${fontSizeWithUnit} * 1.75);
+      }
+      
       ruby > rt {
       font-size: 6.5q;
       }
@@ -362,17 +391,17 @@ async function getPrintContent(): Promise<string> {
 
     
     div.indent-1 p{
-    height: calc( ${columnHeitghtRate} - ${fontSizeWithUnit});
+    inline-size: calc( ${columnHeitghtRate} - ${fontSizeWithUnit});
     padding-inline-start: calc( ${fontSizeWithUnit});
     }
 
     div.indent-2 p{
-    height: calc( ${columnHeitghtRate} - (${fontSizeWithUnit} * 2));
+    inline-size: calc( ${columnHeitghtRate} - (${fontSizeWithUnit} * 2));
     padding-inline-start: calc(${fontSizeWithUnit} * 2);
     }
 
     div.indent-3 p{
-    height: calc( ${columnHeitghtRate} - (${fontSizeWithUnit} * 3));
+    inline-size: calc( ${columnHeitghtRate} - (${fontSizeWithUnit} * 3));
     padding-inline-start: calc(${fontSizeWithUnit} * 3);
     }
 
@@ -413,7 +442,7 @@ async function getPrintContent(): Promise<string> {
     hr {
     border: none;
     border-right: 1pt solid black;
-    height: 6em;
+    block-size: 6em;
     margin: auto 8.5pt;
     }
 
@@ -479,7 +508,7 @@ async function getPrintContent(): Promise<string> {
 
     figure img {
     width: 100%;
-    height: auto;
+    block-size: auto;
     vertical-align: bottom;
     }
 

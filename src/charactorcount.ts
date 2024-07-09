@@ -99,12 +99,12 @@ export class CharacterCounter {
         const storedTotalCountDate = context.workspaceState.get(
           "totalCountPreviousDate"
         );
-        console.log(storedTotalCountDate, typeof storedTotalCountDate);
+        // console.log(storedTotalCountDate, typeof storedTotalCountDate);
         this.totalCountPreviousDate =
           typeof storedTotalCountDate == "string"
             ? new Date(storedTotalCountDate)
             : new Date(new Date());
-        console.log("ステータス日", storedTotalCountDate);
+        // console.log("ステータス日", storedTotalCountDate);
       }
     }
   }
@@ -191,7 +191,7 @@ export class CharacterCounter {
     // 執筆日またぎ処理
     const launchDay = this.totalCountPreviousDate.getDate();
     const today = new Date().getDate();
-    console.log(this.totalCountPreviousDate, launchDay, today);
+    // console.log(this.totalCountPreviousDate, launchDay, today);
     if (launchDay != today) {
       console.log("日跨ぎ発生！", launchDay, today);
       this.workspaceState?.update("totalCountPrevious", totalCharacterCountNum);
@@ -558,7 +558,6 @@ export class CharacterCounterController {
   private _onEvent() {
     this._characterCounter.updateCharacterCount();
     if (this._characterCounter.ifEditDistance) {
-      console.log("TEST");
       this._characterCounter._updateEditDistanceDelay();
     }
   }

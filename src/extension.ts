@@ -234,7 +234,7 @@ export function activate(context: vscode.ExtensionContext): void {
     const editor = vscode.window.activeTextEditor;
     if (typeof editor != "undefined") {
       latestEditor = editor;
-      console.log("editor changed!");
+      // console.log("editor changed!");
     }
     if (editor?.document.languageId == "novel") {
       previewBesideSection(editor);
