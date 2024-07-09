@@ -12,7 +12,7 @@ import { draftTreeProvider } from "./novel";
 import { CharacterCounter, CharacterCounterController } from "./charactorcount";
 export * from "./charactorcount";
 import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
-import { activateTokenizer, changeTenseAspect, addRuby } from "./tokenize";
+import { activateTokenizer, changeTenseAspect, addRuby, addSesami } from "./tokenize";
 import { exportpdf, previewpdf } from "./pdf";
 import {MarkdownFoldingProvider} from "./markdown";
 
@@ -96,9 +96,15 @@ export function activate(context: vscode.ExtensionContext): void {
       changeTenseAspect
     )
   );
+
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.add-ruby", addRuby)
   );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("Novel.add-sesami", addSesami)
+  );
+
 
   const draftNodeTreeProvider = new draftTreeProvider();
   vscode.window.registerTreeDataProvider(

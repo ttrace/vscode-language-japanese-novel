@@ -858,6 +858,30 @@ export async function addRuby() {
   return;
 }
 
+// 圏点挿入
+export async function addSesami() {
+  console.log("圏点！");
+  const editor = vscode.window.activeTextEditor;
+  if (editor == null) return; // エディターがない時は動作しない
+  const document = vscode.window.activeTextEditor?.document;
+  const lineString = document?.lineAt(editor.selection.active.line).text;
+  const selection = editor.selection;
+
+  //空行の時は動作しない
+  if (lineString == "" || lineString == "　" || lineString == undefined) return;
+  //複数行の時は動作しない
+  if (!selection.isSingleLine) return;
+
+  if (!selection.isEmpty) {
+    // console.log("ルビ選択範囲あり", editor.document.getText(selection));
+    const baseString = editor.document.getText(selection);
+    const replaceRange = new Range(selection.start, selection.end);
+    const sesamiString =  `${baseString}［＃「${baseString}」に傍点］`;
+    changeText(replaceRange, sesamiString);
+    return;
+  }
+}
+
 //文字の挿入
 function changeText(range: vscode.Range, text: string) {
   const editor = vscode.window.activeTextEditor;

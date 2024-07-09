@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -53,6 +53,10 @@
       {
         "command": "Novel.add-ruby",
         "title": "Novel:ルビ挿入"
+      },
+      {
+        "command": "Novel.add-sesami",
+        "title": "Novel:圏点挿入"
       },
       {
         "command": "Novel.launch-preview-server",

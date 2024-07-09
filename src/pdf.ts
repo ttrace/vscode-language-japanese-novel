@@ -302,8 +302,6 @@ async function getPrintContent(): Promise<string> {
       /* 字下げ */
       text-indent: 0;
       /* 直後の改ページ・改段禁止 */
-      page-break-before: always;
-      page-break-after: always;
       line-height: 42q;
       letter-spacing: 0.25em;
       display: flex;
@@ -318,8 +316,6 @@ async function getPrintContent(): Promise<string> {
       /* 字下げ */
       text-indent: 3em;
       /* 直後の改ページ・改段禁止 */
-      page-break-before: always;
-      page-break-after: avoid;
       line-height: 42q;
       margin-left: 2em;
       }
