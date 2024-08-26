@@ -216,6 +216,11 @@ novel-writerは階層化されたフォルダーの中のテキストも結合�
 ### vscode-textlintとの併用
 novel-writerはnovelというファイル形式を用いますので、VS CodeのsettingsでのTextlint: Languagesにnovelを追加してください。
 
+### novel-writerの機能を無効にしたい場合
+
+VS Codeは標準的なテキストファイルで小説を書くための機能拡張です。そのため、小説ではないプロジェクトを開いたときにも動作してしまいます。novel-writerの機能を停止したい場合には、VS Codeのプロファイルを用いてnovel-writerが動作しないプロファイル（あるいはnovel-writerが有効なプロファイル）を作成してご利用ください。
+
+拡張子を追加する要望があることは承知していますが、VS Code本体で拡張子に関する機能拡張が行われるまでは対応できません。
 
 ## 参考にした文献
 
