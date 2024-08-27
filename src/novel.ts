@@ -1,8 +1,8 @@
-import * as vscode from 'vscode';
-import { draftRoot, draftsObject } from './compile';
+import * as vscode from "vscode";
+import { draftRoot, draftsObject } from "./compile";
 
 export class DraftWebViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'draftTree';
+  public static readonly viewType = "draftTree";
   private _context: vscode.ExtensionContext;
   private _webviewView?: vscode.WebviewView;
 
@@ -10,16 +10,16 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
 
   constructor(context: vscode.ExtensionContext) {
     this._context = context;
-    
+
     // ファイルシステムの監視を設定
-    this.watch = vscode.workspace.createFileSystemWatcher('**/*.txt');
+    this.watch = vscode.workspace.createFileSystemWatcher("**/*.txt");
     this.watch.onDidChange(this.handleFileSystemEvent, this);
     this.watch.onDidCreate(this.handleFileSystemEvent, this);
     this.watch.onDidDelete(this.handleFileSystemEvent, this);
   }
 
   private handleFileSystemEvent(uri: vscode.Uri) {
-    console.log('File system event detected:', uri);
+    console.log("File system event detected:", uri);
     this.refreshWebview();
   }
 
@@ -36,20 +36,28 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
 
-    webviewView.webview.onDidReceiveMessage(message => {
-      if (message.command === 'loadTreeData') {
+    webviewView.webview.onDidReceiveMessage(async (message) => {
+      if (message.command === "loadTreeData") {
         this.loadTreeData(webviewView.webview);
-        console.log('Treeからデータ取得依頼');
+        console.log("Treeからデータ取得依頼");
+      } else if (message.command === "openFile") {
+        const uri = vscode.Uri.file(message.filePath);
+        await vscode.commands.executeCommand("vscode.open", uri);
       }
     });
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._context.extensionUri, 'dist', 'webview', 'bundle.js')
+      vscode.Uri.joinPath(
+        this._context.extensionUri,
+        "dist",
+        "webview",
+        "bundle.js"
+      )
     );
     const styleUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._context.extensionUri, 'media', 'style.css')
+      vscode.Uri.joinPath(this._context.extensionUri, "media", "style.css")
     );
 
     return /* html */ `
@@ -70,8 +78,8 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
 
   private loadTreeData(webview: vscode.Webview) {
     webview.postMessage({
-      command: 'treeData',
-      data: draftsObject(draftRoot())
+      command: "treeData",
+      data: draftsObject(draftRoot()),
     });
   }
 
