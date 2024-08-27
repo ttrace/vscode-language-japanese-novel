@@ -1,34 +1,42 @@
 import React, { useEffect, useState } from 'react';
-import { useDrop } from 'react-dnd';
-import { ItemTypes } from './treeItemTypes';
+import ReactDOM from 'react-dom/client';
 
-export const App: React.FC = () => {
-    const [files, setFiles] = useState<string[]>([]);
-
-    useEffect(() => {
-        // VS Codeから送信されるメッセージを受け取る
-        window.addEventListener('message', (event) => {
-            const message = event.data;
-            if (message.type === 'update') {
-                setFiles(message.files);
-            }
-        });
-    }, []);
-
-    const [, dropRef] = useDrop({
-        accept: ItemTypes.FILE,
-        drop(item) {
-            console.log(`Dropped item: ${item}`);
-        },
-    });
-
-    return (
-        <div ref={dropRef}>
-            {files.map(file => (
-                <div key={file}>{file}</div>
-            ))}
-        </div>
-    );
+type TreeFileNode = {
+  dir: string;
+  name: string;
+  length: number;
+  children?: TreeFileNode[];
 };
 
-export default App;
+export const App: React.FC = () => {
+  const [treeData, setTreeData] = useState<TreeFileNode[]>([]);
+
+  useEffect(() => {
+    // VS Code の API にアクセス
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const vscode = (window as any).acquireVsCodeApi();
+
+    // 初期ロード時にツリーデータを要求
+    vscode.postMessage({ command: 'loadTreeData' });
+
+    window.addEventListener('message', event => {
+      const message = event.data; // メッセージデータを取得
+      switch (message.command) {
+        case 'treeData':
+          setTreeData(message.data); // データセット
+          break;
+      }
+    });
+  }, []);
+
+  return (
+    <div>
+      <h1>Draft Tree</h1>
+      <pre>{JSON.stringify(treeData, null, 2)}</pre>
+      {/* ツリー表示のロジックをここに追加 */}
+    </div>
+  );
+};
+
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(<App />);

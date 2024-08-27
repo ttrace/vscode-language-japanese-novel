@@ -8,7 +8,7 @@ import { Server, WebSocket } from "ws";
 import { getConfig } from "./config";
 import compileDocs, { draftRoot } from "./compile";
 import { draftsObject } from "./compile"; // filelist オブジェクトもある
-import { DraftTreeViewProvider } from "./novel";
+import { DraftWebViewProvider } from "./novel";
 import { CharacterCounter, CharacterCounterController } from "./charactorcount";
 export * from "./charactorcount";
 import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
@@ -105,7 +105,8 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("Novel.add-sesami", addSesami)
   );
 
-  const treeProvider = new DraftTreeViewProvider(context);
+  // 原稿ツリーの登録と表示
+  const treeProvider = new DraftWebViewProvider(context);
   
   context.subscriptions.push(
       vscode.window.registerWebviewViewProvider('draftTree', treeProvider)

@@ -246,8 +246,9 @@
     "views": {
       "novelApp": [
         {
+          "type": "webview",
           "id": "draftTree",
-          "name": "原稿ツリー"
+          "name": "原稿"
         }
       ]
     },
