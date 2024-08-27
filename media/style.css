@@ -12,6 +12,8 @@ div {
   margin-bottom: 5px;
 }
 
+/* MARK:ツリー */
+
 .tree-node {
   height: 1rem;
   overflow-y: hidden;
@@ -93,10 +95,11 @@ div {
 }
 
 .tree-node.highlighted {
-  background-color: rgba(0.5, 0.5, 0.5, 0.1);
-  border-top: rgba(0.5, 0.5, 0.5, 0.3) 1px solid;
-  border-bottom: rgba(0.5, 0.5, 0.5, 0.3) 1px solid;
+  background-color: rgba(116, 116, 116, 0.2);
+  border-top: rgba(116, 116, 116, 0.4) 1px solid;
+  border-bottom: rgba(116, 116, 116, 0.4) 1px solid;
 }
+
 
 .tree-node.expanded > span.triangle {
   transform: rotate(90deg);

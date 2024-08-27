@@ -32,7 +32,9 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
 
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     context: vscode.WebviewViewResolveContext,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     token: vscode.CancellationToken
   ) {
     this._webviewView = webviewView;
