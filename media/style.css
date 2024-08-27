@@ -13,15 +13,17 @@ div {
 }
 
 .tree-node {
-    height: 1.1rem;
-    overflow-y: hidden;
-    transition: all 1s linear;
-    line-height: 1;
+  height: 1rem;
+  overflow-y: hidden;
+  transition: all 0.3s linear;
+  line-height: 1;
+  border-top: transparent 1px solid;
+  border-bottom: transparent 1px solid;
 }
 
-.tree-node.expanded{
-    height: auto;
-    transition: all 0.3s linear;
+.tree-node.expanded {
+  height: auto;
+  transition: all 0.3s linear;
 }
 
 .tree-node-children {
@@ -35,63 +37,69 @@ div {
 }
 
 .tree-node > span.label {
-    margin-left: 0em;
+  margin-left: 0em;
 }
 
 .tree-node > span.label::before {
-    content: url('folder-closed.svg');
-    width:1.2em;
-    display: inline-block;
-    margin-right:0.2em;
+  content: url("folder-closed.svg");
+  width: 1.2em;
+  display: inline-block;
+  margin-right: 0.2em;
 }
 
 .vscode-light .tree-node > span.label::before {
-    content: url('folder-closed-light.svg');
+  content: url("folder-closed-light.svg");
 }
 
 .tree-node.expanded.text > span.label::before {
-    content: url('file-dark.svg');
-    margin-left: 0.75em;
+  content: url("file-dark.svg");
+  margin-left: 0.75em;
 }
 
 .vscode-light .tree-node.expanded.text > span.label::before {
-    content: url('file-light.svg');
-    margin-left: 0.75em;
+  content: url("file-light.svg");
+  margin-left: 0.75em;
 }
 
 .horizontal.tree-node.expanded.text > span.label::before {
-    content: url('file-dark.svg');
-    margin-left: 0.75em;
+  content: url("file-dark.svg");
+  margin-left: 0.75em;
 }
 
 .vscode-light .horizontal.tree-node.expanded.text > span.label::before {
-    content: url('file-light.svg');
-    margin-left: 0.75em;
+  content: url("file-light.svg");
+  margin-left: 0.75em;
 }
 
 .tree-node.expanded > span.label::before {
-    content: url('folder-opens.svg');
+  content: url("folder-opens.svg");
 }
 
 .vscode-light .tree-node.expanded > span.label::before {
-    content: url('folder-opens-light.svg');
+  content: url("folder-opens-light.svg");
 }
 
 .tree-node > span.triangle {
-    font-size: 1em;
-    width:1em;
-    height:1em;
-    text-align: center;
-    display: inline-block;
-    transform: rotate(0deg);
+  font-size: 1em;
+  width: 1em;
+  height: 1em;
+  text-align: center;
+  display: inline-block;
+  transform: rotate(0deg);
 }
 
 .tree-node.text > span.triangle {
-    display: none;
+  display: none;
+}
+
+.tree-node.highlighted {
+  background-color: rgba(0.5, 0.5, 0.5, 0.1);
+  border-top: rgba(0.5, 0.5, 0.5, 0.3) 1px solid;
+  border-bottom: rgba(0.5, 0.5, 0.5, 0.3) 1px solid;
 }
 
 .tree-node.expanded > span.triangle {
-    transform: rotate(90deg);
+  transform: rotate(90deg);
 }
 
 .tree-node > span.chars {
@@ -100,54 +108,58 @@ div {
   margin-left: 0.5em;
 }
 
+/* #MARK: トグルスイッチ */
+.toggle-switch {
+  text-align:right
+}
 
 .switch {
-    position: relative;
-    display: inline-block;
-    width: 34px;
-    height: 20px;
-  }
-  
-  .switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-  
-  .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ccc;
-    transition: .4s;
-    border-radius: 34px;
-  }
-  
-  .slider:before {
-    position: absolute;
-    content: "";
-    height: 14px;
-    width: 14px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-  }
-  
-  input:checked + .slider {
-    background-color: #2196f3;
-  }
-  
-  input:checked + .slider:before {
-    transform: translateX(14px);
-  }
-  
-  .sorting-toggle {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-  }
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 20px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2196f3;
+}
+
+input:checked + .slider:before {
+  transform: translateX(14px);
+}
+
+.sorting-toggle {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}

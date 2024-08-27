@@ -105,7 +105,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("Novel.add-sesami", addSesami)
   );
 
-  // 原稿ツリーの登録と表示
+  // MARK: 原稿ツリー
   const treeProvider = new DraftWebViewProvider(context);
   
   context.subscriptions.push(
@@ -119,8 +119,6 @@ export function activate(context: vscode.ExtensionContext): void {
     })
   );
 
-
-  
   // 品詞ハイライトの初期化
   const kuromojiPath = context.extensionPath + "/node_modules/kuromoji/dict";
   activateTokenizer(context, kuromojiPath);

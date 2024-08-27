@@ -16,6 +16,13 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
     this.watch.onDidChange(this.handleFileSystemEvent, this);
     this.watch.onDidCreate(this.handleFileSystemEvent, this);
     this.watch.onDidDelete(this.handleFileSystemEvent, this);
+
+    // エディターが変更されたときにwebviewにメッセージを送信
+    vscode.window.onDidChangeActiveTextEditor(() => {
+      if (this._webviewView) {
+        this._webviewView.webview.postMessage({ command: "clearHighlight" });
+      }
+    });
   }
 
   private handleFileSystemEvent(uri: vscode.Uri) {
