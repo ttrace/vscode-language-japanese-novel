@@ -13,11 +13,17 @@
   "main": "dist/extension.js",
   "dependencies": {
     "@types/kuromoji": "^0.1.3",
+    "@types/react": "^18.3.4",
+    "@types/react-dnd": "^3.0.2",
+    "@types/react-dom": "^18.3.0",
     "@vivliostyle/cli": "^8.12.1",
     "fastest-levenshtein": "^1.0.16",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
     "kuromoji": "github:ttrace/kuromoji.js",
+    "react": "^18.3.1",
+    "react-dnd": "^16.0.1",
+    "react-dom": "^18.3.1",
     "simple-git": "^3.25.0",
     "tree-model": "^1.0.7",
     "ws": "^8.17.1"
@@ -42,6 +48,10 @@
   ],
   "contributes": {
     "commands": [
+      {
+        "command": "Novel.showTreeView",
+        "title": "原稿ツリー表示"
+      },
       {
         "command": "Novel.vertical-preview",
         "title": "Novel:縦書きプレビュー"
@@ -213,30 +223,30 @@
       "view/title": [
         {
           "command": "draftTree.refresh",
-          "when": "view == draftTreePanel",
+          "when": "view == draftTree",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
           "command": "Novel.set-counter",
-          "when": "view == draftTreePanel && viewItem == folder"
+          "when": "view == draftTree && viewItem == folder"
         }
       ]
     },
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "novelPanel",
+          "id": "novelApp",
           "title": "ノベルライター",
           "icon": "resource/icon.png"
         }
       ]
     },
     "views": {
-      "novelPanel": [
+      "novelApp": [
         {
-          "id": "draftTreePanel",
+          "id": "draftTree",
           "name": "原稿ツリー"
         }
       ]
@@ -696,11 +706,11 @@
     "ps-tree": "^1.2.0",
     "sinon": "^18.0.0",
     "ts-loader": "^9.5.1",
-    "typescript": "^5.5.3",
+    "typescript": "^5.5.4",
     "utf-8-validate": "^6.0.4",
     "util": "^0.12.5",
     "vscode-test": "^1.5.2",
-    "webpack": "^5.92.1",
+    "webpack": "^5.94.0",
     "webpack-cli": "^5.1.4",
     "webpack-env": "^0.8.0",
     "xhr2": "^0.2.1"

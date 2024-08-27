@@ -11,21 +11,18 @@
 //@ts-check
 /** @typedef {import('webpack').Configuration} WebpackConfig **/
 
-
 const path = require('path');
 const webpack = require('webpack');
 
 /** @type WebpackConfig */
 const webExtensionConfig = {
 	mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
-	target: 'node', // extensions run in a node >>>  webworker context
+	target: 'node', // extensions run in a node >> webworker context
 	entry: {
 		'extension': './src/extension.ts',
-		//'test/suite/index': './src/web/test/suite/index.ts'
 	},
 	output: {
 		filename: '[name].js',
-		// eslint-disable-next-line no-undef
 		path: path.join(__dirname, './dist'),
 		libraryTarget: 'commonjs2',
 		devtoolModuleFilenameTemplate: '../[resource-path]'
@@ -37,16 +34,8 @@ const webExtensionConfig = {
 	resolve: {
 		mainFields: ['browser', 'module', 'main'], // look for `browser` entry point in imported node modules
 		extensions: ['.ts', '.js'], // support ts-files and js-files
-		alias: {
-			// provides alternate implementation for node module and source files
-		},
-		fallback: {
-			// Webpack 5 no longer polyfills Node.js core modules automatically.
-			// see https://webpack.js.org/configuration/resolve/#resolvefallback
-			// for the list of Node.js core module polyfills.
-			// eslint-disable-next-line no-undef
-			//'assert': require.resolve('assert')
-		}
+		alias: {},
+		fallback: {}
 	},
 	module: {
 		rules: [{
@@ -70,5 +59,36 @@ const webExtensionConfig = {
 	},
 };
 
+/** @type WebpackConfig */
+const webviewConfig = {
+	mode: 'none',
+	entry: './src/webview/treeview.tsx',
+	output: {
+		path: path.resolve(__dirname, 'dist/webview'),
+		filename: 'bundle.js'
+	},
+	resolve: {
+		extensions: ['.jsx', '.js', '.tsx', '.ts'],
+	},
+	module: {
+		rules: [
+			{
+				test: /\.tsx?$/,
+				exclude: /node_modules/,
+				use: 'ts-loader'
+			},
+			{
+				test: /\.css$/,
+				use: ['style-loader', 'css-loader']
+			}
+		]
+	},
+	plugins: [
+		new webpack.DefinePlugin({
+			'process.env.NODE_ENV': JSON.stringify('production')
+		})
+	]
+};
+
 // eslint-disable-next-line no-undef
-module.exports = [ webExtensionConfig ];1
+module.exports = [webExtensionConfig, webviewConfig];

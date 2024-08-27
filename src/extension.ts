@@ -8,7 +8,7 @@ import { Server, WebSocket } from "ws";
 import { getConfig } from "./config";
 import compileDocs, { draftRoot } from "./compile";
 import { draftsObject } from "./compile"; // filelist オブジェクトもある
-import { draftTreeProvider } from "./novel";
+import { DraftTreeViewProvider } from "./novel";
 import { CharacterCounter, CharacterCounterController } from "./charactorcount";
 export * from "./charactorcount";
 import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
@@ -105,15 +105,17 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("Novel.add-sesami", addSesami)
   );
 
-
-  const draftNodeTreeProvider = new draftTreeProvider();
-  vscode.window.registerTreeDataProvider(
-    "draftTreePanel",
-    draftNodeTreeProvider
+  const treeProvider = new DraftTreeViewProvider(context);
+  
+  context.subscriptions.push(
+      vscode.window.registerWebviewViewProvider('draftTree', treeProvider)
   );
 
-  vscode.commands.registerCommand("draftTree.refresh", () =>
-    draftNodeTreeProvider.refresh()
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('novel.refresh', () => {
+      vscode.window.showInformationMessage('Refresh Command Triggered');
+    })
   );
 
   // 品詞ハイライトの初期化

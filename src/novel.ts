@@ -2,132 +2,54 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import * as vscode from "vscode";
 //import * as fs from "fs";
-//import * as path from "path";
+// import * as path from "path";
 import { draftRoot, draftsObject } from "./compile";
-import { deadLineFolderPath, deadLineTextCount } from "./charactorcount";
+// import { deadLineFolderPath, deadLineTextCount } from "./charactorcount";
 
-type TreeFileNode = {
-  dir: string;
-  name: string;
-  length: number;
-  children?: FileNode[];
-};
+console.log(draftRoot, draftsObject);
 
-type FileNode = {
-  dir: string;
-  name: string;
-  length: number;
-};
+export class DraftTreeViewProvider implements vscode.WebviewViewProvider {
+  public static readonly viewType = 'draftTree';
+  private _context: vscode.ExtensionContext;
 
-export class draftTreeProvider
-  implements vscode.TreeDataProvider<draftTreeItem>
-{
-  //draftTreeOrign = () => draftsObject(draftRoot());
-  private watch: vscode.FileSystemWatcher;
-  constructor() {
-    this.watch = vscode.workspace.createFileSystemWatcher("**/*.txt");
-
-    this.watch.onDidChange((uri) => {
-      // console.log("changed!!!", uri);
-      this._onDidChangeTreeData.fire();
-    });
-    this.watch.onDidCreate((uri) => {
-      // console.log("changed!!!", uri);
-      this._onDidChangeTreeData.fire();
-    });
-    this.watch.onDidDelete((uri) => {
-      // console.log("changed!!!", uri);
-      this._onDidChangeTreeData.fire();
-    });
-
-    console.log(draftRoot());
-  }
-  //
-  private _onDidChangeTreeData: vscode.EventEmitter<
-    draftTreeItem | undefined | void
-  > = new vscode.EventEmitter<draftTreeItem | undefined | void>();
-  readonly onDidChangeTreeData: vscode.Event<draftTreeItem | undefined | void> =
-    this._onDidChangeTreeData.event;
-
-  refresh(): void {
-    console.log("refresh");
-    this._onDidChangeTreeData.fire();
+  constructor(context: vscode.ExtensionContext) {
+    this._context = context;
   }
 
-  getTreeItem(element: draftTreeItem): draftTreeItem | draftTreeItem {
-    //ツリーの最小単位を返す
-    return element;
+  public resolveWebviewView(
+    webviewView: vscode.WebviewView,
+    context: vscode.WebviewViewResolveContext,
+    token: vscode.CancellationToken
+  ) {
+    console.log(context, token);
+    webviewView.webview.options = {
+      enableScripts: true
+    };
+
+    webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
   }
 
-  getChildren(element?: draftTreeItem): draftTreeItem[] {
-    if (draftRoot() == "") {
-      vscode.window.showInformationMessage("No dependency in empty workspace");
-      return [];
-    }
-
-    if (element === undefined) {
-      const draftTreeOrign: FileNode[] = draftsObject(draftRoot());
-      return this.buildDraftTree(draftTreeOrign);
-    }
-    return this.buildDraftTree(element.children as FileNode[]);
-  }
-
-  private buildDraftTree(draftObj: FileNode[]): draftTreeItem[] {
-    const children: draftTreeItem[] = [];
-
-    draftObj.forEach((draftItem: TreeFileNode) => {
-      const treeItem = new draftTreeItem(draftItem);
-
-      children.push(treeItem);
-      if (draftItem.children !== undefined) {
-        this.buildDraftTree(draftItem.children);
-      }
-    });
-
-    return children;
-  }
-}
-
-class draftTreeItem extends vscode.TreeItem {
-  children?: vscode.TreeItem[] | TreeFileNode[];
-  constructor(draftItem: TreeFileNode) {
-    super(
-      draftItem.name,
-      draftItem.children === undefined
-        ? vscode.TreeItemCollapsibleState.None
-        : vscode.TreeItemCollapsibleState.Expanded
+  private getHtmlForWebview(webview: vscode.Webview): string {
+    const scriptUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._context.extensionUri, "media", "main.js")
+    );
+    const styleUri = webview.asWebviewUri(
+      vscode.Uri.joinPath(this._context.extensionUri, "media", "style.css")
     );
 
-    const filePath = vscode.Uri.file(draftItem.dir.split('\\').join('/'));
-
-    this.label = draftItem.name.replace(
-      /^([0-9]+[-_\s]){0,1}(.+)(\.txt)$/,
-      "$2"
-    );
-    this.description = `:${Intl.NumberFormat().format(draftItem.length)}文字`;
-    this.resourceUri = filePath;
-
-    if (!draftItem.children) {
-      this.iconPath = new vscode.ThemeIcon("note");
-    } else {
-      this.iconPath = new vscode.ThemeIcon("folder-library");
-    }
-
-    if (draftItem.dir == deadLineFolderPath()){
-      this.iconPath = new vscode.ThemeIcon("folder-active");
-      this.description = `:${Intl.NumberFormat().format(draftItem.length)}/${deadLineTextCount()}文字`;
-    }
-
-    this.children = draftItem.children;
-    if (draftItem.children === undefined) {
-      this.command = {
-        command: "vscode.open",
-        title: "ファイルを開く",
-        arguments: [filePath],
-      };
-      this.contextValue = "file";
-    } else {
-      this.contextValue = "folder";
-    }
+    return /* html */ `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <link href="${styleUri}" rel="stylesheet">
+              <title>Draft Tree</title>
+          </head>
+          <body>
+              <div id="root"></div>
+              <script src="${scriptUri}"></script>
+          </body>
+          </html>`;
   }
 }
