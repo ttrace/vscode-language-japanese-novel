@@ -33,15 +33,16 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
 
-    const draftsItems: TreeFileNode[] = draftsObject(draftRoot());
+    //const draftsItems: TreeFileNode[] = draftsObject(draftRoot());
     
     // 初期データの転送
     webviewView.webview.onDidReceiveMessage(message => {
       if (message.command === 'loadTreeData') {
         webviewView.webview.postMessage({
           command: 'treeData',
-          data: draftsItems
+          data: draftsObject(draftRoot())
         });
+        console.log("Treeからデータ取得依頼");
       }
     });
   }

@@ -8,6 +8,21 @@ type TreeFileNode = {
   children?: TreeFileNode[];
 };
 
+const TreeNode: React.FC<{ node: TreeFileNode }> = ({ node }) => {
+  return (
+    <div style={{ marginLeft: 20 }}>
+      <div>{node.name}</div>
+      {node.children && (
+        <div>
+          {node.children.map((child) => (
+            <TreeNode key={child.name} node={child} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const App: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeFileNode[]>([]);
 
@@ -17,10 +32,12 @@ export const App: React.FC = () => {
     const vscode = (window as any).acquireVsCodeApi();
 
     // 初期ロード時にツリーデータを要求
+    console.log("初期ロード時にツリーデータを要求");
     vscode.postMessage({ command: 'loadTreeData' });
 
     window.addEventListener('message', event => {
       const message = event.data; // メッセージデータを取得
+      console.log(message);
       switch (message.command) {
         case 'treeData':
           setTreeData(message.data); // データセット
@@ -32,8 +49,11 @@ export const App: React.FC = () => {
   return (
     <div>
       <h1>Draft Tree</h1>
-      <pre>{JSON.stringify(treeData, null, 2)}</pre>
-      {/* ツリー表示のロジックをここに追加 */}
+      <div>
+        {treeData.map((node) => (
+          <TreeNode key={node.name} node={node} />
+        ))}
+      </div>
     </div>
   );
 };
