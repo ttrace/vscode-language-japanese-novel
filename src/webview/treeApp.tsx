@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 
+// TypeScript の型定義
 type TreeFileNode = {
   dir: string;
   name: string;
@@ -8,34 +9,45 @@ type TreeFileNode = {
   children?: TreeFileNode[];
 };
 
-const TreeNode: React.FC<{ node: TreeFileNode }> = ({ node }) => {
-  return (
-    <div style={{ marginLeft: 20 }}>
-      <div>{node.name}</div>
-      {node.children && (
-        <div>
-          {node.children.map((child) => (
-            <TreeNode key={child.name} node={child} />
-          ))}
-        </div>
-      )}
-    </div>
-  );
+interface TreeViewProps {
+  node: TreeFileNode;
+}
+
+const TreeView: React.FC<TreeViewProps> = ({ node }) => {
+
+    const [expanded, setExpanded] = useState(true);
+
+    const toggleExpand = () => {
+        setExpanded(!expanded);
+      };
+
+    return (
+        <div className={`tree-node ${expanded ? 'expanded' : ''} ${!node.children ? 'text' : ''}`}>
+        <span className='triangle' onClick={toggleExpand}>&gt;</span>
+        <span className='label'>{node.name.replace(/(\d+[-_\s])*(.+)(\.(txt|md))*/,'$2')}</span>
+        <span className='chars'>{node.length.toLocaleString()}文字</span>
+        {node.children && (
+          <div className="tree-node-children">
+            {node.children.map((child) => (
+              <TreeView key={child.name} node={child} /> // Assuming 'name' is unique within the directory
+            ))}
+          </div>
+        )}
+      </div>
+    );
 };
+
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const vscode = (window as any).acquireVsCodeApi();
 
 export const App: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeFileNode[]>([]);
 
   useEffect(() => {
-    // VS Code の API にアクセス
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const vscode = (window as any).acquireVsCodeApi();
-
-    // 初期ロード時にツリーデータを要求
-    console.log("初期ロード時にツリーデータを要求");
     vscode.postMessage({ command: 'loadTreeData' });
 
-    window.addEventListener('message', event => {
+    const handleMessage = (event: MessageEvent) => {
       const message = event.data; // メッセージデータを取得
       console.log(message);
       switch (message.command) {
@@ -43,20 +55,27 @@ export const App: React.FC = () => {
           setTreeData(message.data); // データセット
           break;
       }
-    });
+    };
+
+    window.addEventListener('message', handleMessage);
+
+    // クリーンアップ関数でイベントリスナーを解除
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
   }, []);
 
   return (
     <div>
-      <h1>Draft Tree</h1>
-      <div>
-        {treeData.map((node) => (
-          <TreeNode key={node.name} node={node} />
-        ))}
-      </div>
+      {treeData.length === 0 ? (
+        <p>Loading...</p>
+      ) : (
+        treeData.map((node, index) => <TreeView key={index} node={node} />)
+      )}
     </div>
   );
 };
 
+// root.render を呼び出す
 const root = ReactDOM.createRoot(document.getElementById('root')!);
 root.render(<App />);

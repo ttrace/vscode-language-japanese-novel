@@ -6,12 +6,12 @@ import * as vscode from "vscode";
 import { draftRoot, draftsObject } from "./compile";
 // import { deadLineFolderPath, deadLineTextCount } from "./charactorcount";
 
-type TreeFileNode = { 
-  dir: string;
-  name: string;
-  length: number;
-  children?: TreeFileNode[];
-};
+// type TreeFileNode = { 
+//   dir: string;
+//   name: string;
+//   length: number;
+//   children?: TreeFileNode[];
+// };
 
 export class DraftWebViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "draftTree";
@@ -61,19 +61,19 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
     );
 
     return /* html */ `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <link href="${styleUri}" rel="stylesheet">
-          <title>Draft Tree</title>
-      </head>
-      <body>
-          <div id="root"></div>
-          <script src="${scriptUri}"></script>
-      </body>
-      </html>`;
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="${styleUri}" rel="stylesheet">
+        <title>Draft Tree</title>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script src="${scriptUri}"></script>
+    </body>
+    </html>`;
   }
 }
 

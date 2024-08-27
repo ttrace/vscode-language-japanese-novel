@@ -1,9 +1,91 @@
 body {
-    font-family: sans-serif;
-  }
-  h1 {
+  font-family: sans-serif;
+  padding: 0em 0.5em;
+  user-select: none;
+  overflow-x: hidden;
+}
+
+h1 {
+  text-align: center;
+}
+div {
+  margin-bottom: 5px;
+}
+
+.tree-node {
+    height: 1.1rem;
+    overflow-y: hidden;
+    transition: all 1s linear;
+    line-height: 1;
+}
+
+.tree-node.expanded{
+    height: auto;
+    transition: all 0.3s linear;
+}
+
+.tree-node-children {
+  margin-top: 5px;
+  padding-left: 20px;
+}
+
+.tree-node > span {
+  cursor: pointer;
+  transform: rotate(90deg);
+}
+
+.tree-node > span.label {
+    margin-left: 0em;
+}
+
+.tree-node > span.label::before {
+    content: url('folder-closed.svg');
+    width:1.2em;
+    display: inline-block;
+    margin-right:0.2em;
+}
+
+.vscode-light .tree-node > span.label::before {
+    content: url('folder-closed-light.svg');
+}
+
+.tree-node.expanded.text > span.label::before {
+    content: url('file-dark.svg');
+    margin-left: 0.75em;
+}
+
+.vscode-light .tree-node.expanded.text > span.label::before {
+    content: url('file-light.svg');
+    margin-left: 0.75em;
+}
+
+.tree-node.expanded > span.label::before {
+    content: url('folder-opens.svg');
+}
+
+.vscode-light .tree-node.expanded > span.label::before {
+    content: url('folder-opens-light.svg');
+}
+
+.tree-node > span.triangle {
+    font-size: 1em;
+    width:1em;
+    height:1em;
     text-align: center;
-  }
-  div {
-    margin-bottom: 5px;
-  }
+    display: inline-block;
+    transform: rotate(0deg);
+}
+
+.tree-node.text > span.triangle {
+    display: none;
+}
+
+.tree-node.expanded > span.triangle {
+    transform: rotate(90deg);
+}
+
+.tree-node > span.chars {
+  font-size: 0.8em;
+  opacity: 0.8;
+  margin-left: 0.5em;
+}
