@@ -59,6 +59,16 @@ div {
     margin-left: 0.75em;
 }
 
+.horizontal.tree-node.expanded.text > span.label::before {
+    content: url('file-dark.svg');
+    margin-left: 0.75em;
+}
+
+.vscode-light .horizontal.tree-node.expanded.text > span.label::before {
+    content: url('file-light.svg');
+    margin-left: 0.75em;
+}
+
 .tree-node.expanded > span.label::before {
     content: url('folder-opens.svg');
 }
