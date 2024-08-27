@@ -6,10 +6,10 @@ import * as vscode from "vscode";
 import { draftRoot, draftsObject } from "./compile";
 // import { deadLineFolderPath, deadLineTextCount } from "./charactorcount";
 
-console.log(draftRoot, draftsObject);
+console.log("原稿の構造体",draftsObject(draftRoot()));
 
 export class DraftTreeViewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = 'draftTree';
+  public static readonly viewType = "draftTree";
   private _context: vscode.ExtensionContext;
 
   constructor(context: vscode.ExtensionContext) {
@@ -23,7 +23,7 @@ export class DraftTreeViewProvider implements vscode.WebviewViewProvider {
   ) {
     console.log(context, token);
     webviewView.webview.options = {
-      enableScripts: true
+      enableScripts: true,
     };
 
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
@@ -31,25 +31,30 @@ export class DraftTreeViewProvider implements vscode.WebviewViewProvider {
 
   private getHtmlForWebview(webview: vscode.Webview): string {
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this._context.extensionUri, "media", "main.js")
+      vscode.Uri.joinPath(
+        this._context.extensionUri,
+        "dist",
+        "webview",
+        "bundle.js"
+      )
     );
     const styleUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._context.extensionUri, "media", "style.css")
     );
 
     return /* html */ `
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <link href="${styleUri}" rel="stylesheet">
-              <title>Draft Tree</title>
-          </head>
-          <body>
-              <div id="root"></div>
-              <script src="${scriptUri}"></script>
-          </body>
-          </html>`;
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link href="${styleUri}" rel="stylesheet">
+            <title>Draft Tree</title>
+        </head>
+        <body>00
+            <div id="root"></div>
+            <script src="${scriptUri}"></script>
+        </body>
+        </html>`;
   }
 }
