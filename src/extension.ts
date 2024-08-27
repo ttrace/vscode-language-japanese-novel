@@ -119,6 +119,8 @@ export function activate(context: vscode.ExtensionContext): void {
     })
   );
 
+
+  
   // 品詞ハイライトの初期化
   const kuromojiPath = context.extensionPath + "/node_modules/kuromoji/dict";
   activateTokenizer(context, kuromojiPath);

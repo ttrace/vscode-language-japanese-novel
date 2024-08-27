@@ -37,7 +37,6 @@ const TreeView: React.FC<TreeViewProps> = ({ node }) => {
     );
 };
 
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const vscode = (window as any).acquireVsCodeApi();
 
