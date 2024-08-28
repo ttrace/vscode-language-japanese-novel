@@ -62,7 +62,7 @@ const webExtensionConfig = {
 /** @type WebpackConfig */
 const webviewConfig = {
 	mode: 'none',
-	entry: './src/webview/treeview.tsx',
+	entry: './src/webview/treeApp.tsx',
 	output: {
 		path: path.resolve(__dirname, 'dist/webview'),
 		filename: 'bundle.js'

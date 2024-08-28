@@ -56,6 +56,10 @@ h1 {
   content: url("folder-closed-light.svg");
 }
 
+.tree-node.expanded .tree-label > span.item-name::before {
+  content: url("folder-opens.svg");
+}
+
 .tree-node.expanded > .tree-label.text > span.item-name::before {
   content: url("file-dark.svg");
   margin-left: 0.75em;
@@ -71,13 +75,13 @@ h1 {
   margin-left: 0.75em;
 }
 
-.vscode-light .horizontal .tree-node.expanded > .tree-label.text > span.item-name::before {
+.vscode-light
+  .horizontal
+  .tree-node.expanded
+  > .tree-label.text
+  > span.item-name::before {
   content: url("file-light.svg");
   margin-left: 0.75em;
-}
-
-.tree-label.expanded > span.item-name::before {
-  content: url("folder-opens.svg");
 }
 
 .vscode-light .tree-node.expanded > .tree-label > span.item-name::before {
@@ -116,7 +120,7 @@ h1 {
 
 /* #MARK: トグルスイッチ */
 .toggle-switch {
-  text-align:right
+  text-align: right;
 }
 
 .switch {
