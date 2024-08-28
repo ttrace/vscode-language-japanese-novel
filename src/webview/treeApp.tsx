@@ -46,18 +46,20 @@ const TreeView: React.FC<TreeViewProps> = ({
 
   return (
     <div
-      className={`tree-node ${expanded ? "expanded" : ""} ${
-        !node.children ? "text" : ""
-      } ${highlightedNode === node.dir ? "highlighted" : ""}`}
+      className={`tree-node ${expanded ? "expanded" : ""}  ${
+        highlightedNode === node.dir ? "highlighted" : ""
+      }`}
       onClick={handleNodeClick}
     >
-      <span className="triangle" onClick={toggleExpand}>
-        &gt;
-      </span>
-      <span className="label">
-        {node.name.replace(/^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/, "$1")}
-      </span>
-      <span className="chars">{node.length.toLocaleString()}文字</span>
+      <div className={`tree-label ${!node.children ? "text" : ""}`}>
+        <span className="triangle" onClick={toggleExpand}>
+          &gt;
+        </span>
+        <span className="item-name">
+          {node.name.replace(/^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/, "$1")}
+        </span>
+        <span className="chars">{node.length.toLocaleString()}文字</span>
+      </div>
       {node.children && (
         <div className="tree-node-children">
           {node.children.map((child) => (
@@ -126,18 +128,20 @@ export const App: React.FC = () => {
           handleToggle={() => setIsOrdable(!isOrdable)}
         />
       </div>
-      {treeData.length === 0 ? (
-        <p>Loading...</p>
-      ) : (
-        treeData.map((node, index) => (
-          <TreeView
-            key={index}
-            node={node}
-            highlightedNode={highlightedNode}
-            onHighlight={setHighlightedNode}
-          />
-        ))
-      )}
+      <div className="tree-wrapper">
+        {treeData.length === 0 ? (
+          <p>Loading...</p>
+        ) : (
+          treeData.map((node, index) => (
+            <TreeView
+              key={index}
+              node={node}
+              highlightedNode={highlightedNode}
+              onHighlight={setHighlightedNode}
+            />
+          ))
+        )}
+      </div>
     </div>
   );
 };
