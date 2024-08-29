@@ -78,6 +78,7 @@ export const App: React.FC = () => {
                 onHighlight={setHighlightedNode}
                 isDraggingGlobal={isDraggingGlobal}
                 setIsDraggingGlobal={setIsDraggingGlobal}
+                isFirstSibling={index === 0}
               />
             ))
           )}
@@ -93,6 +94,7 @@ interface TreeViewProps {
   onHighlight: (nodeDir: string) => void;
   isDraggingGlobal: boolean;
   setIsDraggingGlobal: (isDragging: boolean) => void;
+  isFirstSibling: boolean;
 }
 
 // // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -104,6 +106,7 @@ const TreeView: React.FC<TreeViewProps> = ({
   onHighlight,
   isDraggingGlobal,
   setIsDraggingGlobal,
+  isFirstSibling,
 }) => {
   // フォルダーが開いているかどうかを知るステータス（初期状態は開）
   const [expanded, setExpanded] = useState(true);
@@ -203,14 +206,16 @@ const TreeView: React.FC<TreeViewProps> = ({
         }`}
         onClick={handleNodeClick}
       >
+        {isFirstSibling && (
         <div
           ref={drop}
           className={`insert-bar before
-          ${(isDraggingGlobal && !isDragging) ? "droppable" : ""}
+          ${isDraggingGlobal && !isDragging ? "droppable" : ""}
           ${isDraggedOverBefore ? "dropping" : ""}`}
           onDragEnter={handleDragEnterBefore}
           onDragLeave={handleDragLeaveBefore}
         ></div>
+          )}
         <div
           className={`tree-label ${!node.children ? "text" : ""} ${
             highlightedNode === node.dir ? "highlighted" : ""
@@ -226,7 +231,7 @@ const TreeView: React.FC<TreeViewProps> = ({
         </div>
         {node.children && (
           <div className="tree-node-children">
-            {node.children.map((child) => (
+            {node.children.map((child, index) => (
               <TreeView
                 key={child.name}
                 node={child}
@@ -234,18 +239,21 @@ const TreeView: React.FC<TreeViewProps> = ({
                 onHighlight={onHighlight}
                 isDraggingGlobal={isDraggingGlobal}
                 setIsDraggingGlobal={setIsDraggingGlobal}
-              /> // Assuming 'name' is unique within the directory
+                isFirstSibling={index === 0}
+              /> 
             ))}
           </div>
         )}
-        <div
-          ref={drop}
-          className={`insert-bar after
-          ${(isDraggingGlobal && !isDragging) ? "droppable" : ""}
+        
+          <div
+            ref={drop}
+            className={`insert-bar after
+          ${isDraggingGlobal && !isDragging ? "droppable" : ""}
           ${isDraggedOverAfter ? "dropping" : ""}`}
-          onDragEnter={handleDragEnterAfter}
-          onDragLeave={handleDragLeaveAfter}
-        ></div>
+            onDragEnter={handleDragEnterAfter}
+            onDragLeave={handleDragLeaveAfter}
+          ></div>
+        
       </div>
     </div>
   );

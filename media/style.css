@@ -3,6 +3,12 @@ body {
   padding: 0em 0.5em;
   user-select: none;
   overflow-x: hidden;
+  height: 100vh;
+}
+
+.tree-wrapper{
+  padding-top: 0.5em;
+  padding-bottom: 1em;
 }
 
 h1 {
@@ -16,14 +22,18 @@ h1 {
 }
 
 .tree-node {
-  height: 1.3em;
+  height: 1.0em;
   overflow-y: hidden;
   transition: all 0.1s linear;
-  line-height: 1.0;
+  line-height: 1;
+  padding-bottom: 0.6em;
+  margin-bottom: -0.4em;
 }
 
-.tree-node:has(:scope > :not(.text)){
-  margin-bottom:0.4em;
+.tree-node:has(> .text) {
+  padding-bottom: 0em;
+  margin-bottom: 0em;
+  overflow-y: auto;
 }
 
 .tree-node.expanded {
@@ -127,30 +137,48 @@ h1 {
 
 .insert-bar {
   display: block;
-  height:0px;
+  height: 0px;
   margin-bottom: 0px;
-  background-color: gray;
-  opacity:0.0;
+  background-image: url("insert-line-dark.svg");
+  background-repeat: no-repeat;
+  background-size: 1200px 6px;
+  background-position-x: left;
+  background-position-y: top;
+  background-color: rgba(116, 116, 116, 0.4);
+  opacity: 0;
 }
 
 /* テキストノードの挿入ポイント */
 .insert-bar.droppable {
-  height: 0.5em;
+  height: calc(0.5em);
   margin-bottom: calc(-0.5em);
-  opacity: 0.0;
+  opacity: 0.3;
 }
 
 .insert-bar.after.droppable {
-  margin-bottom: 0.0em;
+  margin-bottom: -0.4em;
+  margin-top: calc(-0.1em);
+}
+
+.tree-node:has(> .text) .insert-bar.after.droppable {
+  margin-bottom: 0em;
   margin-top: calc(-0.5em);
 }
 
-.insert-bar.dropping {
-  opacity: 0.5;
+.insert-bar.dropping.before {
+  opacity: 1.0;
+  height: calc(0.5em + 0px);
 }
 
 .insert-bar.dropping.after {
-  
+  background-position-y: bottom;
+  opacity: 1.0;
+  height: calc(0.5em);
+  margin-bottom: calc(-0.4em);
+}
+
+.tree-node:has(> .text) .insert-bar.after.dropping {
+  margin-top: calc(-0.5em);
 }
 
 .vscode-light .insert-bar {
