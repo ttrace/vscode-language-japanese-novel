@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { TreeItem } from "vscode";
 //  import { TreeView } from "./treeComponent";
 
 // TypeScript の型定義
@@ -32,6 +31,7 @@ export const App: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeFileNode[]>([]);
   const [isOrdable, setIsOrdable] = useState(false);
   const [highlightedNode, setHighlightedNode] = useState<string | null>(null);
+  const [isDraggingGlobal, setIsDraggingGlobal] = useState(true);
 
   useEffect(() => {
     vscode.postMessage({ command: "loadTreeData" });
@@ -76,6 +76,8 @@ export const App: React.FC = () => {
                 node={node}
                 highlightedNode={highlightedNode}
                 onHighlight={setHighlightedNode}
+                isDraggingGlobal={isDraggingGlobal}
+                setIsDraggingGlobal={setIsDraggingGlobal}
               />
             ))
           )}
@@ -89,6 +91,8 @@ interface TreeViewProps {
   node: TreeFileNode;
   highlightedNode: string | null;
   onHighlight: (nodeDir: string) => void;
+  isDraggingGlobal: boolean;
+  setIsDraggingGlobal: (isDragging: boolean) => void;
 }
 
 // // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -98,15 +102,36 @@ const TreeView: React.FC<TreeViewProps> = ({
   node,
   highlightedNode,
   onHighlight,
+  isDraggingGlobal,
+  setIsDraggingGlobal,
 }) => {
+  // フォルダーが開いているかどうかを知るステータス（初期状態は開）
   const [expanded, setExpanded] = useState(true);
+  // ドラッグ中かどうかを知るステータス（初期状態はfalse）
+  const [isDragging, setIsDragging] = useState(false);
+  // ドロップ対象かどうかを知るステータス（初期状態はfalce）
+  const [isDraggedOverBefore, setIsDraggedOverBefore] = useState(false);
+  const [isDraggedOverAfter, setIsDraggedOverAfter] = useState(false);
+
+  const handleDragStart = (e: { stopPropagation: () => void }) => {
+    console.log("DnD Dev: ドラッグ開始");
+    e.stopPropagation(); // イベントのバブリングを防止
+    setIsDragging(true);
+    setIsDraggingGlobal(true);
+  };
+
+  const handleDragEnd = (e: { stopPropagation: () => void }) => {
+    e.stopPropagation(); // イベントのバブリングを防止
+    setIsDragging(false);
+    setIsDraggingGlobal(false);
+  };
 
   //フォルダーの開け閉め
   const toggleExpand = () => {
     setExpanded(!expanded);
   };
 
-  // クリックしてファイルを開くコマンドをVS Codeに送信
+  // クリックしてファイルを開くコマンド。VS Codeに送信する部分も含む
   const handleNodeClick = (event: React.MouseEvent<HTMLSpanElement>) => {
     event.stopPropagation();
     if (!node.children) {
@@ -123,8 +148,33 @@ const TreeView: React.FC<TreeViewProps> = ({
     }
   };
 
+  const handleDragEnterBefore = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggedOverBefore(true);
+    e.stopPropagation();
+  };
+
+  const handleDragLeaveBefore = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggedOverBefore(false);
+    e.stopPropagation();
+  };
+
+  const handleDragEnterAfter = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggedOverAfter(true);
+    e.stopPropagation();
+  };
+
+  const handleDragLeaveAfter = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggedOverAfter(false);
+    e.stopPropagation();
+  };
+
   // MARK: D&D
-  const [collected, drag, dragPreview] = useDrag(
+  // ドラッグ制御の実装
+  const [, drag] = useDrag(
     {
       type: "NODE",
       item: { name: node.name, dir: node.dir },
@@ -132,35 +182,71 @@ const TreeView: React.FC<TreeViewProps> = ({
     [node]
   );
 
+  const [, drop] = useDrop(
+    {
+      accept: "NODE",
+      drop() {
+        console.log("dropped!");
+      },
+    },
+    [node]
+  );
+
   return (
-    <div
-      ref={drag}
-      className={`tree-node ${expanded ? "expanded" : ""}  ${
-        highlightedNode === node.dir ? "highlighted" : ""
-      }`}
-      onClick={handleNodeClick}
-    >
-      <div className={`tree-label ${!node.children ? "text" : ""}`}>
-        <span className="triangle" onClick={toggleExpand}>
-          &gt;
-        </span>
-        <span className="item-name">
-          {node.name.replace(/^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/, "$1")}
-        </span>
-        <span className="chars">{node.length.toLocaleString()}文字</span>
-      </div>
-      {node.children && (
-        <div className="tree-node-children">
-          {node.children.map((child) => (
-            <TreeView
-              key={child.name}
-              node={child}
-              highlightedNode={highlightedNode}
-              onHighlight={onHighlight}
-            /> // Assuming 'name' is unique within the directory
-          ))}
+    <div>
+      <div
+        ref={drag}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        className={`tree-node ${expanded ? "expanded" : ""} ${
+          isDragging ? "dragged" : ""
+        }`}
+        onClick={handleNodeClick}
+      >
+        <div
+          ref={drop}
+          className={`insert-bar before
+          ${isDraggingGlobal ? "droppable" : ""}
+          ${isDraggedOverBefore ? "dropping" : ""}`}
+          onDragEnter={handleDragEnterBefore}
+          onDragLeave={handleDragLeaveBefore}
+        ></div>
+        <div
+          className={`tree-label ${!node.children ? "text" : ""} ${
+            highlightedNode === node.dir ? "highlighted" : ""
+          }`}
+        >
+          <span className="triangle" onClick={toggleExpand}>
+            &gt;
+          </span>
+          <span className="item-name">
+            {node.name.replace(/^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/, "$1")}
+          </span>
+          <span className="chars">{node.length.toLocaleString()}文字</span>
         </div>
-      )}
+        {node.children && (
+          <div className="tree-node-children">
+            {node.children.map((child) => (
+              <TreeView
+                key={child.name}
+                node={child}
+                highlightedNode={highlightedNode}
+                onHighlight={onHighlight}
+                isDraggingGlobal={isDraggingGlobal}
+                setIsDraggingGlobal={setIsDraggingGlobal}
+              /> // Assuming 'name' is unique within the directory
+            ))}
+          </div>
+        )}
+        <div
+          ref={drop}
+          className={`insert-bar after
+          ${isDraggingGlobal ? "droppable" : ""}
+          ${isDraggedOverAfter ? "dropping" : ""}`}
+          onDragEnter={handleDragEnterAfter}
+          onDragLeave={handleDragLeaveAfter}
+        ></div>
+      </div>
     </div>
   );
 };

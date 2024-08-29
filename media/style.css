@@ -16,12 +16,14 @@ h1 {
 }
 
 .tree-node {
-  height: 1rem;
+  height: 1.3em;
   overflow-y: hidden;
   transition: all 0.1s linear;
-  line-height: 1;
-  border-top: transparent 1px solid;
-  border-bottom: transparent 1px solid;
+  line-height: 1.0;
+}
+
+.tree-node:has(> .text){
+  margin-bottom:0.4em;
 }
 
 .tree-node.expanded {
@@ -29,8 +31,11 @@ h1 {
   transition: all 0.1s linear;
 }
 
+.tree-node.dragged {
+  opacity: 0.3;
+}
+
 .tree-node-children {
-  margin-top: 5px;
   padding-left: 20px;
 }
 
@@ -38,6 +43,8 @@ h1 {
   display: flex;
   align-items: flex-end;
   overflow-x: hidden;
+  border-top: transparent 1px solid;
+  border-bottom: transparent 1px solid;
 }
 
 .tree-label > span.item-name {
@@ -101,7 +108,7 @@ h1 {
   display: none;
 }
 
-.tree-node.highlighted {
+.tree-label.highlighted {
   background-color: rgba(116, 116, 116, 0.2);
   border-top: rgba(116, 116, 116, 0.4) 1px solid;
   border-bottom: rgba(116, 116, 116, 0.4) 1px solid;
@@ -116,6 +123,44 @@ h1 {
   opacity: 0.8;
   margin-left: 0.5em;
   text-wrap: nowrap;
+}
+
+.insert-bar {
+  display: block;
+  height:0px;
+  margin-bottom: 0px;
+  background-color: white;
+  opacity:0.0;
+}
+
+/* テキストノードの挿入ポイント */
+.insert-bar.droppable {
+  height: 0.7em;
+  margin-bottom: -0.7em;
+  opacity: 0.3;
+  border:2px white;
+  border-style: none none none none;
+}
+
+.insert-bar.droppable.before {
+  border-style: solid none none none;
+}
+
+.insert-bar.droppable.after {
+  border-style: none none none solid;
+}
+
+.insert-bar.after.droppable {
+  margin-bottom: 0.0em;
+  margin-top: -0.7em;
+}
+
+.insert-bar.dropping {
+  opacity: 1;
+}
+
+.vscode-light .insert-bar {
+  background-color: black;
 }
 
 /* #MARK: トグルスイッチ */
