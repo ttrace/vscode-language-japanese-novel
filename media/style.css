@@ -22,7 +22,7 @@ h1 {
   line-height: 1.0;
 }
 
-.tree-node:has(> .text){
+.tree-node:has(:scope > :not(.text)){
   margin-bottom:0.4em;
 }
 
@@ -129,34 +129,28 @@ h1 {
   display: block;
   height:0px;
   margin-bottom: 0px;
-  background-color: white;
+  background-color: gray;
   opacity:0.0;
 }
 
 /* テキストノードの挿入ポイント */
 .insert-bar.droppable {
-  height: 0.7em;
-  margin-bottom: -0.7em;
-  opacity: 0.3;
-  border:2px white;
-  border-style: none none none none;
-}
-
-.insert-bar.droppable.before {
-  border-style: solid none none none;
-}
-
-.insert-bar.droppable.after {
-  border-style: none none none solid;
+  height: 0.5em;
+  margin-bottom: calc(-0.5em);
+  opacity: 0.0;
 }
 
 .insert-bar.after.droppable {
   margin-bottom: 0.0em;
-  margin-top: -0.7em;
+  margin-top: calc(-0.5em);
 }
 
 .insert-bar.dropping {
-  opacity: 1;
+  opacity: 0.5;
+}
+
+.insert-bar.dropping.after {
+  
 }
 
 .vscode-light .insert-bar {

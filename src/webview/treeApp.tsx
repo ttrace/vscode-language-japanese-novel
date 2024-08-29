@@ -31,7 +31,7 @@ export const App: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeFileNode[]>([]);
   const [isOrdable, setIsOrdable] = useState(false);
   const [highlightedNode, setHighlightedNode] = useState<string | null>(null);
-  const [isDraggingGlobal, setIsDraggingGlobal] = useState(true);
+  const [isDraggingGlobal, setIsDraggingGlobal] = useState(false);
 
   useEffect(() => {
     vscode.postMessage({ command: "loadTreeData" });
@@ -206,7 +206,7 @@ const TreeView: React.FC<TreeViewProps> = ({
         <div
           ref={drop}
           className={`insert-bar before
-          ${isDraggingGlobal ? "droppable" : ""}
+          ${(isDraggingGlobal && !isDragging) ? "droppable" : ""}
           ${isDraggedOverBefore ? "dropping" : ""}`}
           onDragEnter={handleDragEnterBefore}
           onDragLeave={handleDragLeaveBefore}
@@ -241,7 +241,7 @@ const TreeView: React.FC<TreeViewProps> = ({
         <div
           ref={drop}
           className={`insert-bar after
-          ${isDraggingGlobal ? "droppable" : ""}
+          ${(isDraggingGlobal && !isDragging) ? "droppable" : ""}
           ${isDraggedOverAfter ? "dropping" : ""}`}
           onDragEnter={handleDragEnterAfter}
           onDragLeave={handleDragLeaveAfter}
