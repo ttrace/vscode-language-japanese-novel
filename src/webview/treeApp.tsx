@@ -15,6 +15,8 @@ type TreeFileNode = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const vscode = (window as any).acquireVsCodeApi();
 
+let isDraggingGlobal = false;
+
 const ToggleSwitch: React.FC<{ isOn: boolean; handleToggle: () => void }> = ({
   isOn,
   handleToggle,
@@ -31,7 +33,7 @@ export const App: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeFileNode[]>([]);
   const [isOrdable, setIsOrdable] = useState(false);
   const [highlightedNode, setHighlightedNode] = useState<string | null>(null);
-  const [isDraggingGlobal, setIsDraggingGlobal] = useState(false);
+  // const [isDraggingGlobal, setIsDraggingGlobal] = useState(false);
 
   useEffect(() => {
     vscode.postMessage({ command: "loadTreeData" });
@@ -76,8 +78,6 @@ export const App: React.FC = () => {
                 node={node}
                 highlightedNode={highlightedNode}
                 onHighlight={setHighlightedNode}
-                isDraggingGlobal={isDraggingGlobal}
-                setIsDraggingGlobal={setIsDraggingGlobal}
                 isFirstSibling={index === 0}
               />
             ))
@@ -92,20 +92,17 @@ interface TreeViewProps {
   node: TreeFileNode;
   highlightedNode: string | null;
   onHighlight: (nodeDir: string) => void;
-  isDraggingGlobal: boolean;
-  setIsDraggingGlobal: (isDragging: boolean) => void;
+  // isDraggingGlobal: boolean;
+  // setIsDraggingGlobal: (isDragging: boolean) => void;
   isFirstSibling: boolean;
 }
-
-// // eslint-disable-next-line @typescript-eslint/no-explicit-any
-// const vscode = (window as any).acquireVsCodeApi();
 
 const TreeView: React.FC<TreeViewProps> = ({
   node,
   highlightedNode,
   onHighlight,
-  isDraggingGlobal,
-  setIsDraggingGlobal,
+  // isDraggingGlobal,
+  // setIsDraggingGlobal,
   isFirstSibling,
 }) => {
   // フォルダーが開いているかどうかを知るステータス（初期状態は開）
@@ -116,17 +113,22 @@ const TreeView: React.FC<TreeViewProps> = ({
   const [isDraggedOverBefore, setIsDraggedOverBefore] = useState(false);
   const [isDraggedOverAfter, setIsDraggedOverAfter] = useState(false);
 
-  const handleDragStart = (e: { stopPropagation: () => void }) => {
-    console.log("DnD Dev: ドラッグ開始");
-    e.stopPropagation(); // イベントのバブリングを防止
-    setIsDragging(true);
-    setIsDraggingGlobal(true);
+  const handleDragStart = (e: React.DragEvent, node: TreeFileNode) => {
+    if (!isDraggingGlobal) {
+      setIsDragging(true);
+      // setIsDraggingGlobal(true);
+      isDraggingGlobal = true;
+      console.log("DnD Dev: ドラッグ開始", node);
+    } else {
+      console.log("すでにドラッグ要素があります");
+    }
   };
 
-  const handleDragEnd = (e: { stopPropagation: () => void }) => {
-    e.stopPropagation(); // イベントのバブリングを防止
+  const handleDragEnd = () => {
+    console.log("DnD Dev: ドラッグ終了");
     setIsDragging(false);
-    setIsDraggingGlobal(false);
+    // setIsDraggingGlobal(false);
+    isDraggingGlobal = false;
   };
 
   //フォルダーの開け閉め
@@ -151,28 +153,20 @@ const TreeView: React.FC<TreeViewProps> = ({
     }
   };
 
-  const handleDragEnterBefore = (e: React.DragEvent) => {
-    e.preventDefault();
+  const handleDragEnterBefore = () => {
     setIsDraggedOverBefore(true);
-    e.stopPropagation();
   };
 
-  const handleDragLeaveBefore = (e: React.DragEvent) => {
-    e.preventDefault();
+  const handleDragLeaveBefore = () => {
     setIsDraggedOverBefore(false);
-    e.stopPropagation();
   };
 
-  const handleDragEnterAfter = (e: React.DragEvent) => {
-    e.preventDefault();
+  const handleDragEnterAfter = () => {
     setIsDraggedOverAfter(true);
-    e.stopPropagation();
   };
 
-  const handleDragLeaveAfter = (e: React.DragEvent) => {
-    e.preventDefault();
+  const handleDragLeaveAfter = () => {
     setIsDraggedOverAfter(false);
-    e.stopPropagation();
   };
 
   // MARK: D&D
@@ -181,16 +175,46 @@ const TreeView: React.FC<TreeViewProps> = ({
     {
       type: "NODE",
       item: { name: node.name, dir: node.dir },
+      end: (item, monitor) => {
+        const dropResult = monitor.getDropResult();
+
+        // ドロップ成功時の処理
+        if (dropResult && item) {
+          console.log(`Dropped ${item.name} into`, dropResult);
+        }
+        setIsDragging(false);
+        isDraggingGlobal = false;
+      },
     },
     [node]
   );
 
-  const [, drop] = useDrop(
+  const [, dropBefore] = useDrop(
     {
       accept: "NODE",
-      drop() {
-        console.log("dropped!");
+      drop: () => {
+        setIsDraggedOverBefore(false);
+        return { name: "Before Insert", node: node.dir }
       },
+      collect: (monitor) => ({
+        isOverBefore: monitor.isOver(),
+        canDropBefore: monitor.canDrop(),
+      }),
+    },
+    [node]
+  );
+
+  const [, dropAfter] = useDrop(
+    {
+      accept: "NODE",
+      drop: () => {
+        setIsDraggedOverAfter(false);
+        return { name: "After Insert", node: node.dir };
+      },
+      collect: (monitor) => ({
+        isOverAfter: monitor.isOver(),
+        canDropAfter: monitor.canDrop(),
+      }),
     },
     [node]
   );
@@ -199,7 +223,7 @@ const TreeView: React.FC<TreeViewProps> = ({
     <div>
       <div
         ref={drag}
-        onDragStart={handleDragStart}
+        onDragStart={(e) => handleDragStart(e, node)}
         onDragEnd={handleDragEnd}
         className={`tree-node ${expanded ? "expanded" : ""} ${
           isDragging ? "dragged" : ""
@@ -207,15 +231,15 @@ const TreeView: React.FC<TreeViewProps> = ({
         onClick={handleNodeClick}
       >
         {isFirstSibling && (
-        <div
-          ref={drop}
-          className={`insert-bar before
+          <div
+            ref={dropBefore}
+            className={`insert-bar before
           ${isDraggingGlobal && !isDragging ? "droppable" : ""}
           ${isDraggedOverBefore ? "dropping" : ""}`}
-          onDragEnter={handleDragEnterBefore}
-          onDragLeave={handleDragLeaveBefore}
-        ></div>
-          )}
+            onDragEnter={handleDragEnterBefore}
+            onDragLeave={handleDragLeaveBefore}
+          ></div>
+        )}
         <div
           className={`tree-label ${!node.children ? "text" : ""} ${
             highlightedNode === node.dir ? "highlighted" : ""
@@ -237,23 +261,20 @@ const TreeView: React.FC<TreeViewProps> = ({
                 node={child}
                 highlightedNode={highlightedNode}
                 onHighlight={onHighlight}
-                isDraggingGlobal={isDraggingGlobal}
-                setIsDraggingGlobal={setIsDraggingGlobal}
                 isFirstSibling={index === 0}
-              /> 
+              />
             ))}
           </div>
         )}
-        
-          <div
-            ref={drop}
-            className={`insert-bar after
+
+        <div
+          ref={dropAfter}
+          className={`insert-bar after
           ${isDraggingGlobal && !isDragging ? "droppable" : ""}
           ${isDraggedOverAfter ? "dropping" : ""}`}
-            onDragEnter={handleDragEnterAfter}
-            onDragLeave={handleDragLeaveAfter}
-          ></div>
-        
+          onDragEnter={handleDragEnterAfter}
+          onDragLeave={handleDragLeaveAfter}
+        ></div>
       </div>
     </div>
   );
