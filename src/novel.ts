@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { draftRoot, draftsObject } from "./compile";
+import { draftRoot, draftsObject, resetCounter } from "./compile";
 
 export class DraftWebViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "draftTree";
@@ -52,6 +52,8 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
       } else if (message.command === "openFile") {
         const uri = vscode.Uri.file(message.filePath);
         await vscode.commands.executeCommand("vscode.open", uri);
+      } else if (message.command === "log"){
+        console.log(message.log);
       }
     });
   }
@@ -86,6 +88,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
   }
 
   private loadTreeData(webview: vscode.Webview) {
+    resetCounter();
     webview.postMessage({
       command: "treeData",
       data: draftsObject(draftRoot()),

@@ -7,7 +7,7 @@ import * as os from "os";
 import { Server, WebSocket } from "ws";
 import { getConfig } from "./config";
 import compileDocs, { draftRoot } from "./compile";
-import { draftsObject } from "./compile"; // filelist オブジェクトもある
+import { draftsObject, resetCounter } from "./compile"; // filelist オブジェクトもある
 import { DraftWebViewProvider } from "./novel";
 import { CharacterCounter, CharacterCounterController } from "./charactorcount";
 export * from "./charactorcount";
@@ -331,6 +331,7 @@ function launchserver(originEditor: vscode.TextEditor) {
         if (keyPressStored) publishWebsocketsDelay.presskey(s);
       } else if (message == "giveMeObject") {
         // メタデータ送信要求を受け取った時
+        resetCounter();
         const sendingObjects = draftsObject(draftRoot());
         console.log("send:", sendingObjects);
         ws.send(JSON.stringify(sendingObjects));
