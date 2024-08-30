@@ -49,7 +49,7 @@ h1 {
   display: none;
 }
 
-div:has(+ div > .tree-node.dragged) .tree-node > .insert-bar.after {
+div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
   display: none;
 }
 
