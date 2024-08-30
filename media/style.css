@@ -45,8 +45,11 @@ h1 {
   opacity: 0.3;
 }
 
-.tree-node.dragged .insert-bar {
-  opacity: 0.3;
+.tree-node.dragged .insert-bar{
+  display: none;
+}
+
+div:has(+ div > .tree-node.dragged) .tree-node > .insert-bar.after {
   display: none;
 }
 
