@@ -45,6 +45,11 @@ h1 {
   opacity: 0.3;
 }
 
+.tree-node.dragged .insert-bar {
+  opacity: 0.3;
+  display: none;
+}
+
 .tree-node-children {
   padding-left: 20px;
 }
@@ -133,9 +138,11 @@ h1 {
   opacity: 0.8;
   margin-left: 0.5em;
   text-wrap: nowrap;
+  z-index: 0;
 }
 
 .insert-bar {
+  position: relative;
   display: block;
   height: 0px;
   margin-bottom: 0px;
@@ -146,13 +153,14 @@ h1 {
   background-position-y: top;
   background-color: rgba(116, 116, 116, 0.4);
   opacity: 0;
+  z-index: 1;
 }
 
 /* テキストノードの挿入ポイント */
 .insert-bar.droppable {
   height: calc(0.5em);
   margin-bottom: calc(-0.5em);
-  opacity: 0.3;
+  opacity: 0;
 }
 
 .insert-bar.after.droppable {
