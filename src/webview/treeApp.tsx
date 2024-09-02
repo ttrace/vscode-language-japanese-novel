@@ -193,7 +193,7 @@ const TreeView: React.FC<TreeViewProps> = ({
             fileTransferData: fileTransferData,
           });
           console.log(
-            `Move ${item.id}:${item.name} ${dropResult.name} ${dropResult.node.id}:${dropResult.node.name}`
+            `Move ${item.name} ${dropResult.name} to ${dropResult.node.name}`
           );
         }
         setIsDragging(false);
