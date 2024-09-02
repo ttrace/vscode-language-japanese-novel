@@ -6,11 +6,17 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 
 // TypeScript の型定義
 type TreeFileNode = {
+  id: string;
   dir: string;
   name: string;
   length: number;
   children?: TreeFileNode[];
 };
+
+interface DropResult {
+  name: "before" | "after";
+  node: TreeFileNode;
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const vscode = (window as any).acquireVsCodeApi();
@@ -43,6 +49,7 @@ export const App: React.FC = () => {
       switch (message.command) {
         case "treeData":
           setTreeData(message.data); // データセット
+          console.log(message.data);
           break;
         case "clearHighlight":
           setHighlightedNode(null);
@@ -113,21 +120,15 @@ const TreeView: React.FC<TreeViewProps> = ({
   const [isDraggedOverBefore, setIsDraggedOverBefore] = useState(false);
   const [isDraggedOverAfter, setIsDraggedOverAfter] = useState(false);
 
-  const handleDragStart = (e: React.DragEvent, node: TreeFileNode) => {
+  const handleDragStart = () => {
     if (!isDraggingGlobal) {
       setIsDragging(true);
-      // setIsDraggingGlobal(true);
       isDraggingGlobal = true;
-      console.log("DnD Dev: ドラッグ開始", node);
-    } else {
-      console.log("すでにドラッグ要素があります");
     }
   };
 
   const handleDragEnd = () => {
-    console.log("DnD Dev: ドラッグ終了");
     setIsDragging(false);
-    // setIsDraggingGlobal(false);
     isDraggingGlobal = false;
   };
 
@@ -174,13 +175,26 @@ const TreeView: React.FC<TreeViewProps> = ({
   const [, drag] = useDrag(
     {
       type: "NODE",
-      item: { name: node.name, dir: node.dir },
+      item: { id: node.id, name: node.name, dir: node.dir },
       end: (item, monitor) => {
-        const dropResult = monitor.getDropResult();
+        const dropResult: DropResult | null = monitor.getDropResult();
 
         // ドロップ成功時の処理
         if (dropResult && item) {
-          console.log(`Dropped ${item.name} into`, dropResult);
+          const fileTransferData = {
+            movingFileId: item.id,
+            movingFileDir: item.dir,
+            insertPoint: dropResult.name,
+            destinationId: dropResult.node.id,
+            destinationPath: dropResult.node.dir,
+          };
+          vscode.postMessage({
+            command: "moveCommmand",
+            fileTransferData: fileTransferData,
+          });
+          console.log(
+            `Move ${item.id}:${item.name} ${dropResult.name} ${dropResult.node.id}:${dropResult.node.name}`
+          );
         }
         setIsDragging(false);
         isDraggingGlobal = false;
@@ -194,7 +208,7 @@ const TreeView: React.FC<TreeViewProps> = ({
       accept: "NODE",
       drop: () => {
         setIsDraggedOverBefore(false);
-        return { name: "Before Insert", node: node.dir }
+        return { name: "before", node: node };
       },
       collect: (monitor) => ({
         isOverBefore: monitor.isOver(),
@@ -209,7 +223,7 @@ const TreeView: React.FC<TreeViewProps> = ({
       accept: "NODE",
       drop: () => {
         setIsDraggedOverAfter(false);
-        return { name: "After Insert", node: node.dir };
+        return { name: "after", node: node };
       },
       collect: (monitor) => ({
         isOverAfter: monitor.isOver(),
@@ -223,7 +237,7 @@ const TreeView: React.FC<TreeViewProps> = ({
     <div>
       <div
         ref={drag}
-        onDragStart={(e) => handleDragStart(e, node)}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         className={`tree-node ${expanded ? "expanded" : ""} ${
           isDragging ? "dragged" : ""

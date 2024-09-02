@@ -25,6 +25,8 @@ let previewRedrawing = false;
 export let deadlineFolderPath: string;
 export let deadlineTextCount: string;
 
+let draftWebViewProviderInstance: DraftWebViewProvider;
+
 emptyPort(function (port: number) {
   servicePort = port;
   // console.log('真の空きポート',port);
@@ -106,10 +108,10 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   // MARK: 原稿ツリー
-  const treeProvider = new DraftWebViewProvider(context);
+  draftWebViewProviderInstance = new DraftWebViewProvider(context);
   
   context.subscriptions.push(
-      vscode.window.registerWebviewViewProvider('draftTree', treeProvider)
+      vscode.window.registerWebviewViewProvider('draftTree', draftWebViewProviderInstance)
   );
 
 
@@ -153,6 +155,7 @@ export function activate(context: vscode.ExtensionContext): void {
       parseInt(deadLineTextCount)
     );
   }
+
 
   //締め切りカウンター
   context.subscriptions.push(
@@ -243,6 +246,11 @@ export function activate(context: vscode.ExtensionContext): void {
       previewBesideSection(editor);
     }
   });
+}
+
+// インスタンスを返す関数をエクスポートする
+export function getDraftWebViewProviderInstance(): DraftWebViewProvider {
+  return draftWebViewProviderInstance;
 }
 
 let latestEditor: vscode.TextEditor;
