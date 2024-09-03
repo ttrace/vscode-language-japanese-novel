@@ -159,6 +159,10 @@ div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
   z-index: 1;
 }
 
+.tree-node-children .insert-bar.inside:nth-child(n+2){
+  display: none;
+}
+
 /* テキストノードの挿入ポイント */
 .insert-bar.droppable {
   height: calc(0.5em);
@@ -190,6 +194,19 @@ div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
 
 .tree-node:has(> .text) .insert-bar.after.dropping {
   margin-top: calc(-0.5em);
+}
+
+.insert-bar.inside {
+  opacity: 0.0;
+}
+
+.insert-bar.inside.droppable, .insert-bar.inside.dropping {
+  margin-top: -0.2em;
+  margin-bottom: -0.4em;
+}
+
+.insert-bar.inside.dropping{
+  opacity: 1.0;
 }
 
 .vscode-light .insert-bar {

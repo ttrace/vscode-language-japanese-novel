@@ -33,7 +33,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
 
   private handleFileSystemEvent(uri: vscode.Uri) {
     // console.log("File system event detected:", uri);
-    if (debugWebView){
+    if (debugWebView) {
       console.log(uri);
     }
     this.refreshWebview();
@@ -120,7 +120,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
 
 async function moveAndReorderFiles(
   destinationPath: string,
-  insertPoint: "before" | "after",
+  insertPoint: "before" | "inside" | "after",
   movingFileDir: string
 ) {
   // ワークスペースフォルダを取得します
@@ -138,9 +138,12 @@ async function moveAndReorderFiles(
   const movingFileUri = vscode.Uri.file(movingFileDir);
 
   // 上位ディレクトリURIを返す変数を作成
-  const destinationUpperUri = vscode.Uri.file(
-    vscode.Uri.joinPath(destinationUri, "..").fsPath
-  );
+  // insideの時は、destinationUriがdestinationUpperUriになる
+  const destinationUpperUri =
+    insertPoint !== "inside"
+      ? vscode.Uri.file(vscode.Uri.joinPath(destinationUri, "..").fsPath)
+      : destinationUri;
+
   const movingFileUpperUri = vscode.Uri.file(
     vscode.Uri.joinPath(movingFileUri, "..").fsPath
   );
@@ -183,15 +186,21 @@ async function moveAndReorderFiles(
     const uniqueId = uuidv4();
 
     const fileName = path.basename(movingFileDir);
-    const fileIndex = insertPoint == "before" ? 1 : destinationIndex + 2;
+    const fileIndex =
+      insertPoint === "before" || insertPoint === "inside"
+        ? 1
+        : destinationIndex + 2;
     // 桁数判断 同一ディレクトリ内での入れ替えならファイル総数は変わらないが、挿入の時は1増える
     const digits = (destinationFiles.length + (isOnlySort ? 0 : 1)).toString()
       .length;
 
+    const targetUri =
+      insertPoint === "inside" ? destinationUri : destinationUpperUri;
+
     await vscode.workspace.fs.copy(
       movingFileUri,
       vscode.Uri.joinPath(
-        destinationUpperUri,
+        targetUri,
         `moving-${uniqueId}-${String(fileIndex).padStart(
           digits,
           "0"
@@ -199,42 +208,47 @@ async function moveAndReorderFiles(
       ),
       { overwrite: true }
     );
+
     await vscode.workspace.fs.delete(movingFileUri, { recursive: true });
-
-    if (!isOnlySort) {
-      // 移動元ディレクトリの内容を読み取ります。
-      const movingFiles = await (await vscode.workspace.fs.readDirectory(
-        movingFileUpperUri
-      )).filter(
-        (file) =>
-          file[0].endsWith(".txt") || file[1] === vscode.FileType.Directory
-      );
-
-      // 移動元フォルダーの連番化
-      await addSequentialNumberToFiles(
-        movingFileUpperUri,
-        movingFiles,
-        -1,
-        insertPoint
-      );
-    }
 
     // 移動先ディレクトリの内容を読み取ります。
     destinationFiles = await (
-      await vscode.workspace.fs.readDirectory(destinationUpperUri)
+      await vscode.workspace.fs.readDirectory(targetUri)
     ).filter(
       (file) =>
         file[0].endsWith(".txt") || file[1] === vscode.FileType.Directory
     );
 
-    // ファイル名に連番を付与して移動させる関数を呼び出します
-    await addSequentialNumberToFiles(
-      destinationUpperUri,
+    // 移動先のフォルダーの中のファイルに連番を付与します
+    // 戻り値は、移動元ディレクトリの新しいパスです。
+    const currentMovingFileUpperUri = await addSequentialNumberToFiles(
+      targetUri,
       destinationFiles,
       destinationIndex,
       insertPoint,
+      movingFileUpperUri,
       uniqueId
     );
+
+    if (!isOnlySort) {
+      // 移動元ディレクトリの内容を読み取ります。
+      const movingFiles = await (
+        await vscode.workspace.fs.readDirectory(currentMovingFileUpperUri)
+      ).filter(
+        (file) =>
+          file[0].endsWith(".txt") || file[1] === vscode.FileType.Directory
+      );
+
+      // 移動元のフォルダーの中のファイルに連番を付与します
+      await addSequentialNumberToFiles(
+        currentMovingFileUpperUri,
+        movingFiles,
+        -1,
+        insertPoint,
+        movingFileUpperUri,
+        uniqueId
+      );
+    }
   } catch (error) {
     // エラーハンドリング
     if (error instanceof Error) {
@@ -249,21 +263,23 @@ async function moveAndReorderFiles(
   }
 
   isFileOperating = false;
-    // ツリービューの更新
-    const draftWebViewProvider = getDraftWebViewProviderInstance();
-    draftWebViewProvider.loadTreeData(draftWebViewProvider._webviewView!.webview);
+  // ツリービューの更新
+  const draftWebViewProvider = getDraftWebViewProviderInstance();
+  draftWebViewProvider.loadTreeData(draftWebViewProvider._webviewView!.webview);
 }
 
 // ファイルとフォルダーにdestinationUriとinsertPointで示される位置の番号を抜いた連番をつける関数
 async function addSequentialNumberToFiles(
-  destinationUpperUri: vscode.Uri,
+  targetUri: vscode.Uri,
   destinationFiles: [string, vscode.FileType][],
   destinationIndex: number,
-  insertPoint: "before" | "after",
+  insertPoint: "before" | "inside" | "after",
+  movingFileUpperUri: vscode.Uri,
   uniqueId?: string
 ) {
   console.log("sort!");
 
+  let renamedMovingFileUpperUrl = movingFileUpperUri;
   let fileIndex = 1;
   // ディレクトリ内のファイルとフォルダの名前を変更
   //スキップするindex beforeなら0、afterならdestinationIndexの一つ後ろ
@@ -287,19 +303,29 @@ async function addSequentialNumberToFiles(
       fileIndex++;
     }
 
-    const oldUri = vscode.Uri.joinPath(destinationUpperUri, fileName);
+    const oldUri = vscode.Uri.joinPath(targetUri, fileName);
 
     // 先頭に /(^\d+[-_])/ の形式がある場合、それを削除します
     fileName = fileName.replace(/^\d+[-_]/, "");
 
-    const digits = (destinationFiles.length).toString().length;
+    const digits = destinationFiles.length.toString().length;
     const newFileName = `${String(fileIndex).padStart(
       digits,
       "0"
     )}-${fileName}`;
     fileIndex++;
 
-    const newUri = vscode.Uri.joinPath(destinationUpperUri, newFileName);
+    const newUri = vscode.Uri.joinPath(targetUri, newFileName);
+
+    if((oldUri.path == movingFileUpperUri.path)){
+      // 上位ディレクトリから
+      renamedMovingFileUpperUrl = newUri
+    } else if(movingFileUpperUri.path.startsWith(oldUri.path)){
+      // 下位ディレクトリから
+      const subDir = movingFileUpperUri.path.replace(oldUri.path,"");
+      renamedMovingFileUpperUrl = vscode.Uri.joinPath(newUri,subDir);
+    }
+
 
     try {
       // console.log(`ファイル名変更" ${oldUri} to ${newUri}`);
@@ -317,12 +343,9 @@ async function addSequentialNumberToFiles(
     // UUIDの削除
     try {
       const uidHandlerRegex = new RegExp(`^moving-${uniqueId}-(.+)`);
-      const movingFilesUri = vscode.Uri.joinPath(
-        destinationUpperUri,
-        movigFileName
-      );
+      const movingFilesUri = vscode.Uri.joinPath(targetUri, movigFileName);
       const movingFilesNewUri = vscode.Uri.joinPath(
-        destinationUpperUri,
+        targetUri,
         movigFileName.replace(uidHandlerRegex, "$1")
       );
       console.log("移動中ファイルのUIDつきファイル名", movigFileName);
@@ -334,6 +357,7 @@ async function addSequentialNumberToFiles(
     }
   }
 
+  return renamedMovingFileUpperUrl;
 }
 
 async function closeFileInEditor(fileUri: vscode.Uri) {

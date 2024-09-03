@@ -14,7 +14,7 @@ type TreeFileNode = {
 };
 
 interface DropResult {
-  name: "before" | "after";
+  name: "before" | "inside" | "after";
   node: TreeFileNode;
 }
 
@@ -119,6 +119,7 @@ const TreeView: React.FC<TreeViewProps> = ({
   // ドロップ対象かどうかを知るステータス（初期状態はfalce）
   const [isDraggedOverBefore, setIsDraggedOverBefore] = useState(false);
   const [isDraggedOverAfter, setIsDraggedOverAfter] = useState(false);
+  const [isDraggedOverInside, setIsDraggedOverInside] = useState(false);
 
   const handleDragStart = () => {
     if (!isDraggingGlobal) {
@@ -160,6 +161,14 @@ const TreeView: React.FC<TreeViewProps> = ({
 
   const handleDragLeaveBefore = () => {
     setIsDraggedOverBefore(false);
+  };
+
+  const handleDragEnterInside = () => {
+    setIsDraggedOverInside(true);
+  };
+
+  const handleDragLeaveInside = () => {
+    setIsDraggedOverInside(false);
   };
 
   const handleDragEnterAfter = () => {
@@ -213,6 +222,21 @@ const TreeView: React.FC<TreeViewProps> = ({
       collect: (monitor) => ({
         isOverBefore: monitor.isOver(),
         canDropBefore: monitor.canDrop(),
+      }),
+    },
+    [node]
+  );
+
+  const [, dropInside] = useDrop(
+    {
+      accept: "NODE",
+      drop: () => {
+        setIsDraggedOverInside(false);
+        return { name: "inside", node: node };
+      },
+      collect: (monitor) => ({
+        isOverInside: monitor.isOver(),
+        canDropInside: monitor.canDrop(),
       }),
     },
     [node]
@@ -278,6 +302,14 @@ const TreeView: React.FC<TreeViewProps> = ({
                 isFirstSibling={index === 0}
               />
             ))}
+                    <div
+          ref={dropInside}
+          className={`insert-bar inside
+          ${isDraggingGlobal && !isDragging ? "droppable" : ""}
+          ${isDraggedOverInside ? "dropping" : ""}`}
+          onDragEnter={handleDragEnterInside}
+          onDragLeave={handleDragLeaveInside}
+        ></div>
           </div>
         )}
 
