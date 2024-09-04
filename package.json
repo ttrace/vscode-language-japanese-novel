@@ -8,25 +8,26 @@
   },
   "icon": "resource/icon.png",
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "^1.92.0"
   },
   "main": "dist/extension.js",
   "dependencies": {
     "@types/kuromoji": "^0.1.3",
-    "@types/react": "^18.3.4",
+    "@types/react": "^18.3.5",
     "@types/react-dnd": "^3.0.2",
     "@types/react-dom": "^18.3.0",
-    "@vivliostyle/cli": "^8.12.1",
+    "@vivliostyle/cli": "^8.14.1",
     "fastest-levenshtein": "^1.0.16",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
     "kuromoji": "github:ttrace/kuromoji.js",
     "react": "^18.3.1",
     "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.3.1",
-    "simple-git": "^3.25.0",
+    "simple-git": "^3.26.0",
     "tree-model": "^1.0.7",
-    "ws": "^8.17.1"
+    "ws": "^8.18.0"
   },
   "scripts": {
     "vscode:prepublish": "npm run package-webpack",
@@ -126,6 +127,11 @@
     "configuration": {
       "title": "Novel-writer設定",
       "properties": {
+        "Novel.DraftTree.renumber": {
+          "type": "boolean",
+          "default": false,
+          "description": "原稿ツリーでファイルの並び替えを行うかどうかを設定します\n有効にすると原稿ツリーでファイル・フォルダーの順番を入れ替えられますが、ファイル・フォルダーの名前の先頭に連番を付与します\nファイル名を書き換える機能なので、ワークスペースごとに設定することを推奨します"
+        },
         "Novel.general.filetype": {
           "type": "string",
           "default": ".txt",
@@ -196,14 +202,6 @@
           "type": "boolean",
           "default": true,
           "description": "次のシーン、前のシーンを開くためのナビゲーターを表示する"
-        },
-        "Novel.compile.separator": {
-          "type": "string",
-          "default": "＊",
-          "enum": [
-            "*"
-          ],
-          "description": "ファイルを結合する際に、フォルダーの区切り文字を指定してください（実装中）"
         },
         "Novel.preview.userRegex": {
           "type": "array",
@@ -683,24 +681,24 @@
   "devDependencies": {
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.7",
-    "@types/node": "^20.14.9",
+    "@types/node": "^22.5.2",
     "@types/ps-tree": "^1.1.6",
     "@types/sinon": "^17.0.3",
     "@types/text-encoding": "^0.0.39",
-    "@types/vscode": "^1.90.0",
+    "@types/vscode": "^1.92.0",
     "@types/webpack-env": "^1.18.5",
-    "@types/ws": "^8.5.10",
-    "@typescript-eslint/eslint-plugin": "^7.15.0",
-    "@typescript-eslint/parser": "^7.15.0",
-    "@vscode/test-web": "^0.0.55",
+    "@types/ws": "^8.5.12",
+    "@typescript-eslint/eslint-plugin": "^8.4.0",
+    "@typescript-eslint/parser": "^8.4.0",
+    "@vscode/test-web": "^0.0.57",
     "bufferutil": "^4.0.8",
     "child_process": "^1.0.2",
-    "eslint": "^8.56.0",
+    "eslint": "^9.9.1",
     "fs": "^0.0.1-security",
-    "glob": "^10.4.2",
+    "glob": "^11.0.0",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
-    "mocha": "^10.5.2",
+    "mocha": "^10.7.3",
     "net": "^1.0.2",
     "node-levenshtein": "^3.0.7",
     "path": "^0.12.7",

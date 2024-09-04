@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+
 //  import { TreeView } from "./treeComponent";
 
-// TypeScript の型定義
+// MARK:型定義
 type TreeFileNode = {
   id: string;
   dir: string;
@@ -23,10 +24,13 @@ const vscode = (window as any).acquireVsCodeApi();
 
 let isDraggingGlobal = false;
 
+
 const ToggleSwitch: React.FC<{ isOn: boolean; handleToggle: () => void }> = ({
   isOn,
-  handleToggle,
+  handleToggle
+
 }) => {
+
   return (
     <label className="switch">
       <input type="checkbox" checked={isOn} onChange={handleToggle} />
@@ -35,6 +39,7 @@ const ToggleSwitch: React.FC<{ isOn: boolean; handleToggle: () => void }> = ({
   );
 };
 
+// MARK: App
 export const App: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeFileNode[]>([]);
   const [isOrdable, setIsOrdable] = useState(false);
@@ -43,17 +48,20 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     vscode.postMessage({ command: "loadTreeData" });
+    vscode.postMessage({ command: "loadIsOrdable" });
 
     const handleMessage = (event: MessageEvent) => {
       const message = event.data; // メッセージデータを取得
       switch (message.command) {
         case "treeData":
           setTreeData(message.data); // データセット
-          console.log(message.data);
+          // console.log(message.data);
           break;
         case "clearHighlight":
           setHighlightedNode(null);
           break;
+        case "configIsOrdable":
+          setIsOrdable(message.data);
       }
     };
 
@@ -65,13 +73,24 @@ export const App: React.FC = () => {
     };
   }, []);
 
+  const handleToggle = () => {
+    const newIsOrdable = !isOrdable;
+    setIsOrdable(newIsOrdable);
+    
+    // VS Code にメッセージを送る
+    vscode.postMessage({
+      command: 'updateOrderStatus',
+      isOrdable: newIsOrdable
+    });
+  }
+
   return (
     <div>
       <div className="toggle-switch">
-        <span>並び順の変更:</span>
+        <span>順序管理:</span>
         <ToggleSwitch
           isOn={isOrdable}
-          handleToggle={() => setIsOrdable(!isOrdable)}
+          handleToggle={handleToggle}
         />
       </div>
       <div className="tree-wrapper">
@@ -86,6 +105,7 @@ export const App: React.FC = () => {
                 highlightedNode={highlightedNode}
                 onHighlight={setHighlightedNode}
                 isFirstSibling={index === 0}
+                isOrdable={isOrdable}
               />
             ))
           )}
@@ -99,19 +119,20 @@ interface TreeViewProps {
   node: TreeFileNode;
   highlightedNode: string | null;
   onHighlight: (nodeDir: string) => void;
-  // isDraggingGlobal: boolean;
-  // setIsDraggingGlobal: (isDragging: boolean) => void;
   isFirstSibling: boolean;
+  isOrdable: boolean;
 }
 
+// MARK: TreeView
 const TreeView: React.FC<TreeViewProps> = ({
   node,
   highlightedNode,
   onHighlight,
-  // isDraggingGlobal,
-  // setIsDraggingGlobal,
   isFirstSibling,
+  isOrdable
 }) => {
+  // ツリービューの制御
+  const treeNodeRef = useRef(null);
   // フォルダーが開いているかどうかを知るステータス（初期状態は開）
   const [expanded, setExpanded] = useState(true);
   // ドラッグ中かどうかを知るステータス（初期状態はfalse）
@@ -120,7 +141,11 @@ const TreeView: React.FC<TreeViewProps> = ({
   const [isDraggedOverBefore, setIsDraggedOverBefore] = useState(false);
   const [isDraggedOverAfter, setIsDraggedOverAfter] = useState(false);
   const [isDraggedOverInside, setIsDraggedOverInside] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(node.name);
+  const [isComposing, setIsComposing] = React.useState(false);
 
+  // ドラッグ制御
   const handleDragStart = () => {
     if (!isDraggingGlobal) {
       setIsDragging(true);
@@ -134,11 +159,12 @@ const TreeView: React.FC<TreeViewProps> = ({
   };
 
   //フォルダーの開け閉め
-  const toggleExpand = () => {
+  const toggleExpand = (event: React.MouseEvent<HTMLSpanElement>) => {
+    event.stopPropagation();
     setExpanded(!expanded);
   };
 
-  // クリックしてファイルを開くコマンド。VS Codeに送信する部分も含む
+  // ノードのクリック ハイライトとVS Codeに送信する部分も含む
   const handleNodeClick = (event: React.MouseEvent<HTMLSpanElement>) => {
     event.stopPropagation();
     if (!node.children) {
@@ -146,14 +172,18 @@ const TreeView: React.FC<TreeViewProps> = ({
         command: "openFile",
         filePath: node.dir,
       });
-
-      // ハイライトを少し遅らせて設定
-      setTimeout(() => onHighlight(node.dir), 200);
-      //   onHighlight(node.dir);
-    } else {
-      toggleExpand();
     }
+    // ハイライトを少し遅らせて設定
+    setTimeout(() => {
+      onHighlight(node.dir);
+      if (treeNodeRef.current) {
+        (treeNodeRef.current as HTMLDivElement).focus();
+      }
+    }, 200);
   };
+
+  // MARK: D&D
+  // ドラッグ制御の実装
 
   const handleDragEnterBefore = () => {
     setIsDraggedOverBefore(true);
@@ -179,8 +209,6 @@ const TreeView: React.FC<TreeViewProps> = ({
     setIsDraggedOverAfter(false);
   };
 
-  // MARK: D&D
-  // ドラッグ制御の実装
   const [, drag] = useDrag(
     {
       type: "NODE",
@@ -257,12 +285,75 @@ const TreeView: React.FC<TreeViewProps> = ({
     [node]
   );
 
+  // MARK: リネーム処理
+  const handleKeyDown = (event: {
+    stopPropagation: () => void;
+    key: string;
+  }) => {
+    event.stopPropagation();
+    if (event.key === "Enter") {
+      // IMEがアクティブな場合、Enterキーの動作を無視する
+      if (!isComposing) {
+        if (!isEditing) {
+          // console.log("編集開始");
+          setIsEditing(true);
+        } else {
+          handleBlur();
+        }
+      }
+    }
+  };
+
+  const handleChange = (event: {
+    target: { value: React.SetStateAction<string> };
+  }) => {
+    console.log("handleCnange", node.dir);
+    setEditValue(event.target.value);
+  };
+
+  const handleBlur = () => {
+    if (editValue === node.name){
+      setIsEditing(false);
+    }else
+    if (editValue === "") {
+      vscode.postMessage({
+        command: "alert",
+        alertMessage: "名称は必ず設定してください",
+      });
+      setEditValue(node.name);
+      setIsEditing(false);
+    } else {
+      const renameFile = {
+        targetPath: node.dir,
+        newName: editValue,
+      };
+      vscode.postMessage({
+        command: "rename",
+        renameFile: renameFile,
+      });
+      setIsEditing(false);
+    }
+  };
+
+  const handleCompositionStart = () => {
+    setIsComposing(true);
+  };
+
+  const handleCompositionEnd = () => {
+    setIsComposing(false);
+  };
+
   return (
-    <div>
+    <div
+      ref={treeNodeRef}
+      tabIndex={-1} // フォーカス可能とする
+      onKeyDown={handleKeyDown}
+    >
+
       <div
-        ref={drag}
-        onDragStart={handleDragStart}
-        onDragEnd={handleDragEnd}
+        ref={isOrdable ? drag : undefined}
+        onDragStart={isOrdable ? handleDragStart : undefined}
+        onDragEnd={isOrdable? handleDragEnd : undefined}
         className={`tree-node ${expanded ? "expanded" : ""} ${
           isDragging ? "dragged" : ""
         }`}
@@ -286,9 +377,30 @@ const TreeView: React.FC<TreeViewProps> = ({
           <span className="triangle" onClick={toggleExpand}>
             &gt;
           </span>
-          <span className="item-name">
-            {node.name.replace(/^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/, "$1")}
-          </span>
+          {isEditing ? (
+            <span className="item-name">
+              {
+                <input
+                  type="text"
+                  value={isOrdable ? editValue.replace(
+                    /^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/,
+                    "$1"
+                  ) : editValue}
+                  onChange={handleChange}
+                  onKeyDown={handleKeyDown}
+                  onCompositionStart={handleCompositionStart}
+                  onCompositionEnd={handleCompositionEnd}
+                  onBlur={handleBlur}
+                  autoFocus
+                  className="item-name-input"
+                />
+              }
+            </span>
+          ) : (
+            <span className="item-name">
+              {isOrdable ? node.name.replace(/^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/, "$1") : node.name}
+            </span>
+          )}
           <span className="chars">{node.length.toLocaleString()}文字</span>
         </div>
         {node.children && (
@@ -300,16 +412,17 @@ const TreeView: React.FC<TreeViewProps> = ({
                 highlightedNode={highlightedNode}
                 onHighlight={onHighlight}
                 isFirstSibling={index === 0}
+                isOrdable={isOrdable}
               />
             ))}
-                    <div
-          ref={dropInside}
-          className={`insert-bar inside
+            <div
+              ref={dropInside}
+              className={`insert-bar inside
           ${isDraggingGlobal && !isDragging ? "droppable" : ""}
           ${isDraggedOverInside ? "dropping" : ""}`}
-          onDragEnter={handleDragEnterInside}
-          onDragLeave={handleDragLeaveInside}
-        ></div>
+              onDragEnter={handleDragEnterInside}
+              onDragLeave={handleDragLeaveInside}
+            ></div>
           </div>
         )}
 

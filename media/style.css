@@ -65,37 +65,38 @@ div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
   border-bottom: transparent 1px solid;
 }
 
-.tree-label > span.item-name {
+.tree-label > .item-name {
+  display: inline-block;
   margin-left: 0em;
   text-wrap: nowrap;
 }
 
-.tree-label > span.item-name::before {
+.tree-label > .item-name::before {
   content: url("folder-closed.svg");
   width: 1.2em;
   display: inline-block;
   margin-right: 0.2em;
 }
 
-.vscode-light .tree-label > span.item-name::before {
+.vscode-light .tree-label > .item-name::before {
   content: url("folder-closed-light.svg");
 }
 
-.tree-node.expanded .tree-label > span.item-name::before {
+.tree-node.expanded .tree-label > .item-name::before {
   content: url("folder-opens.svg");
 }
 
-.tree-node.expanded > .tree-label.text > span.item-name::before {
+.tree-node.expanded > .tree-label.text > .item-name::before {
   content: url("file-dark.svg");
   margin-left: 0.75em;
 }
 
-.vscode-light .tree-node.expanded > .tree-label.text > span.item-name::before {
+.vscode-light .tree-node.expanded > .tree-label.text > .item-name::before {
   content: url("file-light.svg");
   margin-left: 0.75em;
 }
 
-.horizontal .tree-node.expanded > .tree-label.text > span.item-name::before {
+.horizontal .tree-node.expanded > .tree-label.text > .item-name::before {
   content: url("file-dark.svg");
   margin-left: 0.75em;
 }
@@ -104,12 +105,12 @@ div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
   .horizontal
   .tree-node.expanded
   > .tree-label.text
-  > span.item-name::before {
+  > .item-name::before {
   content: url("file-light.svg");
   margin-left: 0.75em;
 }
 
-.vscode-light .tree-node.expanded > .tree-label > span.item-name::before {
+.vscode-light .tree-node.expanded > .tree-label > .item-name::before {
   content: url("folder-opens-light.svg");
 }
 
@@ -127,9 +128,15 @@ div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
 }
 
 .tree-label.highlighted {
-  background-color: rgba(116, 116, 116, 0.2);
-  border-top: rgba(116, 116, 116, 0.4) 1px solid;
-  border-bottom: rgba(116, 116, 116, 0.4) 1px solid;
+  background-color: rgba(224, 145, 0, 0.3);
+  border-top: #ffb134 1px solid;
+  border-bottom: #ffb134 1px solid;
+}
+
+.vscode-light .tree-label.highlighted {
+  background-color: rgba(224, 145, 0, 0.3);
+  border-top: #ff8f34 1px solid;
+  border-bottom: #ff8f34 1px solid;
 }
 
 .tree-node.expanded > .tree-label > span.triangle {
@@ -154,9 +161,12 @@ div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
   background-size: 1200px 6px;
   background-position-x: left;
   background-position-y: top;
-  background-color: rgba(116, 116, 116, 0.4);
   opacity: 0;
   z-index: 1;
+}
+
+.vscode-light .insert-bar{
+  background-image: url("insert-line-light.svg");
 }
 
 .tree-node-children .insert-bar.inside:nth-child(n+2){
@@ -207,10 +217,6 @@ div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
 
 .insert-bar.inside.dropping{
   opacity: 1.0;
-}
-
-.vscode-light .insert-bar {
-  background-color: black;
 }
 
 /* #MARK: トグルスイッチ */

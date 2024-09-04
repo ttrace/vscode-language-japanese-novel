@@ -6,6 +6,9 @@ import { v4 as uuidv4 } from "uuid";
 
 let isFileOperating = false;
 const debugWebView = false;
+const configuration = vscode.workspace.getConfiguration();
+const draftFileType =
+  configuration.get("Novel.general.filetype") == ".txt" ? ".txt" : ".md";
 
 export class DraftWebViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "draftTree";
@@ -18,10 +21,28 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
     this._context = context;
 
     // ファイルシステムの監視を設定
-    this.watch = vscode.workspace.createFileSystemWatcher("**/*.txt");
+    this.watch = vscode.workspace.createFileSystemWatcher(
+      `**/*${draftFileType}`
+    );
     this.watch.onDidChange(this.handleFileSystemEvent, this);
     this.watch.onDidCreate(this.handleFileSystemEvent, this);
     this.watch.onDidDelete(this.handleFileSystemEvent, this);
+
+    const disposable = vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration("Novel.general.filetype")) {
+        // `Novel.general.filetype` の設定が変更された場合の処理
+        vscode.window.showInformationMessage(
+          "Novel.general.filetype 設定が変更されました"
+        );
+
+        // 変更後の新しい設定値を取得
+        const newFileType = vscode.workspace
+          .getConfiguration("Novel.general")
+          .get<string>("filetype");
+        console.log(`新しいファイルタイプ: ${newFileType}`);
+      }
+    });
+    context.subscriptions.push(disposable);
 
     // エディターが変更されたときにwebviewにメッセージを送信
     vscode.window.onDidChangeActiveTextEditor(() => {
@@ -55,21 +76,48 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(async (message) => {
+      // MARK: Command一覧
+      // ツリーデータの要求
       if (message.command === "loadTreeData") {
         this.loadTreeData(webviewView.webview);
         console.log("Treeからデータ取得依頼");
+
+        // ファイルを開く
       } else if (message.command === "openFile") {
         const uri = vscode.Uri.file(message.filePath);
         await vscode.commands.executeCommand("vscode.open", uri);
+
+        // ログの出力
       } else if (message.command === "log") {
         console.log(message.log);
+
+        // アラート
+      } else if (message.command === "alert") {
+        vscode.window.showErrorMessage(
+          `Novelーwriter原稿ツリー：${message.alertMessage}`
+        );
+
+        // 順番管理の読み込み
+      } else if (message.command === "loadIsOrdable") {
+        this.sendIsOrdable(webviewView.webview);
+
+        // 順番管理の有効化
+      } else if (message.command === "updateOrderStatus") {
+        console.log("並び替え", message.isOrdable);
+        updateRenumberConfiguration(message.isOrdable);
+        // ファイルの移動
       } else if (message.command === "moveCommmand") {
-        console.log(message.fileTransferData);
+        // console.log(message.fileTransferData);
         moveAndReorderFiles(
           message.fileTransferData.destinationPath,
           message.fileTransferData.insertPoint,
           message.fileTransferData.movingFileDir
         );
+      } else if (message.command === "rename") {
+        console.log(
+          `ファイル名変更 ${message.renameFile.targetPath}を${message.renameFile.newName}`
+        );
+        renameFile(message.renameFile.targetPath, message.renameFile.newName);
       }
     });
   }
@@ -111,6 +159,15 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
     });
   }
 
+  private sendIsOrdable(webview: vscode.Webview) {
+    const configuration = vscode.workspace.getConfiguration();
+    const renumberSetting = configuration.get("Novel.DraftTree.renumber");
+    webview.postMessage({
+      command: "configIsOrdable",
+      data: renumberSetting,
+    });
+  }
+
   private refreshWebview() {
     if (this._webviewView && !isFileOperating) {
       this.loadTreeData(this._webviewView.webview);
@@ -118,6 +175,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
   }
 }
 
+// MARK: ドラッグ&ドロップ
 async function moveAndReorderFiles(
   destinationPath: string,
   insertPoint: "before" | "inside" | "after",
@@ -157,7 +215,11 @@ async function moveAndReorderFiles(
       await vscode.workspace.fs.readDirectory(destinationUpperUri)
     ).filter(
       (file) =>
-        file[0].endsWith(".txt") || file[1] === vscode.FileType.Directory
+        // ファイル名の先頭に'.'が付いているもの(不可視ファイル)を除外
+        !file[0].startsWith(".") &&
+        // 指定されたファイルタイプまたはディレクトリのみを保持
+        (file[0].endsWith(draftFileType) ||
+          file[1] === vscode.FileType.Directory)
     );
 
     // destinationPathがdestinationFilesの何番目にあるかを見つけます
@@ -216,7 +278,11 @@ async function moveAndReorderFiles(
       await vscode.workspace.fs.readDirectory(targetUri)
     ).filter(
       (file) =>
-        file[0].endsWith(".txt") || file[1] === vscode.FileType.Directory
+        // ファイル名の先頭に'.'が付いているもの(不可視ファイル)を除外
+        !file[0].startsWith(".") &&
+        // 指定されたファイルタイプまたはディレクトリのみを保持
+        (file[0].endsWith(draftFileType) ||
+          file[1] === vscode.FileType.Directory)
     );
 
     // 移動先のフォルダーの中のファイルに連番を付与します
@@ -236,7 +302,11 @@ async function moveAndReorderFiles(
         await vscode.workspace.fs.readDirectory(currentMovingFileUpperUri)
       ).filter(
         (file) =>
-          file[0].endsWith(".txt") || file[1] === vscode.FileType.Directory
+          // ファイル名の先頭に'.'が付いているもの(不可視ファイル)を除外
+          !file[0].startsWith(".") &&
+          // 指定されたファイルタイプまたはディレクトリのみを保持
+          (file[0].endsWith(draftFileType) ||
+            file[1] === vscode.FileType.Directory)
       );
 
       // 移動元のフォルダーの中のファイルに連番を付与します
@@ -268,6 +338,7 @@ async function moveAndReorderFiles(
   draftWebViewProvider.loadTreeData(draftWebViewProvider._webviewView!.webview);
 }
 
+// MARK: ファイル通し番号
 // ファイルとフォルダーにdestinationUriとinsertPointで示される位置の番号を抜いた連番をつける関数
 async function addSequentialNumberToFiles(
   targetUri: vscode.Uri,
@@ -317,15 +388,14 @@ async function addSequentialNumberToFiles(
 
     const newUri = vscode.Uri.joinPath(targetUri, newFileName);
 
-    if((oldUri.path == movingFileUpperUri.path)){
+    if (oldUri.path == movingFileUpperUri.path) {
       // 上位ディレクトリから
-      renamedMovingFileUpperUrl = newUri
-    } else if(movingFileUpperUri.path.startsWith(oldUri.path)){
+      renamedMovingFileUpperUrl = newUri;
+    } else if (movingFileUpperUri.path.startsWith(oldUri.path)) {
       // 下位ディレクトリから
-      const subDir = movingFileUpperUri.path.replace(oldUri.path,"");
-      renamedMovingFileUpperUrl = vscode.Uri.joinPath(newUri,subDir);
+      const subDir = movingFileUpperUri.path.replace(oldUri.path, "");
+      renamedMovingFileUpperUrl = vscode.Uri.joinPath(newUri, subDir);
     }
-
 
     try {
       // console.log(`ファイル名変更" ${oldUri} to ${newUri}`);
@@ -360,6 +430,7 @@ async function addSequentialNumberToFiles(
   return renamedMovingFileUpperUrl;
 }
 
+// MARK: エディターを閉じる
 async function closeFileInEditor(fileUri: vscode.Uri) {
   const allOpenEditors = vscode.window.visibleTextEditors;
 
@@ -372,3 +443,46 @@ async function closeFileInEditor(fileUri: vscode.Uri) {
     }
   }
 }
+
+// MARK: ファイルのリネーム
+async function renameFile(targetPath: string, newName: string) {
+  const targetFileUri = vscode.Uri.file(targetPath);
+  // const newFileName = newName;
+  const oldFileName = path.basename(targetPath);
+  const targetFileDir = vscode.Uri.file(path.dirname(targetPath));
+  const newFileName = oldFileName.replace(
+    /^(\d+[-_]*)*(.+?)(\.(txt|md))?$/,
+    `$1${newName}$3`
+  );
+  const newFieUri = vscode.Uri.joinPath(targetFileDir, newFileName);
+  try {
+    await vscode.workspace.fs.rename(targetFileUri, newFieUri, {
+      overwrite: true,
+    });
+  } catch (error) {
+    vscode.window.showErrorMessage(
+      `${oldFileName}を${newFileName}に書き換えることができませんでした`
+    );
+  }
+  const draftWebViewProvider = getDraftWebViewProviderInstance();
+  draftWebViewProvider.loadTreeData(draftWebViewProvider._webviewView!.webview);
+}
+
+// MARK: コンフィグの設定を変更
+const updateRenumberConfiguration = async (newStatus: boolean) => {
+  try {
+    // ワークスペースの構成取得
+    const config = vscode.workspace.getConfiguration("Novel.DraftTree");
+
+    // 構成の一部である 'renumber' を新しい値に設定
+    await config.update(
+      "renumber",
+      newStatus,
+      vscode.ConfigurationTarget.Workspace
+    );
+
+    console.log(`ワークスペースの設定 Renumberを ${newStatus} に更新しました`);
+  } catch (error) {
+    console.error("設定の更新に失敗しました:", error);
+  }
+};
