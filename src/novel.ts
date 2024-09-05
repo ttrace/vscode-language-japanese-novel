@@ -217,6 +217,7 @@ async function moveAndReorderFiles(
       (file) =>
         // ファイル名の先頭に'.'が付いているもの(不可視ファイル)を除外
         !file[0].startsWith(".") &&
+        !(file[0] == "publish" || file[0] == "dict" || file[0] == "css") &&
         // 指定されたファイルタイプまたはディレクトリのみを保持
         (file[0].endsWith(draftFileType) ||
           file[1] === vscode.FileType.Directory)
@@ -280,6 +281,7 @@ async function moveAndReorderFiles(
       (file) =>
         // ファイル名の先頭に'.'が付いているもの(不可視ファイル)を除外
         !file[0].startsWith(".") &&
+        !(file[0] == "publish" || file[0] == "dict" || file[0] == "css") &&
         // 指定されたファイルタイプまたはディレクトリのみを保持
         (file[0].endsWith(draftFileType) ||
           file[1] === vscode.FileType.Directory)
@@ -304,6 +306,7 @@ async function moveAndReorderFiles(
         (file) =>
           // ファイル名の先頭に'.'が付いているもの(不可視ファイル)を除外
           !file[0].startsWith(".") &&
+          !(file[0] == "publish" || file[0] == "dict" || file[0] == "css") &&
           // 指定されたファイルタイプまたはディレクトリのみを保持
           (file[0].endsWith(draftFileType) ||
             file[1] === vscode.FileType.Directory)
