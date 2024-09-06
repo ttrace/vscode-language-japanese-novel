@@ -246,6 +246,7 @@ MIT
 [8amjp/vsce-charactercount](https://github.com/8amjp/vsce-charactercount)
 
 ## Sponsors
+[GitHub Sponsors](https://github.com/sponsors/ttrace)でご支援いただいている方々です
 
 [![bills-appworks](https://github.com/bills-appworks.png?size=24)](https://github.com/bills-appworks)
 
