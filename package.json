@@ -94,9 +94,36 @@
         "title": "Novel:進捗をリセット"
       },
       {
-        "command": "draftTree.refresh",
-        "title": "再表示",
-        "icon": "$(refresh)"
+        "command": "draftTree.insertFile",
+        "title": "空のファイルを挿入",
+        "icon": {
+          "light": "resource/add-file-light.svg",
+          "dark": "resource/add-file-dark.svg"
+        }
+      },
+      {
+        "command": "draftTree.insertFolder",
+        "title": "空のフォルダーを挿入",
+        "icon": {
+          "light": "resource/add-folder-light.svg",
+          "dark": "resource/add-folder-dark.svg"
+        }
+      },
+      {
+        "command": "draftTree.activateDragAndDrop",
+        "title": "ドラッグ&ドロップ",
+        "icon": {
+          "light": "resource/drag-and-drop-dim-light.svg",
+          "dark": "resource/drag-and-drop-dim-dark.svg"
+        }
+      },
+      {
+        "command": "draftTree.deactivateDragAndDrop",
+        "title": "ドラッグ&ドロップ有効",
+        "icon": {
+          "light": "resource/drag-and-drop-light.svg",
+          "dark": "resource/drag-and-drop-dark.svg"
+        }
       }
     ],
     "keybindings": [
@@ -220,8 +247,23 @@
       ],
       "view/title": [
         {
-          "command": "draftTree.refresh",
+          "command": "draftTree.insertFile",
           "when": "view == draftTree",
+          "group": "navigation"
+        },
+        {
+          "command": "draftTree.insertFolder",
+          "when": "view == draftTree",
+          "group": "navigation"
+        },
+        {
+          "command": "draftTree.deactivateDragAndDrop",
+          "when": "view == draftTree && isDndActive == true",
+          "group": "navigation"
+        },
+        {
+          "command": "draftTree.activateDragAndDrop",
+          "when": "view == draftTree && isDndActive == false",
           "group": "navigation"
         }
       ],
@@ -246,7 +288,7 @@
         {
           "type": "webview",
           "id": "draftTree",
-          "name": "原稿"
+          "name": "原稿ツリー"
         }
       ]
     },

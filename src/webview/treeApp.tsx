@@ -25,20 +25,6 @@ const vscode = (window as any).acquireVsCodeApi();
 let isDraggingGlobal = false;
 
 
-const ToggleSwitch: React.FC<{ isOn: boolean; handleToggle: () => void }> = ({
-  isOn,
-  handleToggle
-
-}) => {
-
-  return (
-    <label className="switch">
-      <input type="checkbox" checked={isOn} onChange={handleToggle} />
-      <span className="slider round"></span>
-    </label>
-  );
-};
-
 // MARK: App
 export const App: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeFileNode[]>([]);
@@ -55,6 +41,7 @@ export const App: React.FC = () => {
       switch (message.command) {
         case "treeData":
           setTreeData(message.data); // データセット
+          vscode.postMessage({ command: "loadIsOrdable" });
           // console.log(message.data);
           break;
         case "clearHighlight":
@@ -73,26 +60,10 @@ export const App: React.FC = () => {
     };
   }, []);
 
-  const handleToggle = () => {
-    const newIsOrdable = !isOrdable;
-    setIsOrdable(newIsOrdable);
-    
-    // VS Code にメッセージを送る
-    vscode.postMessage({
-      command: 'updateOrderStatus',
-      isOrdable: newIsOrdable
-    });
-  }
+
 
   return (
     <div>
-      <div className="toggle-switch">
-        <span>順序管理:</span>
-        <ToggleSwitch
-          isOn={isOrdable}
-          handleToggle={handleToggle}
-        />
-      </div>
       <div className="tree-wrapper">
         <DndProvider backend={HTML5Backend}>
           {treeData.length === 0 ? (

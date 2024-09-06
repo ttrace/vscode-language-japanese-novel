@@ -25,7 +25,12 @@ let previewRedrawing = false;
 export let deadlineFolderPath: string;
 export let deadlineTextCount: string;
 
+// VS Codeのコンフィグ
+const configuration = vscode.workspace.getConfiguration();
+
 let draftWebViewProviderInstance: DraftWebViewProvider;
+let isDndActive: boolean | undefined;
+console.log("並び替え", isDndActive);
 
 emptyPort(function (port: number) {
   servicePort = port;
@@ -114,14 +119,28 @@ export function activate(context: vscode.ExtensionContext): void {
       vscode.window.registerWebviewViewProvider('draftTree', draftWebViewProviderInstance)
   );
 
+  isDndActive = configuration.get("Novel.DraftTree.renumber") ?? false;
+  vscode.commands.executeCommand('setContext', 'isDndActive', isDndActive);
+
+  console.log(configuration.get("Novel.DraftTree.renumber"), isDndActive);
+  const toggleDragAndDrop = () => {
+    isDndActive = !isDndActive;
+    configuration.update("Novel.DraftTree.renumber", isDndActive);
+    console.log(`Current toggle state: ${isDndActive}`);
+
+    // アイコンの切り替え
+    vscode.commands.executeCommand('setContext', 'isDndActive', isDndActive);
+  }
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('novel.refresh', () => {
-      vscode.window.showInformationMessage('Refresh Command Triggered');
-    })
+    vscode.commands.registerCommand('draftTree.activateDragAndDrop', toggleDragAndDrop)
   );
 
-  // 品詞ハイライトの初期化
+  context.subscriptions.push(
+    vscode.commands.registerCommand('draftTree.deactivateDragAndDrop', toggleDragAndDrop)
+  );
+
+  // MARK: Tokenize 品詞ハイライトの初期化
   const kuromojiPath = context.extensionPath + "/node_modules/kuromoji/dict";
   activateTokenizer(context, kuromojiPath);
 
