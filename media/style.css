@@ -6,7 +6,7 @@ body {
   height: 100vh;
 }
 
-.tree-wrapper{
+.tree-wrapper {
   padding-top: 0.5em;
   padding-bottom: 1em;
 }
@@ -22,7 +22,7 @@ h1 {
 }
 
 .tree-node {
-  height: 1.0em;
+  height: 1em;
   overflow-y: hidden;
   transition: all 0.1s linear;
   line-height: 1;
@@ -45,7 +45,7 @@ h1 {
   opacity: 0.3;
 }
 
-.tree-node.dragged .insert-bar{
+.tree-node.dragged .insert-bar {
   display: none;
 }
 
@@ -86,19 +86,27 @@ div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
   content: url("folder-opens.svg");
 }
 
-.tree-node.expanded > .tree-label.text > .item-name::before {
+.tree-node.expanded .tree-label.text > .item-name::before {
   content: url("file-dark.svg");
   margin-left: 0.75em;
 }
 
-.vscode-light .tree-node.expanded > .tree-label.text > .item-name::before {
+.vscode-light .tree-node.expanded .tree-label.text > .item-name::before {
   content: url("file-light.svg");
   margin-left: 0.75em;
 }
 
-.horizontal .tree-node.expanded > .tree-label.text > .item-name::before {
+.horizontal .tree-node.expanded .tree-label.text > .item-name::before {
   content: url("file-dark.svg");
   margin-left: 0.75em;
+}
+
+.tree-node.placeholder .tree-label > .item-name {
+  padding-left: 0.75em;
+}
+
+.tree-node.placeholder .tree-label.text > .item-name {
+  padding-left: 0;
 }
 
 .vscode-light
@@ -165,11 +173,11 @@ div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
   z-index: 1;
 }
 
-.vscode-light .insert-bar{
+.vscode-light .insert-bar {
   background-image: url("insert-line-light.svg");
 }
 
-.tree-node-children .insert-bar.inside:nth-child(n+2){
+.tree-node-children .insert-bar.inside:nth-child(n + 2) {
   display: none;
 }
 
@@ -191,13 +199,13 @@ div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
 }
 
 .insert-bar.dropping.before {
-  opacity: 1.0;
+  opacity: 1;
   height: calc(0.5em + 0px);
 }
 
 .insert-bar.dropping.after {
   background-position-y: bottom;
-  opacity: 1.0;
+  opacity: 1;
   height: calc(0.5em);
   margin-bottom: calc(-0.4em);
 }
@@ -207,16 +215,17 @@ div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
 }
 
 .insert-bar.inside {
-  opacity: 0.0;
+  opacity: 0;
 }
 
-.insert-bar.inside.droppable, .insert-bar.inside.dropping {
+.insert-bar.inside.droppable,
+.insert-bar.inside.dropping {
   margin-top: -0.2em;
   margin-bottom: -0.4em;
 }
 
-.insert-bar.inside.dropping{
-  opacity: 1.0;
+.insert-bar.inside.dropping {
+  opacity: 1;
 }
 
 /* #MARK: トグルスイッチ */

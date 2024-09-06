@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { commands } from "vscode";
+import { commands, FileType } from "vscode";
 
 //  import { TreeView } from "./treeComponent";
 
@@ -25,30 +25,43 @@ const vscode = (window as any).acquireVsCodeApi();
 
 let isDraggingGlobal = false;
 
-
 // MARK: App
 export const App: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeFileNode[]>([]);
   const [isOrdable, setIsOrdable] = useState(false);
   const [highlightedNode, setHighlightedNode] = useState<string | null>(null);
+  const [insertingNode, setInsertingNode] = useState<"file" | "folder" | null>(
+    null
+  );
+  const [isInserting, setIsInserting] = useState(false);
+  const [draftFileType, setDraftFileType] = useState<".txt" | ".md">(".txt");
 
   useEffect(() => {
     vscode.postMessage({ command: "loadTreeData" });
     vscode.postMessage({ command: "loadIsOrdable" });
 
+    // MARK: VS Code >> Tree
     const handleMessage = (event: MessageEvent) => {
       const message = event.data; // メッセージデータを取得
       switch (message.command) {
         case "treeData":
           setTreeData(message.data); // データセット
+          setDraftFileType(message.draftFileType);
           vscode.postMessage({ command: "loadIsOrdable" });
           break;
         case "clearHighlight":
           setHighlightedNode(null);
-          vscode.postMessage({command:"fileSelection",node:null});
+          vscode.postMessage({ command: "fileSelection", node: null });
           break;
         case "configIsOrdable":
           setIsOrdable(message.data);
+          break;
+        case "insertFile":
+          console.log(`${message.data}の挿入が要請されました`);
+          setIsInserting(true);
+          setInsertingNode(message.data);
+
+          break;
       }
     };
 
@@ -59,8 +72,6 @@ export const App: React.FC = () => {
       window.removeEventListener("message", handleMessage);
     };
   }, []);
-
-
 
   return (
     <div>
@@ -77,6 +88,10 @@ export const App: React.FC = () => {
                 onHighlight={setHighlightedNode}
                 isFirstSibling={index === 0}
                 isOrdable={isOrdable}
+                isInserting={isInserting}
+                setIsInserting={setIsInserting}
+                insertingNode={insertingNode}
+                draftFileType={draftFileType}
               />
             ))
           )}
@@ -92,6 +107,10 @@ interface TreeViewProps {
   onHighlight: (nodeDir: string) => void;
   isFirstSibling: boolean;
   isOrdable: boolean;
+  insertingNode: "file" | "folder" | null;
+  setIsInserting: any;
+  isInserting: boolean;
+  draftFileType: ".txt" | ".md";
 }
 
 // MARK: TreeView
@@ -100,7 +119,11 @@ const TreeView: React.FC<TreeViewProps> = ({
   highlightedNode,
   onHighlight,
   isFirstSibling,
-  isOrdable
+  isOrdable,
+  insertingNode,
+  setIsInserting,
+  isInserting,
+  draftFileType,
 }) => {
   // ツリービューの制御
   const treeNodeRef = useRef(null);
@@ -115,6 +138,32 @@ const TreeView: React.FC<TreeViewProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(node.name);
   const [isComposing, setIsComposing] = React.useState(false);
+  const [insertingValue, setInsertingValue] = useState("新規ファイル");
+
+  useEffect(() => {
+    if (isInserting == true) {
+      let insertingNodeName = insertingValue;
+      if (isOrdable) {
+        insertingNodeName =
+          insertingNode == "file" ? "新規ファイル" : "新規フォルダー";
+      } else {
+        const match = node.name.match(/^\d+/);
+        if (match != null) {
+          const digit = match[0].length;
+          const fileNumber = String(parseInt(match[0], 10) + 1).padStart(
+            digit,
+            "0"
+          );
+
+          insertingNodeName =
+            insertingNode == "file"
+              ? `${fileNumber}-新規ファイル${draftFileType}`
+              : `${fileNumber}-新規フォルダー`;
+        }
+      }
+      setInsertingValue(insertingNodeName);
+    }
+  }, [isInserting]);
 
   // ドラッグ制御
   const handleDragStart = () => {
@@ -147,7 +196,7 @@ const TreeView: React.FC<TreeViewProps> = ({
     // ハイライトを少し遅らせて設定
     setTimeout(() => {
       onHighlight(node.dir);
-      vscode.postMessage({command:"fileSelection",node:node.dir});
+      vscode.postMessage({ command: "fileSelection", node: node.dir });
       if (treeNodeRef.current) {
         (treeNodeRef.current as HTMLDivElement).focus();
       }
@@ -284,10 +333,9 @@ const TreeView: React.FC<TreeViewProps> = ({
   };
 
   const handleBlur = () => {
-    if (editValue === node.name){
+    if (editValue === node.name) {
       setIsEditing(false);
-    }else
-    if (editValue === "") {
+    } else if (editValue === "") {
       vscode.postMessage({
         command: "alert",
         alertMessage: "名称は必ず設定してください",
@@ -315,17 +363,65 @@ const TreeView: React.FC<TreeViewProps> = ({
     setIsComposing(false);
   };
 
+  const insertingHandleChange = (event: {
+    target: { value: React.SetStateAction<string> };
+  }) => {
+    console.log("挿入ファイル名", node.dir);
+    setInsertingValue(event.target.value);
+  };
+
+  const insertingHandleBlur = () => {
+    if (insertingValue === node.name) {
+      setIsInserting(false);
+    } else if (insertingValue === "") {
+      vscode.postMessage({
+        command: "alert",
+        alertMessage: "名称は必ず設定してください",
+      });
+      setInsertingValue(node.name);
+      setIsInserting(false);
+    } else {
+      setIsInserting(false);
+    }
+  };
+
+  const insertingHandleKeyDown = (event: {
+    stopPropagation: () => void;
+    key: string;
+  }) => {
+    event.stopPropagation();
+    if (event.key === "Enter") {
+      // IMEがアクティブな場合、Enterキーの動作を無視する
+      if (!isComposing) {
+        if (!isInserting) {
+          setIsInserting(true);
+        } else {
+          console.log("Enter押下　isInserting", isInserting);
+          const insertFile = {
+            targetPath: node.dir,
+            insertingNode: insertingNode,
+            newName: insertingValue,
+          };
+          vscode.postMessage({
+            command: "insert",
+            renameFile: insertFile,
+          });
+          insertingHandleBlur();
+        }
+      }
+    }
+  };
+
   return (
     <div
       ref={treeNodeRef}
       tabIndex={-1} // フォーカス可能とする
       onKeyDown={handleKeyDown}
     >
-
       <div
         ref={isOrdable ? drag : undefined}
         onDragStart={isOrdable ? handleDragStart : undefined}
-        onDragEnd={isOrdable? handleDragEnd : undefined}
+        onDragEnd={isOrdable ? handleDragEnd : undefined}
         className={`tree-node ${expanded ? "expanded" : ""} ${
           isDragging ? "dragged" : ""
         }`}
@@ -343,7 +439,7 @@ const TreeView: React.FC<TreeViewProps> = ({
         )}
         <div
           className={`tree-label ${!node.children ? "text" : ""} ${
-            highlightedNode === node.dir ? "highlighted" : ""
+            highlightedNode === node.dir && !isInserting ? "highlighted" : ""
           }`}
         >
           <span className="triangle" onClick={toggleExpand}>
@@ -354,10 +450,14 @@ const TreeView: React.FC<TreeViewProps> = ({
               {
                 <input
                   type="text"
-                  value={isOrdable ? editValue.replace(
-                    /^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/,
-                    "$1"
-                  ) : editValue}
+                  value={
+                    isOrdable
+                      ? editValue.replace(
+                          /^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/,
+                          "$1"
+                        )
+                      : editValue
+                  }
                   onChange={handleChange}
                   onKeyDown={handleKeyDown}
                   onCompositionStart={handleCompositionStart}
@@ -370,7 +470,12 @@ const TreeView: React.FC<TreeViewProps> = ({
             </span>
           ) : (
             <span className="item-name">
-              {isOrdable ? node.name.replace(/^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/, "$1") : node.name}
+              {isOrdable
+                ? node.name.replace(
+                    /^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/,
+                    "$1"
+                  )
+                : node.name}
             </span>
           )}
           <span className="chars">{node.length.toLocaleString()}文字</span>
@@ -385,6 +490,10 @@ const TreeView: React.FC<TreeViewProps> = ({
                 onHighlight={onHighlight}
                 isFirstSibling={index === 0}
                 isOrdable={isOrdable}
+                isInserting={isInserting}
+                setIsInserting={setIsInserting}
+                insertingNode={insertingNode}
+                draftFileType={draftFileType}
               />
             ))}
             <div
@@ -407,6 +516,31 @@ const TreeView: React.FC<TreeViewProps> = ({
           onDragLeave={handleDragLeaveAfter}
         ></div>
       </div>
+      {isInserting && highlightedNode === node.dir && (
+        <div className="tree-node expanded placeholder">
+          <div
+            className={`tree-label highlighted ${
+              insertingNode === "file" ? "text" : ""
+            }`}
+          >
+            <span className="item-name">
+              {
+                <input
+                  type="text"
+                  value={insertingValue}
+                  onChange={insertingHandleChange}
+                  onKeyDown={insertingHandleKeyDown}
+                  onCompositionStart={handleCompositionStart}
+                  onCompositionEnd={handleCompositionEnd}
+                  onBlur={insertingHandleBlur}
+                  autoFocus
+                  className="item-name-input"
+                />
+              }
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
