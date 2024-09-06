@@ -110,6 +110,17 @@
         }
       },
       {
+        "command": "draftTree.insertFileDim",
+        "title": "空のファイルを挿入",
+        "icon": "resource/add-file-dim.svg"
+      },
+      {
+        "command": "draftTree.insertFolderDim",
+        "title": "空のフォルダーを挿入",
+        "icon": "resource/add-folder-dim.svg"
+      
+      },
+      {
         "command": "draftTree.activateDragAndDrop",
         "title": "ドラッグ&ドロップ",
         "icon": {
@@ -248,12 +259,22 @@
       "view/title": [
         {
           "command": "draftTree.insertFile",
-          "when": "view == draftTree",
+          "when": "view == draftTree && isFileSelectedOnTree == true",
+          "group": "navigation"
+        },
+        {
+          "command": "draftTree.insertFileDim",
+          "when": "view == draftTree && isFileSelectedOnTree == false",
           "group": "navigation"
         },
         {
           "command": "draftTree.insertFolder",
-          "when": "view == draftTree",
+          "when": "view == draftTree && isFileSelectedOnTree == true",
+          "group": "navigation"
+        },
+        {
+          "command": "draftTree.insertFolderDim",
+          "when": "view == draftTree && isFileSelectedOnTree == false",
           "group": "navigation"
         },
         {

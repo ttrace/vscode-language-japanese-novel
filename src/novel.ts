@@ -1,7 +1,10 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { draftRoot, draftsObject, resetCounter } from "./compile";
-import { getDraftWebViewProviderInstance } from "./extension";
+import {
+  getDraftWebViewProviderInstance,
+  isFileSelectedOnTree,
+} from "./extension";
 import { v4 as uuidv4 } from "uuid";
 
 let isFileOperating = false;
@@ -86,7 +89,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
     webviewView.webview.html = this.getHtmlForWebview(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(async (message) => {
-      // MARK: Command一覧
+      // MARK: ツリーからのコマンド
       // ツリーデータの要求
       if (message.command === "loadTreeData") {
         this.loadTreeData(webviewView.webview);
@@ -123,6 +126,15 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
           `ファイル名変更 ${message.renameFile.targetPath}を${message.renameFile.newName}`
         );
         renameFile(message.renameFile.targetPath, message.renameFile.newName);
+      } else if (message.command === "fileSelection") {
+        const isFileSelected = (message.node != null) ? true : false;
+        console.log(`${message.node}が選択されました`);
+
+        vscode.commands.executeCommand(
+          "setContext",
+          "isFileSelectedOnTree",
+          isFileSelected
+        );
       }
     });
   }
@@ -177,6 +189,14 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
     if (this._webviewView && !isFileOperating) {
       this.loadTreeData(this._webviewView.webview);
     }
+  }
+
+  public insertFile(webview:vscode.Webview, fileType: "file"|"folder"){
+    console.log(`${fileType}の挿入をツリービューに送ります`);
+    webview.postMessage({
+      command: "insertFile",
+      fileType: fileType,
+    });
   }
 }
 

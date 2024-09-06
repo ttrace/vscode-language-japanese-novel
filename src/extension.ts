@@ -12,9 +12,14 @@ import { DraftWebViewProvider } from "./novel";
 import { CharacterCounter, CharacterCounterController } from "./charactorcount";
 export * from "./charactorcount";
 import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
-import { activateTokenizer, changeTenseAspect, addRuby, addSesami } from "./tokenize";
+import {
+  activateTokenizer,
+  changeTenseAspect,
+  addRuby,
+  addSesami,
+} from "./tokenize";
 import { exportpdf, previewpdf } from "./pdf";
-import {MarkdownFoldingProvider} from "./markdown";
+import { MarkdownFoldingProvider } from "./markdown";
 
 //リソースとなるhtmlファイル
 //let html: Buffer;
@@ -30,7 +35,7 @@ const configuration = vscode.workspace.getConfiguration();
 
 let draftWebViewProviderInstance: DraftWebViewProvider;
 let isDndActive: boolean | undefined;
-console.log("並び替え", isDndActive);
+export let isFileSelectedOnTree: boolean = false;
 
 emptyPort(function (port: number) {
   servicePort = port;
@@ -76,7 +81,7 @@ function emptyPort(callback: any) {
 }
 
 export function activate(context: vscode.ExtensionContext): void {
-  //コマンド登録
+  // MARK:コマンド登録
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.compile-draft", compileDocs)
   );
@@ -114,33 +119,70 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // MARK: 原稿ツリー
   draftWebViewProviderInstance = new DraftWebViewProvider(context);
-  
+
   context.subscriptions.push(
-      vscode.window.registerWebviewViewProvider('draftTree', draftWebViewProviderInstance)
+    vscode.window.registerWebviewViewProvider(
+      "draftTree",
+      draftWebViewProviderInstance
+    )
   );
 
   isDndActive = configuration.get("Novel.DraftTree.renumber") ?? false;
-  vscode.commands.executeCommand('setContext', 'isDndActive', isDndActive);
+  vscode.commands.executeCommand("setContext", "isDndActive", isDndActive);
 
   console.log(configuration.get("Novel.DraftTree.renumber"), isDndActive);
   const toggleDragAndDrop = () => {
     isDndActive = !isDndActive;
     configuration.update("Novel.DraftTree.renumber", isDndActive);
-    console.log(`Current toggle state: ${isDndActive}`);
 
     // アイコンの切り替え
-    vscode.commands.executeCommand('setContext', 'isDndActive', isDndActive);
-  }
+    vscode.commands.executeCommand("setContext", "isDndActive", isDndActive);
+  };
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('draftTree.activateDragAndDrop', toggleDragAndDrop)
+    vscode.commands.registerCommand(
+      "draftTree.activateDragAndDrop",
+      toggleDragAndDrop
+    )
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('draftTree.deactivateDragAndDrop', toggleDragAndDrop)
+    vscode.commands.registerCommand(
+      "draftTree.deactivateDragAndDrop",
+      toggleDragAndDrop
+    )
   );
 
-  // MARK: Tokenize 品詞ハイライトの初期化
+  const insertFile = (fileType: "file" | "folder") => {
+    draftWebViewProviderInstance.insertFile(draftWebViewProviderInstance._webviewView!.webview,fileType);
+  };
+
+  // ファイルとフォルダの追加
+  context.subscriptions.push(
+    vscode.commands.registerCommand("draftTree.insertFile", () => {
+      insertFile("file");
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("draftTree.insertFolder", () => {
+      insertFile("folder");
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("draftTree.insertFileDim", () => {
+      vscode.window.showInformationMessage("ファイル挿入する位置を選択してください");
+    })
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("draftTree.insertFolderDim", () => {
+      vscode.window.showInformationMessage("フォルダーを挿入する位置を選択してください");
+    })
+  );
+
+  // MARK: 品詞ハイライトの初期化
   const kuromojiPath = context.extensionPath + "/node_modules/kuromoji/dict";
   activateTokenizer(context, kuromojiPath);
 
@@ -174,7 +216,6 @@ export function activate(context: vscode.ExtensionContext): void {
       parseInt(deadLineTextCount)
     );
   }
-
 
   //締め切りカウンター
   context.subscriptions.push(
@@ -231,7 +272,7 @@ export function activate(context: vscode.ExtensionContext): void {
   // 進捗のリセット
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.reset-progress", async () => {
-      characterCounter._resetWritingProtgress(); 
+      characterCounter._resetWritingProtgress();
     })
   );
 
@@ -245,7 +286,10 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   const provider = new MarkdownFoldingProvider();
-  vscode.languages.registerFoldingRangeProvider({ language: 'novel' }, provider);
+  vscode.languages.registerFoldingRangeProvider(
+    { language: "novel" },
+    provider
+  );
 
   const codeLensProviderDisposable = vscode.languages.registerCodeLensProvider(
     { language: "novel", scheme: "file" },

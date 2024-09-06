@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import ReactDOM from "react-dom/client";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { commands } from "vscode";
 
 //  import { TreeView } from "./treeComponent";
 
@@ -30,7 +31,6 @@ export const App: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeFileNode[]>([]);
   const [isOrdable, setIsOrdable] = useState(false);
   const [highlightedNode, setHighlightedNode] = useState<string | null>(null);
-  // const [isDraggingGlobal, setIsDraggingGlobal] = useState(false);
 
   useEffect(() => {
     vscode.postMessage({ command: "loadTreeData" });
@@ -42,10 +42,10 @@ export const App: React.FC = () => {
         case "treeData":
           setTreeData(message.data); // データセット
           vscode.postMessage({ command: "loadIsOrdable" });
-          // console.log(message.data);
           break;
         case "clearHighlight":
           setHighlightedNode(null);
+          vscode.postMessage({command:"fileSelection",node:null});
           break;
         case "configIsOrdable":
           setIsOrdable(message.data);
@@ -147,6 +147,7 @@ const TreeView: React.FC<TreeViewProps> = ({
     // ハイライトを少し遅らせて設定
     setTimeout(() => {
       onHighlight(node.dir);
+      vscode.postMessage({command:"fileSelection",node:node.dir});
       if (treeNodeRef.current) {
         (treeNodeRef.current as HTMLDivElement).focus();
       }
