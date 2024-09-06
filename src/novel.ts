@@ -122,12 +122,19 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
           message.fileTransferData.movingFileDir
         );
       } else if (message.command === "rename") {
-        console.log(
-          `ファイル名変更 ${message.renameFile.targetPath}を${message.renameFile.newName}`
-        );
         renameFile(message.renameFile.targetPath, message.renameFile.newName);
+      } else if (message.command === "insert") {
+        console.log(
+          `ファイル挿入 ${message.renameFile.targetPath}の後ろに${message.renameFile.insertingNode}の${message.renameFile.newName}を挿入`
+        );
+        insertFile(
+          message.renameFile.targetPath,
+          message.renameFile.insertingNode,
+          message.renameFile.newName
+        );
+        // renameFile(message.renameFile.targetPath, message.renameFile.newName);
       } else if (message.command === "fileSelection") {
-        const isFileSelected = (message.node != null) ? true : false;
+        const isFileSelected = message.node != null ? true : false;
         console.log(`${message.node}が選択されました`);
 
         vscode.commands.executeCommand(
@@ -170,9 +177,11 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
 
   public loadTreeData(webview: vscode.Webview) {
     resetCounter();
+    const draftFileType = configuration.get("Novel.general.filetype");
     webview.postMessage({
       command: "treeData",
       data: draftsObject(draftRoot()),
+      draftFileType: draftFileType,
     });
   }
 
@@ -191,11 +200,17 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  public insertFile(webview:vscode.Webview, fileType: "file"|"folder"){
+  public insertFile(webview: vscode.Webview, fileType: "file" | "folder") {
     console.log(`${fileType}の挿入をツリービューに送ります`);
     webview.postMessage({
       command: "insertFile",
-      fileType: fileType,
+      data: fileType,
+    });
+  }
+  public highlightFile(webview: vscode.Webview, targetPath: string) {
+    webview.postMessage({
+      command: "setHighlight",
+      highlitingNode: targetPath,
     });
   }
 }
@@ -426,7 +441,6 @@ async function addSequentialNumberToFiles(
     }
 
     try {
-      // console.log(`ファイル名変更" ${oldUri} to ${newUri}`);
       // まずエディターでファイルを閉じます
       await closeFileInEditor(oldUri);
       await vscode.workspace.fs.rename(oldUri, newUri, { overwrite: true });
@@ -438,7 +452,7 @@ async function addSequentialNumberToFiles(
   }
 
   if (uniqueId) {
-    // UUIDの削除
+    console.log("UUIDの削除");
     try {
       const uidHandlerRegex = new RegExp(`^moving-${uniqueId}-(.+)`);
       const movingFilesUri = vscode.Uri.joinPath(targetUri, movigFileName);
@@ -474,14 +488,18 @@ async function closeFileInEditor(fileUri: vscode.Uri) {
 
 // MARK: ファイルのリネーム
 async function renameFile(targetPath: string, newName: string) {
+  console.log(`ファイル名変更： ${targetPath} を ${newName} に変更`);
   const targetFileUri = vscode.Uri.file(targetPath);
   // const newFileName = newName;
   const oldFileName = path.basename(targetPath);
   const targetFileDir = vscode.Uri.file(path.dirname(targetPath));
-  const newFileName = oldFileName.replace(
-    /^(\d+[-_\s]*)*(.+?)(\.(txt|md))?$/,
-    `$1${newName}$3`
-  );
+  let newFileName = newName;
+  if (configuration.get("Novel.DraftTree.renumber") == true) {
+    newFileName = oldFileName.replace(
+      /^(\d+[-_\s]*)*(.+?)(\.(txt|md))?$/,
+      `$1${newName}$3`
+    );
+  }
   const newFieUri = vscode.Uri.joinPath(targetFileDir, newFileName);
   try {
     await vscode.workspace.fs.rename(targetFileUri, newFieUri, {
@@ -494,4 +512,141 @@ async function renameFile(targetPath: string, newName: string) {
   }
   const draftWebViewProvider = getDraftWebViewProviderInstance();
   draftWebViewProvider.loadTreeData(draftWebViewProvider._webviewView!.webview);
+}
+
+async function insertFile(
+  targetPath: string,
+  insertingNodeType: "file" | "folder",
+  insertingNodeName: string
+) {
+  const targetFileUri = vscode.Uri.file(targetPath);
+  const documentFileType = configuration.get("Novel.general.filetype");
+  // 並び替えなし
+  if (configuration.get("Novel.DraftTree.renumber") == false) {
+    const insertingFileUri = vscode.Uri.joinPath(
+      vscode.Uri.file(path.dirname(targetPath)),
+      insertingNodeName
+    );
+    // 並び替えなしでファイルを作成
+    if (insertingNodeType == "file") {
+      const emptyFileData = new Uint8Array();
+      try {
+        await vscode.workspace.fs.writeFile(insertingFileUri, emptyFileData);
+        await vscode.commands.executeCommand("vscode.open", insertingFileUri);
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          "ファイルの作成に失敗しました: " + error
+        );
+      }
+      // 並び替えなしでフォルダーを作成
+    } else if (insertingNodeType == "folder") {
+      try {
+        await vscode.workspace.fs.createDirectory(insertingFileUri);
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          "フォルダーの作成に失敗しました: " + error
+        );
+      }
+    }
+    // 連番管理あり
+  } else {
+    isFileOperating = true;
+    // targetPathの親のUriを作成
+    const destinationUpperUri = vscode.Uri.file(path.dirname(targetPath));
+    let destinationFiles = await (
+      await vscode.workspace.fs.readDirectory(destinationUpperUri)
+    ).filter(
+      (file) =>
+        // ファイル名の先頭に'.'が付いているもの(不可視ファイル)を除外
+        !file[0].startsWith(".") &&
+        !(file[0] == "publish" || file[0] == "dict" || file[0] == "css") &&
+        // 指定されたファイルタイプまたはディレクトリのみを保持
+        (file[0].endsWith(draftFileType) ||
+          file[1] === vscode.FileType.Directory)
+    );
+    // destinationPathがdestinationFilesの何番目にあるかを見つけます
+    let destinationIndex = destinationFiles.findIndex(
+      (file) =>
+        vscode.Uri.joinPath(destinationUpperUri, file[0]).fsPath === targetPath
+    );
+    // 移動用のUUIDを作成
+    const uniqueId = uuidv4();
+    const fileIndex = destinationIndex + 2;
+    const digits = (destinationFiles.length + 1).toString().length;
+    const insertingUidNodeName = `moving-${uniqueId}-${String(
+      fileIndex
+    ).padStart(digits, "0")}-${insertingNodeName}`;
+    const newInsertingNodeName = `${String(fileIndex).padStart(
+      digits,
+      "0"
+    )}-${insertingNodeName}`;
+    const newInsertingNodeUri = vscode.Uri.file(path.dirname(targetPath));
+    // 並び替えありでファイルを作成
+    if (insertingNodeType == "file") {
+      const emptyFileData = new Uint8Array();
+      const writingTextFileUri = vscode.Uri.joinPath(
+        newInsertingNodeUri,
+        insertingUidNodeName + documentFileType
+      );
+      try {
+        await vscode.workspace.fs.writeFile(writingTextFileUri, emptyFileData);
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          "ファイルの作成に失敗しました: " + error
+        );
+      }
+    } else if (insertingNodeType == "folder") {
+      // 並び替えありでフォルダーを作成
+      const writingFolderUri = vscode.Uri.joinPath(
+        newInsertingNodeUri,
+        insertingUidNodeName
+      );
+
+      try {
+        await vscode.workspace.fs.createDirectory(writingFolderUri);
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          "フォルダーの作成に失敗しました: " + error
+        );
+      }
+    }
+    destinationFiles = await (
+      await vscode.workspace.fs.readDirectory(destinationUpperUri)
+    ).filter(
+      (file) =>
+        // ファイル名の先頭に'.'が付いているもの(不可視ファイル)を除外
+        !file[0].startsWith(".") &&
+        !(file[0] == "publish" || file[0] == "dict" || file[0] == "css") &&
+        // 指定されたファイルタイプまたはディレクトリのみを保持
+        (file[0].endsWith(draftFileType) ||
+          file[1] === vscode.FileType.Directory)
+    );
+
+    await addSequentialNumberToFiles(
+      newInsertingNodeUri,
+      destinationFiles,
+      destinationIndex,
+      "after",
+      vscode.Uri.file(draftRoot()),
+      uniqueId
+    );
+
+    const insertedNodeName =
+      insertingNodeType === "file"
+        ? newInsertingNodeName + documentFileType
+        : newInsertingNodeName;
+
+    const insertedNodeUrl = vscode.Uri.joinPath(
+      newInsertingNodeUri,
+      insertedNodeName
+    );
+    if (insertingNodeType === "file") {
+      await vscode.commands.executeCommand("vscode.open", insertedNodeUrl);
+    }
+    const draftWebViewProvider = getDraftWebViewProviderInstance();
+    draftWebViewProvider.highlightFile(
+      draftWebViewProvider._webviewView!.webview, insertedNodeUrl.path
+    );
+    isFileOperating = false;
+  }
 }

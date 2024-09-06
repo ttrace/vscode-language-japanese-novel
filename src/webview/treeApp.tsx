@@ -53,14 +53,16 @@ export const App: React.FC = () => {
           setHighlightedNode(null);
           vscode.postMessage({ command: "fileSelection", node: null });
           break;
+        case "setHighlight":
+          console.log(`ツリーで${message.highlitingNode}を選択`);
+          setHighlightedNode(message.highlitingNode);
+          break;
         case "configIsOrdable":
           setIsOrdable(message.data);
           break;
         case "insertFile":
-          console.log(`${message.data}の挿入が要請されました`);
           setIsInserting(true);
           setInsertingNode(message.data);
-
           break;
       }
     };
@@ -396,7 +398,6 @@ const TreeView: React.FC<TreeViewProps> = ({
         if (!isInserting) {
           setIsInserting(true);
         } else {
-          console.log("Enter押下　isInserting", isInserting);
           const insertFile = {
             targetPath: node.dir,
             insertingNode: insertingNode,
@@ -465,6 +466,7 @@ const TreeView: React.FC<TreeViewProps> = ({
                   onBlur={handleBlur}
                   autoFocus
                   className="item-name-input"
+                  onClick={(event) => event.stopPropagation()}
                 />
               }
             </span>
@@ -535,6 +537,7 @@ const TreeView: React.FC<TreeViewProps> = ({
                   onBlur={insertingHandleBlur}
                   autoFocus
                   className="item-name-input"
+                  onClick={(event) => event.stopPropagation()}
                 />
               }
             </span>
