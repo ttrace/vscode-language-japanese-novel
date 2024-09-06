@@ -12,6 +12,9 @@ novel-writerは.txt、.mdなどのテキストファイルで長編小説（ノ�
 
 ![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/highlight-and-vertical.png)
 
+GitHubスポンサー
+novel-writerの開発は[こちらの方々](#sponsors)に応援いただいています。
+
 
 ##　ハイライト
 
@@ -241,6 +244,10 @@ MIT
 
 文字数を計算する部分、ステータスバーでの文字数表記は、MITライセンスで公開されている8amjp/vsce-charactercountの成果を使わせていただいています。
 [8amjp/vsce-charactercount](https://github.com/8amjp/vsce-charactercount)
+
+## Sponsors
+
+[![bills-appworks](https://github.com/bills-appworks.png?size=24)](https://github.com/bills-appworks)
 
 ## 付録
 
