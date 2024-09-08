@@ -20,6 +20,8 @@ interface DropResult {
   node: TreeFileNode;
 }
 
+let debugIncrement=0;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const vscode = (window as any).acquireVsCodeApi();
 
@@ -43,19 +45,18 @@ export const App: React.FC = () => {
     // MARK: VS Code >> Tree
     const handleMessage = (event: MessageEvent) => {
       const message = event.data; // メッセージデータを取得
+      // console.log(`${debugIncrement++} ツリーに${message.command}が到着`);
       switch (message.command) {
         case "treeData":
           setTreeData(message.data); // データセット
           setDraftFileType(message.draftFileType);
-          vscode.postMessage({ command: "loadIsOrdable" });
-          break;
-        case "clearHighlight":
-          setHighlightedNode(null);
-          vscode.postMessage({ command: "fileSelection", node: null });
+          // vscode.postMessage({ command: "loadIsOrdable" });
           break;
         case "setHighlight":
-          // console.log(`ツリーで${message.highlitingNode}を選択`);
-          setHighlightedNode(message.highlitingNode);
+          if(message.highlitingNode != highlightedNode){
+            setHighlightedNode(message.highlitingNode);
+            
+          }
           break;
         case "configIsOrdable":
           setIsOrdable(message.data);
@@ -67,6 +68,15 @@ export const App: React.FC = () => {
       }
     };
 
+    // useEffect(() => {
+    //   if (highlightedNode !== null) {
+    //     const highlightedElement = nodeRefs.current[highlightedNode];
+    //     if (highlightedElement) {
+    //       highlightedElement.focus();
+    //     }
+    //   }
+    // }, [highlightedNode]);
+    
     window.addEventListener("message", handleMessage);
 
     // クリーンアップ関数でイベントリスナーを解除
@@ -167,6 +177,13 @@ const TreeView: React.FC<TreeViewProps> = ({
     }
   }, [isInserting]);
 
+  useEffect(() => {
+    if (node.dir === highlightedNode && treeNodeRef.current) {
+      (treeNodeRef.current as HTMLDivElement).focus();
+    }
+  }, [highlightedNode]);
+
+
   // ドラッグ制御
   const handleDragStart = () => {
     if (!isDraggingGlobal) {
@@ -189,20 +206,21 @@ const TreeView: React.FC<TreeViewProps> = ({
   // ノードのクリック ハイライトとVS Codeに送信する部分も含む
   const handleNodeClick = (event: React.MouseEvent<HTMLSpanElement>) => {
     event.stopPropagation();
+    // ハイライトを少し遅らせて設定
+    // setTimeout(() => {
+      onHighlight(node.dir);
+      vscode.postMessage({ command: "fileSelection", node: node.dir });
+
+      // if (treeNodeRef.current) {
+      //   (treeNodeRef.current as HTMLDivElement).focus();
+      // }
+    // }, 200);
     if (!node.children) {
       vscode.postMessage({
         command: "openFile",
         filePath: node.dir,
       });
     }
-    // ハイライトを少し遅らせて設定
-    setTimeout(() => {
-      onHighlight(node.dir);
-      vscode.postMessage({ command: "fileSelection", node: node.dir });
-      if (treeNodeRef.current) {
-        (treeNodeRef.current as HTMLDivElement).focus();
-      }
-    }, 200);
   };
 
   // MARK: D&D

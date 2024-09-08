@@ -60,7 +60,7 @@ div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
 .tree-label {
   display: flex;
   align-items: flex-end;
-  overflow-x: hidden;
+  overflow: hidden;
   border-top: transparent 1px solid;
   border-bottom: transparent 1px solid;
 }

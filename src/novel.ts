@@ -7,11 +7,15 @@ import {
 } from "./extension";
 import { v4 as uuidv4 } from "uuid";
 
+let debugIncrement = 0;
+
 let isFileOperating = false;
 const debugWebView = false;
 const configuration = vscode.workspace.getConfiguration();
 const draftFileType =
   configuration.get("Novel.general.filetype") == ".txt" ? ".txt" : ".md";
+
+const output = vscode.window.createOutputChannel("Novel");
 
 export class DraftWebViewProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "draftTree";
@@ -58,9 +62,13 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
     context.subscriptions.push(disposable);
 
     // エディターが変更されたときにwebviewにメッセージを送信
-    vscode.window.onDidChangeActiveTextEditor(() => {
-      if (this._webviewView) {
-        this._webviewView.webview.postMessage({ command: "clearHighlight" });
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      output.appendLine(`editorChanged: ${editor?.document.uri.fsPath}`);
+      if (this._webviewView && editor) {
+        this._webviewView.webview.postMessage({
+          command: "setHighlight",
+          highlitingNode: editor.document.uri.fsPath,
+        });
       }
     });
   }
@@ -92,20 +100,18 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
       // MARK: ツリーからのコマンド
       // ツリーデータの要求
       if (message.command === "loadTreeData") {
+        // console.log(`${debugIncrement} loadTreeDataの要求`);
         this.loadTreeData(webviewView.webview);
         this.sendIsOrdable(webviewView.webview);
-        // console.log("Treeからデータ取得依頼");
 
         // ファイルを開く
       } else if (message.command === "openFile") {
         const uri = vscode.Uri.file(message.filePath);
-        await vscode.commands.executeCommand("vscode.open", uri);
-
-        // ログの出力
+        const stat = await vscode.workspace.fs.stat(uri);
+        if (stat.type !== vscode.FileType.Directory) {
+          await vscode.commands.executeCommand("vscode.open", uri);
+        }
       } else if (message.command === "log") {
-        // console.log(message.log);
-
-        // アラート
       } else if (message.command === "alert") {
         vscode.window.showErrorMessage(
           `Novelーwriter原稿ツリー：${message.alertMessage}`
@@ -299,16 +305,14 @@ async function moveAndReorderFiles(
 
     const targetUri =
       insertPoint === "inside" ? destinationUri : destinationUpperUri;
+    const newFileName = `${String(fileIndex).padStart(
+      digits,
+      "0"
+    )}-${fileName.replace(/^\d+[-_\s]*/, "")}`;
 
     await vscode.workspace.fs.copy(
       movingFileUri,
-      vscode.Uri.joinPath(
-        targetUri,
-        `moving-${uniqueId}-${String(fileIndex).padStart(
-          digits,
-          "0"
-        )}-${fileName.replace(/^\d+[-_\s]*/, "")}`
-      ),
+      vscode.Uri.joinPath(targetUri, `moving-${uniqueId}-${newFileName}`),
       { overwrite: true }
     );
 
@@ -362,6 +366,16 @@ async function moveAndReorderFiles(
         uniqueId
       );
     }
+    isFileOperating = false;
+    // ツリービューの更新
+    const draftWebViewProvider = getDraftWebViewProviderInstance();
+    draftWebViewProvider.loadTreeData(
+      draftWebViewProvider._webviewView!.webview
+    );
+    draftWebViewProvider.highlightFile(
+      draftWebViewProvider._webviewView!.webview,
+      vscode.Uri.joinPath(targetUri, newFileName).fsPath
+    );
   } catch (error) {
     // エラーハンドリング
     if (error instanceof Error) {
@@ -376,9 +390,6 @@ async function moveAndReorderFiles(
   }
 
   isFileOperating = false;
-  // ツリービューの更新
-  const draftWebViewProvider = getDraftWebViewProviderInstance();
-  draftWebViewProvider.loadTreeData(draftWebViewProvider._webviewView!.webview);
 }
 
 // MARK: ファイル通し番号
@@ -514,6 +525,7 @@ async function renameFile(targetPath: string, newName: string) {
   draftWebViewProvider.loadTreeData(draftWebViewProvider._webviewView!.webview);
 }
 
+// MARK: ファイル挿入
 async function insertFile(
   targetPath: string,
   insertingNodeType: "file" | "folder",
@@ -533,6 +545,11 @@ async function insertFile(
       try {
         await vscode.workspace.fs.writeFile(insertingFileUri, emptyFileData);
         await vscode.commands.executeCommand("vscode.open", insertingFileUri);
+        const draftWebViewProvider = getDraftWebViewProviderInstance();
+        draftWebViewProvider.highlightFile(
+          draftWebViewProvider._webviewView!.webview,
+          insertingFileUri.fsPath
+        );
       } catch (error) {
         vscode.window.showErrorMessage(
           "ファイルの作成に失敗しました: " + error
@@ -645,7 +662,8 @@ async function insertFile(
     }
     const draftWebViewProvider = getDraftWebViewProviderInstance();
     draftWebViewProvider.highlightFile(
-      draftWebViewProvider._webviewView!.webview, insertedNodeUrl.path
+      draftWebViewProvider._webviewView!.webview,
+      insertedNodeUrl.fsPath
     );
     isFileOperating = false;
   }
