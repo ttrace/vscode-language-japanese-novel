@@ -159,12 +159,22 @@ function getFiles(dirPath: string) {
   return filesInFolder;
 }
 
+
 type FileNode = {
+  id: string;
   dir: string;
   name: string;
   length: number;
+  children?: FileNode[];
 };
 
+let globalCounter = 0;
+
+export function resetCounter() {
+  globalCounter = 0;
+}
+
+resetCounter();
 export function draftsObject(dirPath: string): FileNode[] {
   const results: FileNode[] = [];
 
@@ -172,11 +182,11 @@ export function draftsObject(dirPath: string): FileNode[] {
 
   for (const dirent of filesInFolder) {
     if (dirent.isDirectory() && dirent.name == "publish") {
-      console.log("publish folder");
+      // console.log("publish folder");
     } else if (dirent.name.match(/^\..*/)) {
       //console.log('invisible docs');
     } else if (dirent.isDirectory() && dirent.name == "dict") {
-      console.log("dictionary folder");
+      // console.log("dictionary folder");
     } else if (dirent.isDirectory()) {
       const directoryPath = path.join(dirPath, dirent.name);
       const containerFiles = draftsObject(directoryPath);
@@ -186,7 +196,8 @@ export function draftsObject(dirPath: string): FileNode[] {
         containerLength += element.length;
       });
 
-      const directory = {
+      const directory: FileNode = {
+        id: `node_${globalCounter++}`,
         dir: path.join(dirPath, dirent.name),
         name: dirent.name,
         length: containerLength,
@@ -210,14 +221,17 @@ export function draftsObject(dirPath: string): FileNode[] {
         .replace(/[|｜]/g, "") // ルビ開始記号
         .replace(/<!--(.+?)-->/, ""); // コメントアウト
 
-      const fileNode = {
+      const fileNode: FileNode = {
+        id: `node_${globalCounter++}`,
         dir: path.join(dirPath, dirent.name),
         name: dirent.name,
         length: readingFile.length,
       };
+      
       results.push(fileNode);
     }
   }
+  
   return results;
 }
 

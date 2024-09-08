@@ -3,7 +3,7 @@
 "use strict";
 import * as path from "path";
 import * as fs from "fs";
-import { draftsObject, ifFileInDraft } from "./compile";
+import { draftsObject, ifFileInDraft, resetCounter } from "./compile";
 import TreeModel from "tree-model";
 // import os from "os";
 
@@ -292,6 +292,7 @@ export class CharacterCounter {
     const tree = new TreeModel();
     const draftTree = tree.parse({ dir: draftRoot(), name: "root", length: 0 });
 
+    resetCounter();
     draftsObject(draftRoot()).forEach((element) => {
       const draftNode = tree.parse(element);
       draftTree.addChild(draftNode);
@@ -313,24 +314,6 @@ export class CharacterCounter {
     }
   }
 
-  // private _ifFileInDraft(): boolean {
-  //   if (draftRoot() == "") {
-  //     return false;
-  //   }
-  //   //Treeモデル構築
-  //   const tree = new TreeModel();
-  //   const draftTree = tree.parse({ dir: draftRoot(), name: "root", length: 0 });
-  //   const activeDocumentPath = window.activeTextEditor?.document.uri.fsPath;
-  //   draftsObject(draftRoot()).forEach((element) => {
-  //     const draftNode = tree.parse(element);
-  //     draftTree.addChild(draftNode);
-  //   });
-  //   const activeDocumentObject = draftTree.first(
-  //     (node) => node.model.dir === activeDocumentPath
-  //   );
-  //   return activeDocumentObject ? true : false;
-  // }
-
   public _setIfChildOfTarget(): boolean {
     if (draftRoot() == "") {
       return false;
@@ -339,6 +322,7 @@ export class CharacterCounter {
     const draftTree = tree.parse({ dir: draftRoot(), name: "root", length: 0 });
     const activeDocumentPath = window.activeTextEditor?.document.uri.fsPath;
 
+    resetCounter();
     draftsObject(draftRoot()).forEach((element) => {
       const draftNode = tree.parse(element);
       draftTree.addChild(draftNode);
@@ -366,7 +350,6 @@ export class CharacterCounter {
   }
 
   public _updateCountingObject(): boolean {
-    //this._countingObject = draftsObject(draftRoot());
     return true;
   }
 

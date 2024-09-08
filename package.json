@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "2.2.1",
+  "version": "3.0.0-beta",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -8,19 +8,26 @@
   },
   "icon": "resource/icon.png",
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "^1.92.0"
   },
   "main": "dist/extension.js",
   "dependencies": {
     "@types/kuromoji": "^0.1.3",
-    "@vivliostyle/cli": "^8.12.1",
+    "@types/react": "^18.3.5",
+    "@types/react-dnd": "^3.0.2",
+    "@types/react-dom": "^18.3.0",
+    "@vivliostyle/cli": "^8.14.1",
     "fastest-levenshtein": "^1.0.16",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
     "kuromoji": "github:ttrace/kuromoji.js",
-    "simple-git": "^3.25.0",
+    "react": "^18.3.1",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "react-dom": "^18.3.1",
+    "simple-git": "^3.26.0",
     "tree-model": "^1.0.7",
-    "ws": "^8.17.1"
+    "ws": "^8.18.0"
   },
   "scripts": {
     "vscode:prepublish": "npm run package-webpack",
@@ -42,6 +49,10 @@
   ],
   "contributes": {
     "commands": [
+      {
+        "command": "Novel.showTreeView",
+        "title": "原稿ツリー表示"
+      },
       {
         "command": "Novel.vertical-preview",
         "title": "Novel:縦書きプレビュー"
@@ -83,9 +94,47 @@
         "title": "Novel:進捗をリセット"
       },
       {
-        "command": "draftTree.refresh",
-        "title": "再表示",
-        "icon": "$(refresh)"
+        "command": "draftTree.insertFile",
+        "title": "空のファイルを挿入",
+        "icon": {
+          "light": "resource/add-file-light.svg",
+          "dark": "resource/add-file-dark.svg"
+        }
+      },
+      {
+        "command": "draftTree.insertFolder",
+        "title": "空のフォルダーを挿入",
+        "icon": {
+          "light": "resource/add-folder-light.svg",
+          "dark": "resource/add-folder-dark.svg"
+        }
+      },
+      {
+        "command": "draftTree.insertFileDim",
+        "title": "空のファイルを挿入",
+        "icon": "resource/add-file-dim.svg"
+      },
+      {
+        "command": "draftTree.insertFolderDim",
+        "title": "空のフォルダーを挿入",
+        "icon": "resource/add-folder-dim.svg"
+      
+      },
+      {
+        "command": "draftTree.activateDragAndDrop",
+        "title": "ドラッグ&ドロップ",
+        "icon": {
+          "light": "resource/drag-and-drop-dim-light.svg",
+          "dark": "resource/drag-and-drop-dim-dark.svg"
+        }
+      },
+      {
+        "command": "draftTree.deactivateDragAndDrop",
+        "title": "ドラッグ&ドロップ有効",
+        "icon": {
+          "light": "resource/drag-and-drop-light.svg",
+          "dark": "resource/drag-and-drop-dark.svg"
+        }
       }
     ],
     "keybindings": [
@@ -116,6 +165,11 @@
     "configuration": {
       "title": "Novel-writer設定",
       "properties": {
+        "Novel.DraftTree.renumber": {
+          "type": "boolean",
+          "default": false,
+          "description": "原稿ツリーでファイルの並び替えを行うかどうかを設定します\n有効にすると原稿ツリーでファイル・フォルダーの順番を入れ替えられますが、ファイル・フォルダーの名前の先頭に連番を付与します\nファイル名を書き換える機能なので、ワークスペースごとに設定することを推奨します"
+        },
         "Novel.general.filetype": {
           "type": "string",
           "default": ".txt",
@@ -187,14 +241,6 @@
           "default": true,
           "description": "次のシーン、前のシーンを開くためのナビゲーターを表示する"
         },
-        "Novel.compile.separator": {
-          "type": "string",
-          "default": "＊",
-          "enum": [
-            "*"
-          ],
-          "description": "ファイルを結合する際に、フォルダーの区切り文字を指定してください（実装中）"
-        },
         "Novel.preview.userRegex": {
           "type": "array",
           "default": [],
@@ -212,31 +258,57 @@
       ],
       "view/title": [
         {
-          "command": "draftTree.refresh",
-          "when": "view == draftTreePanel",
+          "command": "draftTree.insertFile",
+          "when": "view == draftTree && isFileSelectedOnTree == true",
+          "group": "navigation"
+        },
+        {
+          "command": "draftTree.insertFileDim",
+          "when": "view == draftTree && isFileSelectedOnTree == false",
+          "group": "navigation"
+        },
+        {
+          "command": "draftTree.insertFolder",
+          "when": "view == draftTree && isFileSelectedOnTree == true",
+          "group": "navigation"
+        },
+        {
+          "command": "draftTree.insertFolderDim",
+          "when": "view == draftTree && isFileSelectedOnTree == false",
+          "group": "navigation"
+        },
+        {
+          "command": "draftTree.deactivateDragAndDrop",
+          "when": "view == draftTree && isDndActive == true",
+          "group": "navigation"
+        },
+        {
+          "command": "draftTree.activateDragAndDrop",
+          "when": "view == draftTree && isDndActive == false",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
           "command": "Novel.set-counter",
-          "when": "view == draftTreePanel && viewItem == folder"
+          "when": "view == draftTree && viewItem == folder"
         }
       ]
     },
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "novelPanel",
+          "id": "novelApp",
           "title": "ノベルライター",
           "icon": "resource/icon.png"
         }
       ]
     },
     "views": {
-      "novelPanel": [
+      "novelApp": [
         {
-          "id": "draftTreePanel",
+          "type": "webview",
+          "id": "draftTree",
           "name": "原稿ツリー"
         }
       ]
@@ -672,35 +744,35 @@
   "devDependencies": {
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.7",
-    "@types/node": "^20.14.9",
+    "@types/node": "^22.5.2",
     "@types/ps-tree": "^1.1.6",
     "@types/sinon": "^17.0.3",
     "@types/text-encoding": "^0.0.39",
-    "@types/vscode": "^1.90.0",
+    "@types/vscode": "^1.92.0",
     "@types/webpack-env": "^1.18.5",
-    "@types/ws": "^8.5.10",
-    "@typescript-eslint/eslint-plugin": "^7.15.0",
-    "@typescript-eslint/parser": "^7.15.0",
-    "@vscode/test-web": "^0.0.55",
+    "@types/ws": "^8.5.12",
+    "@typescript-eslint/eslint-plugin": "^8.4.0",
+    "@typescript-eslint/parser": "^8.4.0",
+    "@vscode/test-web": "^0.0.57",
     "bufferutil": "^4.0.8",
     "child_process": "^1.0.2",
-    "eslint": "^8.56.0",
+    "eslint": "^9.9.1",
     "fs": "^0.0.1-security",
-    "glob": "^10.4.2",
+    "glob": "^11.0.0",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
-    "mocha": "^10.5.2",
+    "mocha": "^10.7.3",
     "net": "^1.0.2",
     "node-levenshtein": "^3.0.7",
     "path": "^0.12.7",
     "ps-tree": "^1.2.0",
     "sinon": "^18.0.0",
     "ts-loader": "^9.5.1",
-    "typescript": "^5.5.3",
+    "typescript": "^5.5.4",
     "utf-8-validate": "^6.0.4",
     "util": "^0.12.5",
     "vscode-test": "^1.5.2",
-    "webpack": "^5.92.1",
+    "webpack": "^5.94.0",
     "webpack-cli": "^5.1.4",
     "webpack-env": "^0.8.0",
     "xhr2": "^0.2.1"
