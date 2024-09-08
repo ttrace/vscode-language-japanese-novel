@@ -54,7 +54,7 @@ export const App: React.FC = () => {
           vscode.postMessage({ command: "fileSelection", node: null });
           break;
         case "setHighlight":
-          console.log(`ツリーで${message.highlitingNode}を選択`);
+          // console.log(`ツリーで${message.highlitingNode}を選択`);
           setHighlightedNode(message.highlitingNode);
           break;
         case "configIsOrdable":
@@ -252,9 +252,9 @@ const TreeView: React.FC<TreeViewProps> = ({
             command: "moveCommmand",
             fileTransferData: fileTransferData,
           });
-          console.log(
-            `Move ${item.name} ${dropResult.name} to ${dropResult.node.name}`
-          );
+          // console.log(
+          //   `Move ${item.name} ${dropResult.name} to ${dropResult.node.name}`
+          // );
         }
         setIsDragging(false);
         isDraggingGlobal = false;
@@ -330,7 +330,7 @@ const TreeView: React.FC<TreeViewProps> = ({
   const handleChange = (event: {
     target: { value: React.SetStateAction<string> };
   }) => {
-    console.log("handleCnange", node.dir);
+    // console.log("handleCnange", node.dir);
     setEditValue(event.target.value);
   };
 
@@ -368,7 +368,7 @@ const TreeView: React.FC<TreeViewProps> = ({
   const insertingHandleChange = (event: {
     target: { value: React.SetStateAction<string> };
   }) => {
-    console.log("挿入ファイル名", node.dir);
+    // console.log("挿入ファイル名", node.dir);
     setInsertingValue(event.target.value);
   };
 

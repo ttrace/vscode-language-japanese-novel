@@ -41,12 +41,12 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
         const newFileType = vscode.workspace
           .getConfiguration("Novel.general")
           .get<string>("filetype");
-        console.log(`新しいファイルタイプ: ${newFileType}`);
+        // console.log(`新しいファイルタイプ: ${newFileType}`);
       } else if (e.affectsConfiguration("Novel.DraftTree.renumber")) {
         // ドラッグ&ドロップの設定が変更された場合の処理
         const configuration = vscode.workspace.getConfiguration();
         const isDndActivate = configuration.get("Novel.DraftTree.renumber");
-        console.log(isDndActivate);
+        // console.log(isDndActivate);
         if (this._webviewView) {
           this._webviewView.webview.postMessage({
             command: "configIsOrdable",
@@ -68,7 +68,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
   private handleFileSystemEvent(uri: vscode.Uri) {
     // console.log("File system event detected:", uri);
     if (debugWebView) {
-      console.log(uri);
+      // console.log(uri);
     }
     this.refreshWebview();
   }
@@ -103,7 +103,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
 
         // ログの出力
       } else if (message.command === "log") {
-        console.log(message.log);
+        // console.log(message.log);
 
         // アラート
       } else if (message.command === "alert") {
@@ -124,9 +124,9 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
       } else if (message.command === "rename") {
         renameFile(message.renameFile.targetPath, message.renameFile.newName);
       } else if (message.command === "insert") {
-        console.log(
-          `ファイル挿入 ${message.renameFile.targetPath}の後ろに${message.renameFile.insertingNode}の${message.renameFile.newName}を挿入`
-        );
+        // console.log(
+        //   `ファイル挿入 ${message.renameFile.targetPath}の後ろに${message.renameFile.insertingNode}の${message.renameFile.newName}を挿入`
+        // );
         insertFile(
           message.renameFile.targetPath,
           message.renameFile.insertingNode,
@@ -135,7 +135,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
         // renameFile(message.renameFile.targetPath, message.renameFile.newName);
       } else if (message.command === "fileSelection") {
         const isFileSelected = message.node != null ? true : false;
-        console.log(`${message.node}が選択されました`);
+        // console.log(`${message.node}が選択されました`);
 
         vscode.commands.executeCommand(
           "setContext",
@@ -201,7 +201,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
   }
 
   public insertFile(webview: vscode.Webview, fileType: "file" | "folder") {
-    console.log(`${fileType}の挿入をツリービューに送ります`);
+    // console.log(`${fileType}の挿入をツリービューに送ります`);
     webview.postMessage({
       command: "insertFile",
       data: fileType,
@@ -391,7 +391,7 @@ async function addSequentialNumberToFiles(
   movingFileUpperUri: vscode.Uri,
   uniqueId?: string
 ) {
-  console.log("sort!");
+  // console.log("sort!");
 
   let renamedMovingFileUpperUrl = movingFileUpperUri;
   let fileIndex = 1;
@@ -407,7 +407,7 @@ async function addSequentialNumberToFiles(
     let fileName = destinationFiles[i][0];
 
     if (fileName.startsWith("moving-")) {
-      console.log("移動中ファイル発見？", fileName, uniqueId);
+      // console.log("移動中ファイル発見？", fileName, uniqueId);
       movigFileName = fileName;
       continue;
     }
@@ -452,7 +452,7 @@ async function addSequentialNumberToFiles(
   }
 
   if (uniqueId) {
-    console.log("UUIDの削除");
+    // console.log("UUIDの削除");
     try {
       const uidHandlerRegex = new RegExp(`^moving-${uniqueId}-(.+)`);
       const movingFilesUri = vscode.Uri.joinPath(targetUri, movigFileName);
@@ -460,7 +460,7 @@ async function addSequentialNumberToFiles(
         targetUri,
         movigFileName.replace(uidHandlerRegex, "$1")
       );
-      console.log("移動中ファイルのUIDつきファイル名", movigFileName);
+      // console.log("移動中ファイルのUIDつきファイル名", movigFileName);
       await vscode.workspace.fs.rename(movingFilesUri, movingFilesNewUri, {
         overwrite: true,
       });
@@ -488,7 +488,7 @@ async function closeFileInEditor(fileUri: vscode.Uri) {
 
 // MARK: ファイルのリネーム
 async function renameFile(targetPath: string, newName: string) {
-  console.log(`ファイル名変更： ${targetPath} を ${newName} に変更`);
+  // console.log(`ファイル名変更： ${targetPath} を ${newName} に変更`);
   const targetFileUri = vscode.Uri.file(targetPath);
   // const newFileName = newName;
   const oldFileName = path.basename(targetPath);
