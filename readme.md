@@ -2,13 +2,18 @@
 
 Visual Studio Codeで小説を執筆するための機能拡張です。
 
-novel-writerは単一のファイルではなく、シーンごとに分割した.txtや.mdなどのテキストファイルで長編小説（ノベル）を執筆支援する機能拡張です。
-novel-writerをを用いると、章や節を想定したフォルダーの階層に配置したテキストファイルをアウトラインエディターのように順番を並べ替えて、筋書きを検討することが可能になります。分割したテキストファイルはいつでも結合することができ、テキストファイルのそれぞれの文字数と、フォルダーごとの合計の文字数をリアルタイムで確認することも可能です。
-また、雑誌やWeb媒体への連載を行なっているときに、特定のフォルダーを「締め切りフォルダー」に指定することで、任意のフォルダーに含稀る複数のテキストファイルの文字数を表示することも可能です。
+- [エディター機能拡張](#editor)
+- [サイドパネル・ステータスバー機能拡張](#side-panel)
+    - [原稿ツリー編集](#原稿ツリー編集)
+    - [文字数カウント](#文字数カウント)
+- [原稿用紙プレビュー](#preview)
+- [PDF出力](#pdf-features)
+- [FAQ](#faq)
+- [References](#references)
+- [Sponsors](#sponsors)
+- [付録](#appendix)
 
-novel-writerには、縦書き・横書き両方に対応した原稿用紙プレビュー機能があります。リアルタイム更新するプレビューでは、青空文庫の注記法で指定したルビや某点、字下げを確認しながら執筆を進められます。原稿用紙プレビューは1行当たりの文字数を指定できるので、新聞のように段組される、13文字や15文字の短い行の文字送りを確かめながら執筆できます。入力に用いるVS Codeのエディターでは、会話と地の文、名詞や動詞、助詞などをカラーリングする品詞ハイライトも搭載しています。
 
-novel-writerでは、CSSからPDFを作成する組版システムVivliostyleを用いることで、A5サイズの用紙に、原稿用紙プレビューと同じ字数行数で組版されたPDFを出力できます。CSSを個別に指定することで、A5版以外のPDFや任意のアキやフォント、スタイルシートを指定したPDFを生成することも可能です。
 
 ![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/highlight-and-vertical.png)
 
@@ -16,7 +21,9 @@ GitHubスポンサー
 novel-writerの開発は[こちらの方々](#sponsors)に応援いただいています。
 
 
-##　ハイライト
+## Editor
+
+###　段落ハイライト
 
 novel-writerは小説で用いる会話文や青空文庫注記法などをハイライトします。
 
@@ -45,7 +52,7 @@ novel-writerは形態素解析を用いて分割した品詞をハイライト�
 
 品詞ハイライトにはJavaScriptの形態素解析ライブラリ [Kuromoji.js](https://www.npmjs.com/package/kuromoji) を利用しています。素晴らしいライブラリです。この場を借りてお礼申し上げます。
 
-## Markdown見出しの折りたたみ
+### Markdown見出しの折りたたみ
 
 ![折りたたみ](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/folding-heading.png)
 
@@ -54,16 +61,67 @@ novel-writerは形態素解析を用いて分割した品詞をハイライト�
 
 なお、Markdownの見出しは原稿用紙プレビューやPDFで見出しとして描かれます。
 
-## サイドパネル
+### 次のシーン、前のシーンへ移動
 
-![サイドパネル](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/side-panel.png)
+novel形式の書類を開いているときには、前のシーンにあたるファイルや、直後のシーンを開くナビゲーターが表示されます。
+ナビゲーターは設定で表示しないように設定できます。
 
-サイドパネルの原稿ツリーでは、原稿フォルダー（あるいはDraftフォルダー）に含まれているテキストファイル(.txt, .md)の一覧から、目的のファイルをすぐに開くことができます。
-原稿フォルダーはテキストファイルそれぞれの文字数、フォルダー内のテキストファイルを合算表示しています。また、視認性を高めるために、テキストファイルを並べるために用いる、ファイル先頭の数字や拡張子を隠しています。
+![前のシーンを開く](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/prev-scene.png)
 
-## 文字数のカウント
+![次のシーンを開く](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/next-scene.png)
 
-現在編集中のファイルの文字数と、ワークスペースにあるテキストファイル全てを合算した文字数をステータスバーに表示することができます。ワークスペースに「原稿」あるいは「Draft」という名称のフォルダーがある場合には、そのフォルダーの中だけを計算します。
+### ルビの挿入
+
+novel-writerは青空文庫スタイルのルビを挿入できます。
+Novel:ルビの追加（または<kbd>Ctrl</kbd>+<kbd>R</kbd>/<kbd>Command</kbd>+R）を実行するときに選択範囲があれば、選択範囲にルビを振ります。選択範囲がない場合には、カーソル前方の単語、またはカーソルが入っている単語にルビを挿入します。
+
+### 圏点の挿入
+
+novel-writerは青空文庫注記法の圏点（傍点・ゴマ）を挿入できます。
+テキストを選択してNovel:圏点の挿入を実行すると、選択範囲を⚪︎⚪︎［＃「⚪︎⚪︎」に傍点］に変換します。この注記は原稿用紙プレビューやPDFで圏点として描かれます。
+
+### 文末辞の切り替え
+
+novel-writerは、日本語の小説で使われる連体形文末辞（〜していた。〜と言った。〜を持った。）と終止形文末辞（〜している。〜と言う。〜を持つ。）を切り替えることができます。  
+「Novel:文末辞入れ替え」コマンドにキーボードショートカットを登録してお使いください。文章のリズムを整える作業が軽減できることでしょう。
+
+![文末辞の切り替え](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/tense-aspect-change.gif)
+
+### テキスト結合
+
+ワークスペース中のテキストファイルを結合し、publishフォルダーの中にプロジェクトのフォルダー名のファイルを作ります。
+
+ワークスペースに「原稿」あるいは「Draft」という名称のフォルダーがある場合には、そのフォルダーの中のテキストのみ結合します。もしも締め切りフォルダーが指定されていれば、締め切りフォルダー内のテキストファイルを結合します。
+
+novel-writerは階層化されたフォルダーの中のテキストも結合することができます。  
+
+資料などをワークスペースに保存している場合には、テキストファイルを「原稿（あるいはDraft」フォルダーに入れておいてください。
+
+## Side-panel
+
+### 原稿ツリー編集
+
+![サイドパネルの原稿ツリー](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/drafttree-3.png)
+
+サイドパネルには原稿を一覧できる原稿ツリーがあります。それぞれの原稿には文字数が表示され、クリックするとエディターで開くことができます。
+原稿フォルダーはテキストファイルそれぞれの文字数、フォルダー内のテキストファイルを合算表示しています。
+
+![リネームとファイル・フォルダーの挿入](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/drafttree-rename-and-insert.png)
+原稿ツリーのテキストファイルがハイライトしているときにEnterキーを押すと、テキストファイルやフォルダーの名前を変更できます。
+ハイライトしたファイルの直後に、テキストやフォルダーを追加することも可能です。
+
+#### ドラッグ&ドロップ編集
+
+![原稿ツリー編集](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/drafttree-drag-and-drop-tree.png)
+原稿ツリーのタイトル右にあるドラッグ&ドロップを有効化ボタンをクリックすると、原稿ツリーのファイルやフォルダーの順番を入れ替えて、ファイルに連番を付与することができるようになります。
+
+![ドラッグ&ドロップ](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/drafttree-drag-and-drop-button.png)
+ドラッグ&ドロップが有効になると、ファイルの連番と拡張子は表示されなくなります。
+
+**注意！**
+ドラッグ&ドロップ機能は、ファイルの名前を書き換えます。万全を期してはいますが、バックアップを取るようにしてください。
+
+Gitを利用しているときにファイルの連番を変更すると、たくさんのファイルが削除・追加された状態になりますが、```% git add .```を行うと、同じ内容のファイルをgitが検索して、履歴を継続してくれます（VS Codeでは「ステージに追加」を行ってください）。
 
 ### 締め切りフォルダーの設定
 
@@ -74,40 +132,18 @@ novel-writerは形態素解析を用いて分割した品詞をハイライト�
 
 原稿のコンパイルを実行すると、締め切りフォルダー内のテキストファイルを結合します。
 
-### 編集距離の表示
+### 文字数カウント
+
+現在編集中のファイルの文字数と、ワークスペースにあるテキストファイル全てを合算した文字数をステータスバーに表示することができます。ワークスペースに「原稿」あるいは「Draft」という名称のフォルダーがある場合には、そのフォルダーの中だけを計算します。
 
 Gitでファイルの履歴を管理している場合には、前日から現在までの編集距離をリアルタイムに表示します。  
 改稿した分量を把握するのにお使いください。
 
 ![編集距離](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/edit-distance.png)
 
-## 次のシーン、前のシーンへ移動
+## Preview
 
-novel形式の書類を開いているときには、前のシーンにあたるファイルや、直後のシーンを開くナビゲーターが表示されます。
-ナビゲーターは設定で表示しないように設定できます。
-
-![前のシーンを開く](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/prev-scene.png)
-
-![次のシーンを開く](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/next-scene.png)
-
-## ルビの挿入
-
-novel-writerは青空文庫スタイルのルビを挿入できます。
-Novel:ルビの追加（または<kbd>Ctrl</kbd>+<kbd>R</kbd>/<kbd>Command</kbd>+R）を実行するときに選択範囲があれば、選択範囲にルビを振ります。選択範囲がない場合には、カーソル前方の単語、またはカーソルが入っている単語にルビを挿入します。
-
-## 圏点の挿入
-
-novel-writerは青空文庫注記法の圏点（傍点・ゴマ）を挿入できます。
-テキストを選択してNovel:圏点の挿入を実行すると、選択範囲を⚪︎⚪︎［＃「⚪︎⚪︎」に傍点］に変換します。この注記は原稿用紙プレビューやPDFで圏点として描かれます。
-
-## 文末辞の切り替え
-
-novel-writerは、日本語の小説で使われる連体形文末辞（〜していた。〜と言った。〜を持った。）と終止形文末辞（〜している。〜と言う。〜を持つ。）を切り替えることができます。  
-「Novel:文末辞入れ替え」コマンドにキーボードショートカットを登録してお使いください。文章のリズムを整える作業が軽減できることでしょう。
-
-![文末辞の切り替え](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/tense-aspect-change.gif)
-
-## 原稿用紙プレビュー
+### 原稿用紙プレビュー
 
 コマンドパレットの\[Novel:縦書きプレビュー\]で、現在使っているエディタのテキストを、原稿用紙プレビューすることができます。原稿の表示方法は、縦書きと横書き、一行あたりの文字数を指定することができます。
 プレビュー画面はlocalhost:8080に出力していますので、ブラウザーや同じLANの他コンピュターから閲覧することもできます。  
@@ -115,11 +151,11 @@ novel-writerは、日本語の小説で使われる連体形文末辞（〜し�
 
 縦書きプレビューでは、二桁のASCII数字を縦中横に組んで表示します。
 
-### プレビュー画面との画面連動
+#### プレビュー画面との画面連動
 
 縦書きプレビューでクリック（あるいはタップ）すると、エディタがスクロールしてタップした行を選択します。長いテキストを推敲するときにご利用ください。
 
-### プレビュー設定
+#### プレビュー設定
 
 Extension Settings で、文字サイズと一行あたりの文字数、ページあたりの行数を設定してお使いください。
 正規表現による検索置換をカスタマイズすることで、オリジナルのタグを挿入することも可能です。
@@ -127,7 +163,7 @@ Extension Settings で、文字サイズと一行あたりの文字数、ペー�
 ![プレビュー画像](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/preview-settings.png)
 ![プレビュー画像](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/preview-settings.png)
 
-#### 組み方向の変更
+##### 組み方向の変更
 
 設定でプレビューの縦組と横組を選択できます。
 
@@ -137,20 +173,20 @@ Extension Settings で、文字サイズと一行あたりの文字数、ペー�
 ![横組み](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/horizontal.png)
 
 
-#### プレビューフォントの設定
+###### プレビューフォントの設定
 プレビューフォントの設定が可能です。
 
 Contributed by [yasudaz](https://github.com/yasudaz)](https://github.com/yasudaz)
 
-#### 版面指定
+##### 版面指定
 
 1行あたりの文字数、1ページあたりの行数を指定できます。
 
-#### 正規表現検索置換
+##### 正規表現検索置換
 
 出力するHTMLを検索置換することができます。オリジナルのタグを挿入する場合などにご利用ください。  
 
-## PDF出力
+## PDF Features
 
 novel-writerは[Vivliostyle/CLI](https://vivliostyle.org/ja/)を用いて、選択しているテキストファイルのA5変型版（130mm×190mm）の縦書きPDFを出力します。以下のコマンドをでVivlioStyleをインストールしてからPDF出力を実行してください。
 
@@ -166,7 +202,23 @@ PDFを保存するときは、コマンドパレットから「Novel:PDF出力�
 
 * PDF出力にはワークスペースが必要です。フォルダを開いて利用してください。
 
-### PDF出力設定
+
+### PDF用のカスタムCSS
+
+レイアウトを固定して、異なる版面や上下・ノド・小口の空き、新たなスタイルシートを導入いただけます。印刷物を作成する場合にご利用ください。またカスタムCSSでは、いくつかのnovel-writer変数を利用できます。
+
+- ${writingDirection}: 縦書き、横書きの組み方向をnovel-writerの設定で指定できます
+- ${fontSizeWithUnit}: 文字サイズをnovel-writerの設定で指定できます
+- ${originPageNumber}: ノンブルの開始ページをnovel-writerの設定で指定できます
+- ${pageNumberFormatR}: ページの柱をnovel-writerの設定で指定できます
+- ${pageStartingCss}: PDFが右ページ開始か、左ページ開始かをnovel-writerの設定で指定できます
+- ${columnCSS}: 段数をnovel-writerの自動計算で指定できます
+- ${columnHeitghtRate}: 一段の高さをnovel-writerの自動計算で指定できます
+
+novel-writerの標準的なprint.cssは、以下で閲覧できます
+    - [GitHub ttrace/vscode-language-japanese-novel/blob/main/htdocs/css/print.css](https://github.com/ttrace/vscode-language-japanese-novel/blob/main/htdocs/css/print.css)
+
+### PDF出力機能拡張の設定項目
 novel-writerのPDF出力は原稿のために開発していますが、簡単な冊子の本文作成にも利用できます。
 
 #### PDFページ番号フォーマット
@@ -189,31 +241,6 @@ PDFのページ番号の開始ページを指定できます。
 PDFの第一ページを左右どちらにするか設定できます。
 冊子の場合は「左」に、原稿提出の時は「右」にしておくといいでしょう。
 
-#### カスタムCSS
-
-レイアウトを固定して、異なる版面や上下・ノド・小口の空き、新たなスタイルシートを導入いただけます。印刷物を作成する場合にご利用ください。またカスタムCSSでは、いくつかのnovel-writer変数を利用できます。
-
-- ${writingDirection}: 縦書き、横書きの組み方向をnovel-writerの設定で指定できます
-- ${fontSizeWithUnit}: 文字サイズをnovel-writerの設定で指定できます
-- ${originPageNumber}: ノンブルの開始ページをnovel-writerの設定で指定できます
-- ${pageNumberFormatR}: ページの柱をnovel-writerの設定で指定できます
-- ${pageStartingCss}: PDFが右ページ開始か、左ページ開始かをnovel-writerの設定で指定できます
-- ${columnCSS}: 段数をnovel-writerの自動計算で指定できます
-- ${columnHeitghtRate}: 一段の高さをnovel-writerの自動計算で指定できます
-
-novel-writerの標準的なprint.cssは、以下で閲覧できます
-    - [GitHub ttrace/vscode-language-japanese-novel/blob/main/htdocs/css/print.css](https://github.com/ttrace/vscode-language-japanese-novel/blob/main/htdocs/css/print.css)
-
-## テキスト結合
-
-ワークスペース中のテキストファイルを結合し、publishフォルダーの中にプロジェクトのフォルダー名のファイルを作ります。
-
-ワークスペースに「原稿」あるいは「Draft」という名称のフォルダーがある場合には、そのフォルダーの中のテキストのみ結合します。もしも締め切りフォルダーが指定されていれば、締め切りフォルダー内のテキストファイルを結合します。
-
-novel-writerは階層化されたフォルダーの中のテキストも結合することができます。  
-
-資料などをワークスペースに保存している場合には、テキストファイルを「原稿（あるいはDraft」フォルダーに入れておいてください。
-
 ## FAQ
 
 ### vscode-textlintとの併用
@@ -225,7 +252,7 @@ VS Codeは標準的なテキストファイルで小説を書くための機能�
 
 novel形式ための特別な拡張子を追加する要望があることは承知していますが、OSの標準的な機能を利用できない拡張子をメンテナンスすることは困難ですので、VS Code本体で言語と拡張子に関する機能拡張が行われるまでは対応できません。
 
-## 参考にした文献
+## References
 
 novel-writerはさまざまなWeb文書を参考にさせていただきました。特に参考になったのは以下の二つのウェブサイトです。
 
@@ -252,7 +279,7 @@ MIT
 [![ryoutakano](https://github.com/ryoutakano.png?size=24)](https://github.com/ryoutakano)
 [![bills-appworks](https://github.com/bills-appworks.png?size=24)](https://github.com/bills-appworks)
 
-## 付録
+## Appendix
 
 ### ハイライト設定
 機能拡張に内蔵しているデフォルトのハイライト設定です。  
