@@ -20,7 +20,7 @@ interface DropResult {
   node: TreeFileNode;
 }
 
-let debugIncrement=0;
+let debugIncrement = 0;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const vscode = (window as any).acquireVsCodeApi();
@@ -53,9 +53,8 @@ export const App: React.FC = () => {
           // vscode.postMessage({ command: "loadIsOrdable" });
           break;
         case "setHighlight":
-          if(message.highlitingNode != highlightedNode){
+          if (message.highlitingNode != highlightedNode) {
             setHighlightedNode(message.highlitingNode);
-            
           }
           break;
         case "configIsOrdable":
@@ -68,15 +67,6 @@ export const App: React.FC = () => {
       }
     };
 
-    // useEffect(() => {
-    //   if (highlightedNode !== null) {
-    //     const highlightedElement = nodeRefs.current[highlightedNode];
-    //     if (highlightedElement) {
-    //       highlightedElement.focus();
-    //     }
-    //   }
-    // }, [highlightedNode]);
-    
     window.addEventListener("message", handleMessage);
 
     // クリーンアップ関数でイベントリスナーを解除
@@ -179,10 +169,12 @@ const TreeView: React.FC<TreeViewProps> = ({
 
   useEffect(() => {
     if (node.dir === highlightedNode && treeNodeRef.current) {
-      (treeNodeRef.current as HTMLDivElement).focus();
+      setTimeout(() => {
+        console.log("フォーカス獲得", node.dir);
+        (treeNodeRef.current as unknown as HTMLDivElement).focus();
+      }, 100);
     }
   }, [highlightedNode]);
-
 
   // ドラッグ制御
   const handleDragStart = () => {
@@ -206,20 +198,20 @@ const TreeView: React.FC<TreeViewProps> = ({
   // ノードのクリック ハイライトとVS Codeに送信する部分も含む
   const handleNodeClick = (event: React.MouseEvent<HTMLSpanElement>) => {
     event.stopPropagation();
-    // ハイライトを少し遅らせて設定
-    // setTimeout(() => {
+    if (node.dir !== highlightedNode) {
       onHighlight(node.dir);
+      console.log("クリック");
       vscode.postMessage({ command: "fileSelection", node: node.dir });
-
-      // if (treeNodeRef.current) {
-      //   (treeNodeRef.current as HTMLDivElement).focus();
-      // }
-    // }, 200);
-    if (!node.children) {
-      vscode.postMessage({
-        command: "openFile",
-        filePath: node.dir,
-      });
+      if (!node.children) {
+        vscode.postMessage({
+          command: "openFile",
+          filePath: node.dir,
+        });
+      }
+    } else {
+      setTimeout(() => {
+        (treeNodeRef.current as unknown as HTMLDivElement).focus();
+      }, 100);
     }
   };
 
@@ -339,6 +331,15 @@ const TreeView: React.FC<TreeViewProps> = ({
           // console.log("編集開始");
           setIsEditing(true);
         } else {
+          // console.log("編集名称",editValue);
+          const renameFile = {
+            targetPath: node.dir,
+            newName: editValue,
+          };
+          vscode.postMessage({
+            command: "rename",
+            renameFile: renameFile,
+          });
           handleBlur();
         }
       }
@@ -353,9 +354,7 @@ const TreeView: React.FC<TreeViewProps> = ({
   };
 
   const handleBlur = () => {
-    if (editValue === node.name) {
-      setIsEditing(false);
-    } else if (editValue === "") {
+    if (editValue === "") {
       vscode.postMessage({
         command: "alert",
         alertMessage: "名称は必ず設定してください",
@@ -363,14 +362,7 @@ const TreeView: React.FC<TreeViewProps> = ({
       setEditValue(node.name);
       setIsEditing(false);
     } else {
-      const renameFile = {
-        targetPath: node.dir,
-        newName: editValue,
-      };
-      vscode.postMessage({
-        command: "rename",
-        renameFile: renameFile,
-      });
+      setEditValue(node.name);
       setIsEditing(false);
     }
   };

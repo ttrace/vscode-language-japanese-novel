@@ -82,11 +82,11 @@ div:has(+ div > .tree-node.dragged) > .tree-node > .insert-bar.after {
   content: url("folder-closed-light.svg");
 }
 
-.tree-node.expanded .tree-label > .item-name::before {
+.tree-node.expanded > .tree-label > .item-name::before {
   content: url("folder-opens.svg");
 }
 
-.tree-node.expanded .tree-label.text > .item-name::before {
+.tree-node.expanded > .tree-label.text > .item-name::before {
   content: url("file-dark.svg");
   margin-left: 0.75em;
 }
