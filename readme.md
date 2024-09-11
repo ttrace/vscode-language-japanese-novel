@@ -275,6 +275,7 @@ MIT
 ## Sponsors
 [GitHub Sponsors](https://github.com/sponsors/ttrace)でご支援いただいている方々です
 
+[![umiumaya](https://github.com/umiumaya.png?size=24)](https://github.com/umiumaya)
 [![fuji-nakahara](https://github.com/fuji-nakahara.png?size=24)](https://github.com/fuji-nakahara)
 [![ryoutakano](https://github.com/ryoutakano.png?size=24)](https://github.com/ryoutakano)
 [![bills-appworks](https://github.com/bills-appworks.png?size=24)](https://github.com/bills-appworks)
