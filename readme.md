@@ -2,6 +2,7 @@
 
 Visual Studio Codeで小説を執筆するための機能拡張です。
 
+- [novel-writer公式サイト](https://taiyolab.com/ja/novel-writer/)
 - [エディター機能拡張](#editor)
 - [サイドパネル・ステータスバー機能拡張](#side-panel)
     - [原稿ツリー編集](#原稿ツリー編集)
@@ -23,7 +24,7 @@ novel-writerの開発は[こちらの方々](#sponsors)に応援いただいて�
 
 ## Editor
 
-###　段落ハイライト
+### 段落ハイライト
 
 novel-writerは小説で用いる会話文や青空文庫注記法などをハイライトします。
 
