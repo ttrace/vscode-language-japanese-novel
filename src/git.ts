@@ -20,7 +20,7 @@ export class NovelGit {
   
     // コンストラクタ等その他の実装は省略
   
-    public _getDayBackString(filePath: string): Promise<string> {
+    public async _getDayBackString(filePath: string): Promise<string> {
       const relatevePath = path.relative(this.projectPath, filePath);
       const git: SimpleGit = simpleGit(this.projectPath);
   

@@ -105,7 +105,7 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
           launchVivlioStylePreview(`${execPath}`);
         } else {
           // 他のプラットフォームの場合、そのまま実行
-          launchVivlioStylePreview(myPath.path);
+          launchVivlioStylePreview(myPath.fsPath);
         }
       } else {
         vscode.window.showInformationMessage(`プレビューが更新されました`);
@@ -115,7 +115,7 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
 }
 
 function launchVivlioStylePreview(path: string) {
-  vivlioProcess = cp.exec(`vivliostyle preview ${path}`);
+  vivlioProcess = cp.exec(`vivliostyle preview "${path}"`);
 
   if (vivlioProcess.stdout !== null) {
     vivlioProcess.stdout.on("data", (data) => {
