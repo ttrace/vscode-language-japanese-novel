@@ -535,12 +535,18 @@ async function insertFile(
   const documentFileType = configuration.get("Novel.general.filetype");
   // 並び替えなし
   if (configuration.get("Novel.DraftTree.renumber") == false) {
-    const insertingFileUri = vscode.Uri.joinPath(
-      vscode.Uri.file(path.dirname(targetPath)),
-      insertingNodeName
-    );
     // 並び替えなしでファイルを作成
     if (insertingNodeType == "file") {
+      // 拡張子が一致しない場合、拡張子を付与する
+      const fileTypeDetectingRegex = new RegExp(`${draftFileType}$`);
+      console.log("ファイルかどうか",fileTypeDetectingRegex,insertingNodeName.match(fileTypeDetectingRegex));
+      const insertingFileName = insertingNodeName.match(fileTypeDetectingRegex)
+        ? insertingNodeName
+        : insertingNodeName + draftFileType;
+      const insertingFileUri = vscode.Uri.joinPath(
+        vscode.Uri.file(path.dirname(targetPath)),
+        insertingFileName
+      );
       const emptyFileData = new Uint8Array();
       try {
         await vscode.workspace.fs.writeFile(insertingFileUri, emptyFileData);
@@ -557,6 +563,10 @@ async function insertFile(
       }
       // 並び替えなしでフォルダーを作成
     } else if (insertingNodeType == "folder") {
+      const insertingFileUri = vscode.Uri.joinPath(
+        vscode.Uri.file(path.dirname(targetPath)),
+        insertingNodeName
+      );
       try {
         await vscode.workspace.fs.createDirectory(insertingFileUri);
       } catch (error) {

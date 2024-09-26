@@ -170,7 +170,7 @@ const TreeView: React.FC<TreeViewProps> = ({
   useEffect(() => {
     if (node.dir === highlightedNode && treeNodeRef.current) {
       setTimeout(() => {
-        console.log("フォーカス獲得", node.dir);
+        // console.log("フォーカス獲得", node.dir);
         (treeNodeRef.current as unknown as HTMLDivElement).focus();
       }, 100);
     }
@@ -331,10 +331,13 @@ const TreeView: React.FC<TreeViewProps> = ({
           // console.log("編集開始");
           setIsEditing(true);
         } else {
-          // console.log("編集名称",editValue);
+          const renamingTo = isOrdable
+            ? editValue.replace(/^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/, "$1")
+            : editValue;
+          console.log("編集名称", editValue);
           const renameFile = {
             targetPath: node.dir,
-            newName: editValue,
+            newName: renamingTo,
           };
           vscode.postMessage({
             command: "rename",
