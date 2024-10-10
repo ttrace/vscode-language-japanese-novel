@@ -276,6 +276,7 @@ MIT
 ## Sponsors
 [GitHub Sponsors](https://github.com/sponsors/ttrace)でご支援いただいている方々です
 
+[![haoblackj](https://github.com/haoblackj.png?size=24)](https://github.com/haoblackj)
 [![suzukin](https://github.com/suzukin.png?size=24)](https://github.com/suzukin)
 [![kento-oka](https://github.com/kento-oka.png?size=24)](https://github.com/kento-oka)
 [![umiumaya](https://github.com/umiumaya.png?size=24)](https://github.com/umiumaya)
