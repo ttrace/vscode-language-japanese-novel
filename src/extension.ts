@@ -6,7 +6,7 @@ import * as fs from "fs";
 import * as os from "os";
 import { Server, WebSocket } from "ws";
 import { getConfig } from "./config";
-import compileDocs, { draftRoot } from "./compile";
+import compileDocs, { draftRoot, ifFileInDraft } from "./compile";
 import { draftsObject, resetCounter } from "./compile"; // filelist オブジェクトもある
 import { DraftWebViewProvider } from "./novel";
 import { CharacterCounter, CharacterCounterController } from "./charactorcount";
@@ -154,7 +154,10 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   const insertFile = (fileType: "file" | "folder") => {
-    draftWebViewProviderInstance.insertFile(draftWebViewProviderInstance._webviewView!.webview,fileType);
+    draftWebViewProviderInstance.insertFile(
+      draftWebViewProviderInstance._webviewView!.webview,
+      fileType
+    );
   };
 
   // ファイルとフォルダの追加
@@ -172,13 +175,17 @@ export function activate(context: vscode.ExtensionContext): void {
 
   context.subscriptions.push(
     vscode.commands.registerCommand("draftTree.insertFileDim", () => {
-      vscode.window.showInformationMessage("ファイル挿入する位置を選択してください");
+      vscode.window.showInformationMessage(
+        "ファイル挿入する位置を選択してください"
+      );
     })
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand("draftTree.insertFolderDim", () => {
-      vscode.window.showInformationMessage("フォルダーを挿入する位置を選択してください");
+      vscode.window.showInformationMessage(
+        "フォルダーを挿入する位置を選択してください"
+      );
     })
   );
 
@@ -309,6 +316,55 @@ export function activate(context: vscode.ExtensionContext): void {
       previewBesideSection(editor);
     }
   });
+
+  // 開くファイルを"novel"にするかどうかを判定する
+  // 初期化時にすべての開かれているドキュメントに対して処理を実行
+  vscode.workspace.textDocuments.forEach((document) => {
+    setTypeAsNovel(document);
+  });
+
+  // 初期化時にすべての表示されているエディターに対して処理を実行
+  vscode.window.visibleTextEditors.forEach((editor) => {
+    setTypeAsNovel(editor.document);
+  });
+
+  // 開くエディターの変更に対して処理を聞き取る
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (editor) {
+        setTypeAsNovel(editor.document);
+      }
+    })
+  );
+
+  // 新規ドキュメントのオープンに対して処理を聞き取る
+  context.subscriptions.push(
+    vscode.workspace.onDidOpenTextDocument((document) => {
+      setTypeAsNovel(document);
+    })
+  );
+
+  function setTypeAsNovel(document: vscode.TextDocument | undefined) {
+    console.log(`設定ファイルタイプ${getConfig().draftFileType}`);
+    if (
+      document &&
+      (ifFileInDraft(document.uri.fsPath) ||
+        isInPublishFolder(document.uri.fsPath)) &&
+      path.extname(document.uri.fsPath) == getConfig().draftFileType
+    ) {
+      // ドキュメント言語をNovelに変更
+      vscode.languages.setTextDocumentLanguage(document, "novel").then(() => {
+        console.log(
+          `Changed language mode to novel for: ${document.uri.fsPath}`
+        );
+      });
+    }
+  }
+
+  // `/publish`フォルダー内かどうかをチェック
+  function isInPublishFolder(filePath: string): boolean {
+    return filePath.includes("/publish/");
+  }
 }
 
 // インスタンスを返す関数をエクスポートする

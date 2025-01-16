@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "3.0.6",
+  "version": "3.0.7",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -148,10 +148,7 @@
     "languages": [
       {
         "id": "novel",
-        "extensions": [
-          ".txt",
-          ".md"
-        ],
+        "aliases": ["Novel"],
         "configuration": "./novel.language-configuration.json"
       }
     ],
