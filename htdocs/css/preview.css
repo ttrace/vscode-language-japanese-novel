@@ -113,11 +113,11 @@ h2.part {
   font-size: 16Q;
   page-break-before: always;
   page-break-after: always;
-  margin-left: 4em;
+  margin-block-end: 4em;
 }
 
 h1 + h2 {
-  margin-right: 16pt;
+  margin-block-start: 16pt;
 }
 
 ruby > rt {
@@ -162,13 +162,13 @@ div.codes p {
 
 p.star {
   text-indent: 3em;
-  margin-right: 16pt;
-  margin-left: 16pt;
+  margin-block-start: 16pt;
+  margin-block-end: 16pt;
 }
 
 hr {
   border: none;
-  border-right: 1pt solid black;
+  border-block-start: 1pt solid black;
   inline-size: 6em;
   margin: auto 8.5pt;
 }
@@ -260,7 +260,7 @@ body.vscode-dark em.side-dot {
   font-style: normal;
   text-emphasis: filled sesame white;
   -webkit-text-emphasis: filled sesame white;
-  margin-right: -1em;
+  margin-block-start: -1em;
   display: inline-block;
 }
 
@@ -268,7 +268,7 @@ body.vscode-light em.side-dot{
   font-style: normal;
   text-emphasis: filled sesame black;
   -webkit-text-emphasis: filled sesame black;
-  margin-right: -1em;
+  margin-block-start: -1em;
   display: inline-block;
 }
 
