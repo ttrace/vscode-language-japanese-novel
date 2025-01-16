@@ -1,5 +1,9 @@
 # Changelog
 
+# 3.0.7
+
+- 原稿のファイルだけNovel形式として扱うように修正[issue76対応](https://github.com/ttrace/vscode-language-japanese-novel/issues/76)
+
 # 3.0.6
 
 - 横組の圏点位置を修正
