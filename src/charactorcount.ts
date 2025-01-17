@@ -279,14 +279,14 @@ export class CharacterCounter {
       // 各段落の行数を計算して合算
       let lineCount = 0;
       const lineLength = 20;
-      for (const paragraph of paragraphs) {
+      for (const [index, paragraph] of paragraphs.entries()) {
         const paragraphLength = paragraph.length;
-        if (paragraphLength === 0) {
+        if (paragraphLength === 0 && index < paragraphs.length - 1) {
           lineCount += 1;
         } else {
           lineCount += Math.ceil(paragraphLength / lineLength);
         }
-      }
+      }  
       // 行数から原稿用紙の枚数を計算 (1枚あたり20行)
       sheetCount = lineCount / 20;
       // console.log("段落数", paragraphs.length, sheetCount);
