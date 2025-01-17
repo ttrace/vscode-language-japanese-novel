@@ -164,7 +164,10 @@ type FileNode = {
   id: string;
   dir: string;
   name: string;
-  length: number;
+  length: {
+    lengthInNumber: number;
+    lengthInSheet: number;
+  };
   children?: FileNode[];
 };
 
@@ -193,14 +196,20 @@ export function draftsObject(dirPath: string): FileNode[] {
 
       let containerLength = 0;
       containerFiles.forEach((element) => {
-        containerLength += element.length;
+        containerLength += element.length.lengthInNumber;
       });
+
+      // 原稿用紙枚数を計算
+      let containerLengthInSheet = 0;
 
       const directory: FileNode = {
         id: `node_${globalCounter++}`,
         dir: path.join(dirPath, dirent.name),
         name: dirent.name,
-        length: containerLength,
+        length: {
+          lengthInNumber: containerLength,
+          lengthInSheet: containerLengthInSheet, // 原稿用紙枚数を計算する関数
+        },
         children: containerFiles,
       };
 
@@ -221,12 +230,15 @@ export function draftsObject(dirPath: string): FileNode[] {
         .replace(/[|｜]/g, "") // ルビ開始記号
         .replace(/<!--(.+?)-->/, ""); // コメントアウト
 
-      const fileNode: FileNode = {
-        id: `node_${globalCounter++}`,
-        dir: path.join(dirPath, dirent.name),
-        name: dirent.name,
-        length: readingFile.length,
-      };
+        const fileNode: FileNode = {
+          id: `node_${globalCounter++}`,
+          dir: path.join(dirPath, dirent.name),
+          name: dirent.name,
+          length: {
+            lengthInNumber: readingFile.length,
+            lengthInSheet: readingFile.length // レポート用紙枚数の計算ロジックを使用して値を設定
+          }
+        };
       
       results.push(fileNode);
     }
@@ -235,11 +247,12 @@ export function draftsObject(dirPath: string): FileNode[] {
   return results;
 }
 
-export function totalLength(dirPath: string): number {
-  let result = 0;
+export function totalLength(dirPath: string): {lengthInNumber: number, lengthInSheet: number} {
+  let result = {lengthInNumber: 0, lengthInSheet: 0};
   const drafts = draftsObject(dirPath);
   drafts.forEach((element) => {
-    result += element.length;
+    result.lengthInNumber += element.length.lengthInNumber;
+    result.lengthInSheet += element.length.lengthInSheet;
   });
   return result;
 }

@@ -11,7 +11,10 @@ type TreeFileNode = {
   id: string;
   dir: string;
   name: string;
-  length: number;
+  length: {
+    lengthInNumber: number;
+    lengthInSheet: number;
+  };
   children?: TreeFileNode[];
 };
 
@@ -493,7 +496,7 @@ const TreeView: React.FC<TreeViewProps> = ({
                 : node.name}
             </span>
           )}
-          <span className="chars">{node.length.toLocaleString()}文字</span>
+          <span className="chars">{node.length.lengthInNumber.toLocaleString()}文字</span>
         </div>
         {node.children && (
           <div className="tree-node-children">

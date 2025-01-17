@@ -225,6 +225,7 @@ export function activate(context: vscode.ExtensionContext): void {
   }
 
   //締め切りカウンター
+  // 原稿用紙の文字数にも対応すべき
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.set-counter", async (e) => {
       let path = e.collapsibleState ? e.resourceUri.path : e.fsPath;
@@ -233,7 +234,7 @@ export function activate(context: vscode.ExtensionContext): void {
       }
       let currentLength = 0;
       draftsObject(path).forEach((element) => {
-        currentLength += element.length;
+        currentLength += element.length.lengthInNumber;
       });
 
       // InputBoxを呼び出す。awaitで完了を待つ。
@@ -353,9 +354,9 @@ export function activate(context: vscode.ExtensionContext): void {
     ) {
       // ドキュメント言語をNovelに変更
       vscode.languages.setTextDocumentLanguage(document, "novel").then(() => {
-        console.log(
-          `Changed language mode to novel for: ${document.uri.fsPath}`
-        );
+        // console.log(
+        //   `Changed language mode to novel for: ${document.uri.fsPath}`
+        // );
       });
     }
   }
