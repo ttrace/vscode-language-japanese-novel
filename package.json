@@ -253,7 +253,7 @@
           "default": true,
           "description": "Git使用時に編集距離を表示する"
         },
-        "Novel.counter.styelOfProgress": {
+        "Novel.counter.styleOfProgress": {
           "type": "string",
           "default": "数字",
           "enum": [

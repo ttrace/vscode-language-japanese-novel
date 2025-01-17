@@ -74,7 +74,6 @@ export class CharacterCounter {
       }
 
       // 前回記録したテキスト総数と記録日
-
       // 前日までの進捗が存在しなかった時の処理
       // 進捗がなかった場合、現在の文字数を前日分として比較対象にする。
       if (typeof context.workspaceState.get("totalCountPrevious") != "number") {
@@ -130,7 +129,7 @@ export class CharacterCounter {
 
     const doc = editor.document;
     const docPath: string = editor.document.uri.fsPath.normalize();
-    const characterCountNum = this._getCharacterCount(doc);
+    const characterCountNum = this._getCharacterCount(doc).lengthInNumber;
     const characterCount = Intl.NumberFormat().format(characterCountNum);
     const countingTarget = Intl.NumberFormat().format(this._countingTargetNum);
 
@@ -138,12 +137,7 @@ export class CharacterCounter {
 
     // path.relative関数でbasePathからsubPathの相対パスを取得
     const relativePath = path.relative(draftRoot(), docPath);
-
-    if (draftRoot() == "") {
-      //テキストファイルを直接開いているとき
-      this._statusBarItem.text = `$(note) ${Intl.NumberFormat().format(
-        this._getCharacterCount(doc),
-      )} 文字`;
+    if (!draftRoot()) {
     } else if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
       // 相対パスが'.'で始まっていない場合、subPathはbasePathに含まれる
 
@@ -222,7 +216,30 @@ export class CharacterCounter {
         Intl.NumberFormat().format(this.totalWritingProgress) +
         ")";
     }
-    if (this._countingFolder != "") {
+    if (draftRoot() == "") {
+      //テキストファイルを直接開いているときの出力
+      if (getConfig().styleOfProgress == "数字") {
+        this._statusBarItem.text = `$(note) ${Intl.NumberFormat().format(
+          this._getCharacterCount(doc).lengthInNumber,
+        )}文字`;
+      } else {
+        const numberOfSheet = Math.floor(
+          this._getCharacterCount(doc).lengthInSheet,
+        );
+        const numberOfModLines =
+          (this._getCharacterCount(doc).lengthInSheet - numberOfSheet) * 20;
+        this._statusBarItem.text = `$(note) ${Intl.NumberFormat().format(
+          numberOfSheet,
+        )}枚`;
+        this._statusBarItem.text +=
+          numberOfModLines > 0
+            ? `${Intl.NumberFormat().format(numberOfModLines)}行`
+            : "";
+        this._statusBarItem.text += `（${Intl.NumberFormat().format(
+          this._getCharacterCount(doc).lengthInNumber,
+        )}文字）`;
+      }
+    } else if (this._countingFolder != "") {
       //締め切りフォルダーが設定されている時_countingTargetNum
       let targetNumberTextNum = this._folderCount.amountLengthNum;
       let targetNumberText = Intl.NumberFormat().format(targetNumberTextNum);
@@ -241,19 +258,40 @@ export class CharacterCounter {
     this._statusBarItem.show();
   }
 
-  public _getCharacterCount(doc: TextDocument): number {
+  // MARK: アクティブ文字数取得
+  public _getCharacterCount(doc: TextDocument): {
+    lengthInNumber: number;
+    lengthInSheet: number;
+  } {
     let docContent = doc.getText();
     // カウントに含めない文字を削除する
     docContent = docContent
-      .replace(/\s/g, "") // すべての空白文字
+      .replace(/[ \t\r\f\v]/g, "") // 改行以外の空白文字
       .replace(/《(.+?)》/g, "") // ルビ範囲指定記号とその中の文字
       .replace(/[|｜]/g, "") // ルビ開始記号
       .replace(/<!--(.+?)-->/, ""); // コメントアウト
     let characterCount = 0;
+    let sheetCount = 0;
     if (docContent !== "") {
-      characterCount = docContent.length;
+      characterCount = docContent.replace(/\s/g, "").length;
+      const paragraphs = docContent.split(/\r\n|\r|\n/);
+
+      // 各段落の行数を計算して合算
+      let lineCount = 0;
+      const lineLength = 20;
+      for (const paragraph of paragraphs) {
+        const paragraphLength = paragraph.length;
+        if (paragraphLength === 0) {
+          lineCount += 1;
+        } else {
+          lineCount += Math.ceil(paragraphLength / lineLength);
+        }
+      }
+      // 行数から原稿用紙の枚数を計算 (1枚あたり20行)
+      sheetCount = lineCount / 20;
+      // console.log("段落数", paragraphs.length, sheetCount);
     }
-    return characterCount;
+    return { lengthInNumber: characterCount, lengthInSheet: sheetCount };
   }
 
   public _updateProjectCharacterCount(): void {
@@ -528,7 +566,6 @@ export class CharacterCounterController {
 
   constructor(characterCounter: CharacterCounter) {
     this._characterCounter = characterCounter;
-    console.log("displayEditDistance", getConfig().displayEditDistance);
     this._characterCounter._setEditDistance();
     this._characterCounter.updateCharacterCount();
 

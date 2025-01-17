@@ -345,7 +345,6 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   function setTypeAsNovel(document: vscode.TextDocument | undefined) {
-    console.log(`設定ファイルタイプ${getConfig().draftFileType}`);
     if (
       document &&
       (ifFileInDraft(document.uri.fsPath) ||
