@@ -166,6 +166,7 @@ export class CharacterCounter {
 
     let editDistance = "";
     let writingProgressString = "";
+    //  MARK: 出力部分
     if (this.ifEditDistance) {
       // 増減分のプラス記号、±記号を定義
       let progressIndex = this.writingProgress > 0 ? "+" : "";
@@ -206,20 +207,21 @@ export class CharacterCounter {
 
     // 総量：増減分のプラス記号、±記号を定義
     let totalWritingProgressString = "";
-    this.totalWritingProgress = ifActiveDocInDraft
-      ? totalCharacterCountNum + characterCountNum - this.totalCountPrevious
-      : totalCharacterCountNum - this.totalCountPrevious;
-    let progressTotalIndex = this.totalWritingProgress > 0 ? "+" : "";
-    progressTotalIndex =
-      this.totalWritingProgress == 0 ? "±" : progressTotalIndex;
+    if (getConfig().displayProgress) {
+      this.totalWritingProgress = ifActiveDocInDraft
+        ? totalCharacterCountNum + characterCountNum - this.totalCountPrevious
+        : totalCharacterCountNum - this.totalCountPrevious;
+      let progressTotalIndex = this.totalWritingProgress > 0 ? "+" : "";
+      progressTotalIndex =
+        this.totalWritingProgress == 0 ? "±" : progressTotalIndex;
 
-    // 増減分のテキストを定義
-    totalWritingProgressString =
-      "(" +
-      progressTotalIndex +
-      Intl.NumberFormat().format(this.totalWritingProgress) +
-      ")";
-
+      // 増減分のテキストを定義
+      totalWritingProgressString =
+        "(" +
+        progressTotalIndex +
+        Intl.NumberFormat().format(this.totalWritingProgress) +
+        ")";
+    }
     if (this._countingFolder != "") {
       //締め切りフォルダーが設定されている時_countingTargetNum
       let targetNumberTextNum = this._folderCount.amountLengthNum;
@@ -527,7 +529,7 @@ export class CharacterCounterController {
   constructor(characterCounter: CharacterCounter) {
     this._characterCounter = characterCounter;
     console.log("displayEditDistance", getConfig().displayEditDistance);
-      this._characterCounter._setEditDistance();
+    this._characterCounter._setEditDistance();
     this._characterCounter.updateCharacterCount();
 
     const subscriptions: Disposable[] = [];
@@ -559,7 +561,7 @@ export class CharacterCounterController {
     this._characterCounter.ifEditDistance = false;
     this._characterCounter.latestText = "\n";
     this._characterCounter.editDistance = -1;
-      this._characterCounter._setEditDistance();
+    this._characterCounter._setEditDistance();
     this._characterCounter._updateCountingObject();
   }
 

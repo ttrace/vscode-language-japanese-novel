@@ -19,7 +19,7 @@ export type NovelSettings = {
   sceneNav: boolean;
   previewAnimate: boolean;
   semanticHighligting: boolean;
-  dispayProgress: boolean;
+  displayProgress: boolean;
   displayEditDistance: boolean;
   styleOfProgress: string;
 };
@@ -60,7 +60,7 @@ export function getConfig(): NovelSettings {
     "editor.semanticHighligting",
     true
   );
-  const dispayProgress = config.get<boolean>("counter.dispayProgress", true);
+  const displayProgress = config.get<boolean>("counter.displayProgress", true);
   const displayEditDistance = config.get<boolean>(
     "counter.displayEditDistance",
     true
@@ -86,7 +86,7 @@ export function getConfig(): NovelSettings {
     sceneNav,
     previewAnimate,
     semanticHighligting,
-    dispayProgress,
+    displayProgress,
     displayEditDistance,
     styleOfProgress,
   };
