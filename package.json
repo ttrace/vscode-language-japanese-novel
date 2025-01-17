@@ -248,7 +248,7 @@
           "default": true,
           "description": "進捗を表示する"
         },
-        "Novel.counter.dispalyEditDistance": {
+        "Novel.counter.displayEditDistance": {
           "type": "boolean",
           "default": true,
           "description": "Git使用時に編集距離を表示する"

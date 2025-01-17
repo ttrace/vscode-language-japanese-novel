@@ -60,12 +60,12 @@ export function getConfig(): NovelSettings {
     "editor.semanticHighligting",
     true
   );
-  const dispayProgress = config.get<boolean>("editor.dispayProgress", true);
+  const dispayProgress = config.get<boolean>("counter.dispayProgress", true);
   const displayEditDistance = config.get<boolean>(
-    "editor.displayEditDistance",
+    "counter.displayEditDistance",
     true
   );
-  const styleOfProgress = config.get<string>("editor.styleOfProgress", "数字");
+  const styleOfProgress = config.get<string>("counter.styleOfProgress", "数字");
 
   const novelSettings: NovelSettings = {
     draftFileType,
