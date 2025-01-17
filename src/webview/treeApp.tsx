@@ -433,7 +433,7 @@ const TreeView: React.FC<TreeViewProps> = ({
       onKeyDown={handleKeyDown}
     >
       <div
-        ref={isOrdable ? drag : undefined}
+        ref={isOrdable ? (drag as unknown as React.Ref<HTMLDivElement>) : undefined}
         onDragStart={isOrdable ? handleDragStart : undefined}
         onDragEnd={isOrdable ? handleDragEnd : undefined}
         className={`tree-node ${expanded ? "expanded" : ""} ${
@@ -443,7 +443,7 @@ const TreeView: React.FC<TreeViewProps> = ({
       >
         {isFirstSibling && (
           <div
-            ref={dropBefore}
+            ref={dropBefore as any}
             className={`insert-bar before
           ${isDraggingGlobal && !isDragging ? "droppable" : ""}
           ${isDraggedOverBefore ? "dropping" : ""}`}
@@ -512,7 +512,7 @@ const TreeView: React.FC<TreeViewProps> = ({
               />
             ))}
             <div
-              ref={dropInside}
+              ref={dropInside as any}
               className={`insert-bar inside
           ${isDraggingGlobal && !isDragging ? "droppable" : ""}
           ${isDraggedOverInside ? "dropping" : ""}`}
@@ -523,7 +523,7 @@ const TreeView: React.FC<TreeViewProps> = ({
         )}
 
         <div
-          ref={dropAfter}
+          ref={dropAfter as any}
           className={`insert-bar after
           ${isDraggingGlobal && !isDragging ? "droppable" : ""}
           ${isDraggedOverAfter ? "dropping" : ""}`}
