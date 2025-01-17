@@ -19,6 +19,9 @@ export type NovelSettings = {
   sceneNav: boolean;
   previewAnimate: boolean;
   semanticHighligting: boolean;
+  dispayProgress: boolean;
+  displayEditDistance: boolean;
+  styleOfProgress: string;
 };
 
 export function getConfig(): NovelSettings {
@@ -57,6 +60,12 @@ export function getConfig(): NovelSettings {
     "editor.semanticHighligting",
     true
   );
+  const dispayProgress = config.get<boolean>("editor.dispayProgress", true);
+  const displayEditDistance = config.get<boolean>(
+    "editor.displayEditDistance",
+    true
+  );
+  const styleOfProgress = config.get<string>("editor.styleOfProgress", "数字");
 
   const novelSettings: NovelSettings = {
     draftFileType,
@@ -77,6 +86,9 @@ export function getConfig(): NovelSettings {
     sceneNav,
     previewAnimate,
     semanticHighligting,
+    dispayProgress,
+    displayEditDistance,
+    styleOfProgress,
   };
   return novelSettings;
 }

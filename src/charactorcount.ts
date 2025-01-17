@@ -153,7 +153,9 @@ export class CharacterCounter {
 
     // 合計の計算
     // activeファイルが原稿フォルダにあるかどうか
-    const ifActiveDocInDraft = ifFileInDraft(window.activeTextEditor?.document.uri.fsPath);
+    const ifActiveDocInDraft = ifFileInDraft(
+      window.activeTextEditor?.document.uri.fsPath
+    );
     const totalCharacterCountNum = ifActiveDocInDraft
       ? projectCharacterCountNum - savedCharacterCountNum
       : projectCharacterCountNum;
@@ -359,11 +361,13 @@ export class CharacterCounter {
   private projectPath = "";
   public ifEditDistance = false;
   public isEditDistanceInCalc = false;
-  
 
   public async _setEditDistance(): Promise<void> {
     const activeDocumentPath = window.activeTextEditor?.document.uri.fsPath;
-    if (workspace.workspaceFolders == undefined || !ifFileInDraft(activeDocumentPath)) {
+    if (
+      workspace.workspaceFolders == undefined ||
+      !ifFileInDraft(activeDocumentPath)
+    ) {
       return;
     }
     if (typeof activeDocumentPath != "string") return;
@@ -386,8 +390,8 @@ export class CharacterCounter {
           };
           let showString = "";
           await git
-          .log(logOption)
-          .then((logs) => {
+            .log(logOption)
+            .then((logs) => {
               //console.log(logs);
               if (logs.total === 0) {
                 //昨日以前のコミットがなかった場合、当日中に作られた最古のコミットを比較対象に設定する。
@@ -544,7 +548,10 @@ export class CharacterCounterController {
 
   private _onEvent() {
     this._characterCounter.updateCharacterCount();
-    if (this._characterCounter.ifEditDistance && !this._characterCounter.isEditDistanceInCalc) {
+    if (
+      this._characterCounter.ifEditDistance &&
+      !this._characterCounter.isEditDistanceInCalc
+    ) {
       console.log(`Git読んだ直後：${this._characterCounter.ifEditDistance}`);
       this._characterCounter._updateEditDistanceDelay();
     }
