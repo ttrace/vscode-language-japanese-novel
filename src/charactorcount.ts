@@ -3,9 +3,15 @@
 "use strict";
 import * as path from "path";
 import * as fs from "fs";
-import { draftsObject, ifFileInDraft, resetCounter } from "./compile";
+import {
+  draftsObject,
+  ifFileInDraft,
+  resetCounter,
+  totalLength,
+  draftRoot,
+  getLength,
+} from "./compile";
 import TreeModel from "tree-model";
-// import os from "os";
 
 import {
   window,
@@ -17,20 +23,21 @@ import {
 } from "vscode";
 import * as vscode from "vscode";
 
-import { totalLength, draftRoot } from "./compile";
 import simpleGit, { SimpleGit } from "simple-git";
 import { distance } from "fastest-levenshtein";
 import { getConfig } from "./config";
 import { get } from "http";
+import { escape } from "querystring";
 
-let projectDraftLengthObj = {lengthInNumber: 0, lengthInSheet: 0};
+let projectDraftLengthObj = { lengthInNumber: 0, lengthInSheet: 0 };
 let countingFolderPath = "";
 let countingTarget = "";
 
 if (draftRoot() != "") {
-  projectDraftLengthObj.lengthInNumber = totalLength(draftRoot()).lengthInNumber;
+  projectDraftLengthObj.lengthInNumber =
+    totalLength(draftRoot()).lengthInNumber;
   projectDraftLengthObj.lengthInSheet = totalLength(draftRoot()).lengthInSheet;
-  console.log('プロジェクト総文字数',projectDraftLengthObj);
+  console.log("プロジェクト総文字数", projectDraftLengthObj);
 }
 
 export function deadLineFolderPath(): string {
@@ -47,7 +54,7 @@ export class CharacterCounter {
   private _countingTargetNum = 0;
   private _folderCount = {
     label: "",
-    amountLengthNum: 0,
+    amountLength: { lengthInNumber: 0, lengthInSheet: 0 },
   };
   public totalCountPrevious = totalLength(draftRoot()).lengthInNumber;
   public writingDate = new Date();
@@ -129,35 +136,44 @@ export class CharacterCounter {
     }
 
     const doc = editor.document;
+    const docLength = getLength(doc.getText());
     const docPath: string = editor.document.uri.fsPath.normalize();
-    const characterCountNum = this._getCharacterCount(doc).lengthInNumber;
-    const characterCount = Intl.NumberFormat().format(characterCountNum);
+    const activeCount = docLength.lengthInNumber;
+    const activeheetCount = docLength.lengthInSheet;
     const countingTarget = Intl.NumberFormat().format(this._countingTargetNum);
 
-    let savedCharacterCountNum = 0;
-    
+    let savedCount = 0;
+    let savedSheetCount = 0;
+
     // path.relative関数でbasePathからsubPathの相対パスを取得
     const relativePath = path.relative(draftRoot(), docPath);
     if (!draftRoot()) {
+      // プロジェクトフォルダが設定されていない場合
+      // 何も行わない
     } else if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
-      // 相対パスが'.'で始まっていない場合、subPathはbasePathに含まれる
-      savedCharacterCountNum = characterCountNum;
+      // 相対パスが'.'で始まっていない場合、プロジェクト外部のファイルだとみなします
+      savedCount = activeCount;
+      savedSheetCount = activeheetCount;
     } else {
-      savedCharacterCountNum = this._lengthByPath(docPath).lengthInNumber;
-      console.log("合計文字数",savedCharacterCountNum);
+      // プロジェクト内部のファイルの場合
+      const lengthOfFile = this._lengthByPath(docPath);
+      savedCount = lengthOfFile.lengthInNumber;
+      savedSheetCount = lengthOfFile.lengthInSheet;
     }
-    
+
     // 合計の計算
     // activeファイルが原稿フォルダにあるかどうか
     const ifActiveDocInDraft = ifFileInDraft(
       window.activeTextEditor?.document.uri.fsPath,
     );
-    const totalCharacterCountNum = ifActiveDocInDraft
-      ? projectDraftLengthObj.lengthInNumber - savedCharacterCountNum
+
+    // 総数の計算 アクティブドキュメントを開いているときは、保存された文字数を引く
+    const totalCount = ifActiveDocInDraft
+      ? projectDraftLengthObj.lengthInNumber - savedCount + activeCount
       : projectDraftLengthObj.lengthInNumber;
-    const totalCharacterCount = ifActiveDocInDraft
-      ? Intl.NumberFormat().format(totalCharacterCountNum + characterCountNum)
-      : Intl.NumberFormat().format(totalCharacterCountNum);
+    const totalSheetCount = ifActiveDocInDraft
+      ? projectDraftLengthObj.lengthInSheet - savedSheetCount + activeheetCount
+      : projectDraftLengthObj.lengthInSheet;
 
     let editDistance = "";
     let writingProgressString = "";
@@ -187,88 +203,92 @@ export class CharacterCounter {
       }
     }
 
-    // 執筆日またぎ処理
-    const launchDay = this.totalCountPreviousDate.getDate();
-    const today = new Date().getDate();
-    // console.log(this.totalCountPreviousDate, launchDay, today);
-    if (launchDay != today) {
-      console.log("日跨ぎ発生！", launchDay, today);
-      this.workspaceState?.update("totalCountPrevious", totalCharacterCountNum);
-      this.workspaceState?.update("totalCountPreviousDate", new Date());
-      this.writingDate = new Date();
-      this.totalCountPreviousDate = this.writingDate;
-      this.totalCountPrevious = totalCharacterCountNum;
-    }
-
-    // 総量：増減分のプラス記号、±記号を定義
+    // MARK: 進捗
+    
     let totalWritingProgressString = "";
     if (getConfig().displayProgress) {
-      this.totalWritingProgress = ifActiveDocInDraft
-        ? totalCharacterCountNum + characterCountNum - this.totalCountPrevious
-        : totalCharacterCountNum - this.totalCountPrevious;
+      // 執筆日またぎ処理
+      const launchDay = this.totalCountPreviousDate.getDate();
+      const today = new Date().getDate();
+      if (launchDay != today) {
+        console.log("日跨ぎ発生！", launchDay, today);
+        this.workspaceState?.update("totalCountPrevious", totalCount);
+        this.workspaceState?.update("totalCountPreviousDate", new Date());
+        this.writingDate = new Date();
+        this.totalCountPreviousDate = this.writingDate;
+        this.totalCountPrevious = totalCount;
+      }
+      
+      this.totalWritingProgress = totalCount - this.totalCountPrevious;
+      console.log("進捗デバッグ",totalCount,activeCount,this.totalCountPrevious);
+      // 総量：増減分のプラス記号、±記号を定義
       let progressTotalIndex = this.totalWritingProgress > 0 ? "+" : "";
       progressTotalIndex =
         this.totalWritingProgress == 0 ? "±" : progressTotalIndex;
 
       // 増減分のテキストを定義
       totalWritingProgressString =
-        "(" +
+        " 進捗" +
         progressTotalIndex +
         Intl.NumberFormat().format(this.totalWritingProgress) +
-        ")";
+        "文字";
     }
 
     // 数字表示
     const activeDocLengthInNumberStr = `${Intl.NumberFormat().format(
-      this._getCharacterCount(doc).lengthInNumber,
+      getLength(doc.getText()).lengthInNumber,
     )}文字${writingProgressString}`;
 
     // 原稿用紙表示
-    const numberOfSheet = Math.floor(
-      this._getCharacterCount(doc).lengthInSheet,
-    );
-    const numberOfModLines =
-      (this._getCharacterCount(doc).lengthInSheet - numberOfSheet) * 20;
-    const activeDocLengthInSheetStr = `${Intl.NumberFormat().format(
-      numberOfSheet,
-    )}枚`;
-    // 追加行
-    const activeDocLengthInSheetAddLinesStr =
-      numberOfModLines > 0
-        ? `${Intl.NumberFormat().format(numberOfModLines)}行`
-        : "";
+    const numberOfSheetFloat = getLength(doc.getText()).lengthInSheet;
+    const activeDocLengthInSheetStr = formatSheetsAndLines(numberOfSheetFloat);
 
-    const activeDocLengthStr =
-      getConfig().styleOfProgress === "数字"
-        ? "$(note)" + activeDocLengthInNumberStr
-        : "$(note)" + activeDocLengthInSheetStr +
-          activeDocLengthInSheetAddLinesStr + writingProgressString;
+    function formatSheetsAndLines(sheetFloat: number): string {
+      if (sheetFloat == 0) {
+        return "0枚0行";
+      }
+      const sheetInt = Math.floor(sheetFloat);
+      const modLines = (sheetFloat - sheetInt) * 20;
 
-    if (draftRoot() == "") {
-      console.log(
-        "ファイル直接",
-        getConfig().styleOfProgress,
-        getConfig().styleOfProgress != "数字",
-        activeDocLengthStr,
-      );
-      //テキストファイルを直接開いているときの出力
-      this._statusBarItem.text = activeDocLengthStr;
-    } else if (this._countingFolder != "") {
+      // 行が0でない時だけsheetIntを増やす
+      const sheetsStr = `${Intl.NumberFormat().format(sheetInt + (modLines > 0 ? 1 : 0))}枚`;
+
+      // 行の出力は20行から0行に変更
+      const linesStr =
+        modLines > 0 ? `${Intl.NumberFormat().format(modLines)}行` : "20行";
+
+      return `${sheetsStr}${linesStr ? `${linesStr}` : ""}`;
+    }
+
+    let targetNumberStr = "";
+    if (this._countingFolder != "") {
       //締め切りフォルダーが設定されている時_countingTargetNum
-      let targetNumberTextNum = this._folderCount.amountLengthNum;
-      let targetNumberText = Intl.NumberFormat().format(targetNumberTextNum);
+      let targetNumber = this._folderCount.amountLength.lengthInNumber;
+
+      targetNumberStr = Intl.NumberFormat().format(targetNumber);
       if (this._isEditorChildOfTargetFolder) {
-        targetNumberTextNum =
-          targetNumberTextNum - savedCharacterCountNum + characterCountNum;
-        targetNumberText = Intl.NumberFormat().format(targetNumberTextNum);
+        targetNumber = targetNumber - savedCount + activeCount;
+        targetNumberStr = Intl.NumberFormat().format(targetNumber);
       }
       if (this._countingTargetNum != 0) {
-        targetNumberText += "/" + countingTarget;
+        targetNumberStr += "/" + countingTarget;
       }
-      this._statusBarItem.text = ` ${totalCharacterCount}${totalWritingProgressString}文字  $(folder-opened) ${this._folderCount.label} ${targetNumberText}文字／${activeDocLengthStr}${editDistance}`;
-    } else {
-      this._statusBarItem.text = `$(book) ${totalCharacterCount}${totalWritingProgressString}文字／${activeDocLengthStr}${editDistance}`;
+      targetNumberStr = `$(folder-opened) ${this._folderCount.label} ${targetNumberStr}`;
     }
+
+    const totalCountStr = "$(book)" + Intl.NumberFormat().format(totalCount) + "文字";
+    const totalSheetCountStr = formatSheetsAndLines(totalSheetCount);
+    const activeCountStr = "$(note)" + Intl.NumberFormat().format(activeCount) + "文字";
+    const activeCountSheetStr = formatSheetsAndLines(activeheetCount);
+
+    if (draftRoot() == "") {
+      //テキストファイルを直接開いているときの出力
+      this._statusBarItem.text =
+        activeDocLengthInNumberStr + activeDocLengthInSheetStr;
+    }
+
+    this._statusBarItem.text = `${totalSheetCountStr} ${totalCountStr}${totalWritingProgressString} ${targetNumberStr}${activeCountSheetStr}${activeCountStr}${editDistance}`;
+
     this._statusBarItem.show();
   }
 
@@ -277,45 +297,22 @@ export class CharacterCounter {
     lengthInNumber: number;
     lengthInSheet: number;
   } {
-    let docContent = doc.getText();
-    // カウントに含めない文字を削除する
-    docContent = docContent
-      .replace(/[ \t\r\f\v]/g, "") // 改行以外の空白文字
-      .replace(/《(.+?)》/g, "") // ルビ範囲指定記号とその中の文字
-      .replace(/[|｜]/g, "") // ルビ開始記号
-      .replace(/<!--(.+?)-->/, ""); // コメントアウト
-    let characterCount = 0;
-    let sheetCount = 0;
-    if (docContent !== "") {
-      characterCount = docContent.replace(/\s/g, "").length;
-      const paragraphs = docContent.split(/\r\n|\r|\n/);
-
-      // 各段落の行数を計算して合算
-      let lineCount = 0;
-      const lineLength = 20;
-      for (const [index, paragraph] of paragraphs.entries()) {
-        const paragraphLength = paragraph.length;
-        if (paragraphLength === 0 && index < paragraphs.length - 1) {
-          lineCount += 1;
-        } else {
-          lineCount += Math.ceil(paragraphLength / lineLength);
-        }
-      }
-      // 行数から原稿用紙の枚数を計算 (1枚あたり20行)
-      sheetCount = lineCount / 20;
-      // console.log("段落数", paragraphs.length, sheetCount);
-    }
-    return { lengthInNumber: characterCount, lengthInSheet: sheetCount };
+    return getLength(doc.getText());
   }
 
   public _updateProjectCharacterCount(): void {
-    projectDraftLengthObj.lengthInNumber = totalLength(draftRoot()).lengthInNumber;
-    projectDraftLengthObj.lengthInSheet = totalLength(draftRoot()).lengthInSheet;
+    projectDraftLengthObj.lengthInNumber =
+      totalLength(draftRoot()).lengthInNumber;
+    projectDraftLengthObj.lengthInSheet =
+      totalLength(draftRoot()).lengthInSheet;
     if (this._countingFolder != "") {
       //締め切りフォルダーの更新
       this._folderCount = {
         label: path.basename(this._countingFolder),
-        amountLengthNum: totalLength(this._countingFolder).lengthInNumber,
+        amountLength: {
+          lengthInNumber: totalLength(this._countingFolder).lengthInNumber,
+          lengthInSheet: totalLength(this._countingFolder).lengthInSheet,
+        },
       };
     }
     this.updateCharacterCount();
@@ -341,32 +338,35 @@ export class CharacterCounter {
     this._setIfChildOfTarget();
   }
 
-  private _lengthByPath(dirPath: string): {lengthInNumber: number, lengthInSheet: number} {
+  private _lengthByPath(dirPath: string): {
+    lengthInNumber: number;
+    lengthInSheet: number;
+  } {
     // パスを正規化する
     dirPath = dirPath.normalize("NFC"); // NFCに正規化
     if (draftRoot() == "") {
-      return {lengthInNumber: 0, lengthInSheet: 0};
+      return { lengthInNumber: 0, lengthInSheet: 0 };
     }
     const tree = new TreeModel();
-    const draftTree = tree.parse({ dir: draftRoot(), name: "root", length: {lengthInNumber:0, lengthInSheet: 0} });
+    const draftTree = tree.parse({
+      dir: draftRoot(),
+      name: "root",
+      length: { lengthInNumber: 0, lengthInSheet: 0 },
+    });
 
     resetCounter();
     draftsObject(draftRoot()).forEach((element) => {
       const draftNode = tree.parse(element);
       draftTree.addChild(draftNode);
-      console.log(element);
     });
-    const targetFileNode = draftTree.first(
-      function (node) {
-        return node.model.dir.normalize("NFC") === dirPath;
-      },
-    );
-
+    const targetFileNode = draftTree.first(function (node) {
+      return node.model.dir.normalize("NFC") === dirPath;
+    });
 
     if (targetFileNode) {
       return targetFileNode.model.length;
     } else {
-      return {lengthInNumber: 0, lengthInSheet: 0};
+      return { lengthInNumber: 0, lengthInSheet: 0 };
     }
   }
 
@@ -573,6 +573,7 @@ export class CharacterCounter {
   }
 }
 
+// MARK: コントローラー
 export class CharacterCounterController {
   private _characterCounter: CharacterCounter;
   private _disposable: Disposable;

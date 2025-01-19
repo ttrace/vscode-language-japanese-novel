@@ -253,15 +253,17 @@
           "default": true,
           "description": "Git使用時に編集距離を表示する"
         },
-        "Novel.counter.styleOfProgress": {
-          "type": "string",
-          "default": "数字",
-          "enum": [
-            "数字",
-            "原稿用紙枚数"
-          ],
-          "description": "文字数の表示形式を、数字か、400字詰め原稿用紙の枚数で指定できます"
+        "Novel.counter.displayCountOfSheet": {
+          "type": "boolean",
+          "default": true,
+          "description": "原稿の文字数を400字詰め原稿用紙枚数で表示する"
+        },
+        "Novel.counter.displayCountOfNumber": {
+          "type": "boolean",
+          "default": true,
+          "description": "原稿の文字数を表示する"
         }
+
       }
     },
     "menus": {

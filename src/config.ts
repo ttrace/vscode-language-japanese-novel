@@ -21,7 +21,8 @@ export type NovelSettings = {
   semanticHighligting: boolean;
   displayProgress: boolean;
   displayEditDistance: boolean;
-  styleOfProgress: string;
+  displayCountOfNumber: boolean;
+  displayCountOfSheet: boolean;
 };
 
 export function getConfig(): NovelSettings {
@@ -65,7 +66,14 @@ export function getConfig(): NovelSettings {
     "counter.displayEditDistance",
     true
   );
-  const styleOfProgress = config.get<string>("counter.styleOfProgress", "数字");
+  const displayCountOfNumber = config.get<boolean>(
+    "counter.displayCountOfNumber",
+    true
+  );
+  const displayCountOfSheet = config.get<boolean>(
+    "counter.displayCountOfSheet",
+    true
+  );
 
   const novelSettings: NovelSettings = {
     draftFileType,
@@ -88,7 +96,8 @@ export function getConfig(): NovelSettings {
     semanticHighligting,
     displayProgress,
     displayEditDistance,
-    styleOfProgress,
+    displayCountOfNumber,
+    displayCountOfSheet,
   };
   return novelSettings;
 }

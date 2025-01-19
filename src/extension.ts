@@ -80,8 +80,8 @@ function emptyPort(callback: any) {
   loop();
 }
 
+// MARK: NWアクティベーション
 export function activate(context: vscode.ExtensionContext): void {
-  // MARK:コマンド登録
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.compile-draft", compileDocs)
   );
@@ -374,6 +374,7 @@ export function getDraftWebViewProviderInstance(): DraftWebViewProvider {
 
 let latestEditor: vscode.TextEditor;
 
+// MARK: プレビューサーバー起動
 function launchserver(originEditor: vscode.TextEditor) {
   latestEditor = originEditor;
   console.log("サーバー起動", latestEditor);
