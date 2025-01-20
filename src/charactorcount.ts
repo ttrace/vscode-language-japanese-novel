@@ -29,6 +29,8 @@ import { getConfig } from "./config";
 import { get } from "http";
 import { escape } from "querystring";
 
+import { count } from "console";
+
 let projectDraftLengthObj = { lengthInNumber: 0, lengthInSheet: 0 };
 let countingFolderPath = "";
 let countingTarget = "";
@@ -178,17 +180,19 @@ export class CharacterCounter {
     let editDistance = "";
     let writingProgressString = "";
     //  MARK: 出力部分
-    if (this.ifEditDistance) {
+    if (this.ifEditDistance && getConfig().displayEditDistance) {
       // 増減分のプラス記号、±記号を定義
       let progressIndex = this.writingProgress > 0 ? "+" : "";
       progressIndex = this.writingProgress == 0 ? "±" : progressIndex;
 
       // 増減分のテキストを定義
+      if(getConfig().displayProgress){
       writingProgressString =
         " 進捗" +
         progressIndex +
         Intl.NumberFormat().format(this.writingProgress) +
         "文字";
+      }
       if (this.editDistance == -1) {
         editDistance = `／$(compare-changes)$(sync)文字`;
         this._updateEditDistanceDelay();
@@ -204,7 +208,7 @@ export class CharacterCounter {
     }
 
     // MARK: 進捗
-    
+
     let totalWritingProgressString = "";
     if (getConfig().displayProgress) {
       // 執筆日またぎ処理
@@ -218,9 +222,14 @@ export class CharacterCounter {
         this.totalCountPreviousDate = this.writingDate;
         this.totalCountPrevious = totalCount;
       }
-      
+
       this.totalWritingProgress = totalCount - this.totalCountPrevious;
-      console.log("進捗デバッグ",totalCount,activeCount,this.totalCountPrevious);
+      console.log(
+        "進捗デバッグ",
+        totalCount,
+        activeCount,
+        this.totalCountPrevious,
+      );
       // 総量：増減分のプラス記号、±記号を定義
       let progressTotalIndex = this.totalWritingProgress > 0 ? "+" : "";
       progressTotalIndex =
@@ -276,9 +285,10 @@ export class CharacterCounter {
       targetNumberStr = `$(folder-opened) ${this._folderCount.label} ${targetNumberStr}`;
     }
 
-    const totalCountStr = "$(book)" + Intl.NumberFormat().format(totalCount) + "文字";
+    const totalCountStr = Intl.NumberFormat().format(totalCount) + "文字";
     const totalSheetCountStr = formatSheetsAndLines(totalSheetCount);
-    const activeCountStr = "$(note)" + Intl.NumberFormat().format(activeCount) + "文字";
+    const activeCountStr =
+      "$(novel-file-v)" + Intl.NumberFormat().format(activeCount) + "文字";
     const activeCountSheetStr = formatSheetsAndLines(activeheetCount);
 
     if (draftRoot() == "") {
@@ -287,9 +297,52 @@ export class CharacterCounter {
         activeDocLengthInNumberStr + activeDocLengthInSheetStr;
     }
 
-    this._statusBarItem.text = `${totalSheetCountStr} ${totalCountStr}${totalWritingProgressString} ${targetNumberStr}${activeCountSheetStr}${activeCountStr}${editDistance}`;
-
+    this._statusBarItem.text = statusBarItem();
     this._statusBarItem.show();
+
+    function statusBarItem(): string {
+      let statusBarText = "";
+      if (draftRoot() == "") {
+        //テキストファイルを直接開いているときの出力
+        return (
+          "$(file-text)" +
+          activeDocLengthInNumberStr +
+          activeDocLengthInSheetStr
+        );
+      }
+
+      // 合計テキストの追加
+      let statusBarItemText = "$(folder-library)";
+      const showNumber = getConfig().displayCountOfNumber;
+      const showSheet = getConfig().displayCountOfSheet;
+      const showProgress = getConfig().displayProgress;
+      if (getConfig().displayCountOfSheet) {
+        statusBarItemText +=
+          totalSheetCountStr +
+          (showNumber ? `(${totalCountStr})` : "");
+      } else {
+        statusBarItemText += totalCountStr;
+      }
+      statusBarItemText += totalWritingProgressString;
+
+      // 締切フォルダーテキストの追加
+      statusBarItemText += targetNumberStr;
+
+      // アクティブテキストの追加
+      if (getConfig().displayCountOfSheet) {
+        statusBarItemText += " $(file-text)" +
+          activeCountSheetStr +
+          (showNumber ? `(${activeCountStr})` : "");
+      } else {
+        statusBarItemText += " $(file-text)" +activeCountStr;
+      }
+      statusBarItemText += writingProgressString;
+
+      // 編集距離の追加
+      statusBarItemText += editDistance;
+
+      return statusBarItemText;
+    }
   }
 
   // MARK: アクティブ文字数取得
