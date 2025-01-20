@@ -1,5 +1,13 @@
 # Changelog
 
+# 3.1.0
+
+- 文字数カウントの改善
+    - 原稿用紙カウントの表示・非表示機能追加
+    - 文字数カウントの表示・非表示機能追加
+    - 進捗の表示・非表示機能追加
+    - 編集距離の表示・非表示機能追加
+
 # 3.0.7
 
 - 原稿のファイルだけNovel形式として扱うように修正[issue76対応](https://github.com/ttrace/vscode-language-japanese-novel/issues/76)
