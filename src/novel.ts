@@ -6,6 +6,7 @@ import {
   isFileSelectedOnTree,
 } from "./extension";
 import { v4 as uuidv4 } from "uuid";
+import { getConfig } from "./config";
 
 let debugIncrement = 0;
 
@@ -187,6 +188,8 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
     webview.postMessage({
       command: "treeData",
       data: draftsObject(draftRoot()),
+      displayNumber: getConfig().displayCountOfNumber,
+      displaySheet: getConfig().displayCountOfSheet,
       draftFileType: draftFileType,
     });
   }

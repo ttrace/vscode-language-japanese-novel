@@ -9,7 +9,7 @@ import { getConfig } from "./config";
 import compileDocs, { draftRoot, ifFileInDraft } from "./compile";
 import { draftsObject, resetCounter } from "./compile"; // filelist オブジェクトもある
 import { DraftWebViewProvider } from "./novel";
-import { CharacterCounter, CharacterCounterController } from "./charactorcount";
+import { CharacterCounter, CharacterCounterController, formatSheetsAndLines } from "./charactorcount";
 export * from "./charactorcount";
 import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
 import {
@@ -220,7 +220,7 @@ export function activate(context: vscode.ExtensionContext): void {
   ) {
     characterCounter._setCounterToFolder(
       deadLineFolderPath,
-      parseInt(deadLineTextCount)
+      deadLineTextCount
     );
   }
 
@@ -239,24 +239,29 @@ export function activate(context: vscode.ExtensionContext): void {
 
       // InputBoxを呼び出す。awaitで完了を待つ。
       let result = await vscode.window.showInputBox({
-        prompt: `設定する文字数を入力してください。数字を入力せずにEnterを押すと締め切りフォルダーの設定を解除します`,
+        prompt: `設定する文字数を入力してください。原稿用紙の枚数で指定するときは、少数で入力してください（20枚の時は20.0）。\n数字を入力せずにEnterを押すと締め切りフォルダーを解除します`,
         placeHolder: `現在の文字数：${currentLength}`,
       });
       // ここで入力を処理する
       if (result) {
         try {
-          parseInt(result);
+          parseFloat(result);
           // 入力が正常に行われている
           context.workspaceState.update("deadlineFolderPath", path);
           context.workspaceState.update("deadlineTextCount", result);
           deadlineFolderPath = path;
           deadlineTextCount = result;
           console.log("saving memento", deadlineFolderPath, deadlineTextCount);
-          characterCounter._setCounterToFolder(path, parseInt(result));
-
+          let targetTextPrompt = '';
+          if(result.includes(".")){
+            targetTextPrompt = formatSheetsAndLines(parseFloat(result));
+          } else {
+            targetTextPrompt = result + '文字';
+          }
           vscode.window.showInformationMessage(
-            `目標の文字数を: ${result}文字に設定しました`
+            `目標を: ${targetTextPrompt}に設定しました`
           );
+          characterCounter._setCounterToFolder(path, deadlineTextCount);
         } catch (error) {
           vscode.window.showWarningMessage(`数字を入力してください`);
           result = "0";
@@ -264,7 +269,7 @@ export function activate(context: vscode.ExtensionContext): void {
       } else {
         // 入力がキャンセルされた
         vscode.window.showWarningMessage(`目標文字数は設定しません`);
-        characterCounter._setCounterToFolder("", 0);
+        characterCounter._setCounterToFolder("", "");
         context.workspaceState.update("deadlineFolderPath", null);
         context.workspaceState.update("deadlineTextCount", null);
         deadlineFolderPath = "";

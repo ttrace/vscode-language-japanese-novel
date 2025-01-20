@@ -53,7 +53,7 @@ export function deadLineTextCount(): string {
 export class CharacterCounter {
   private _statusBarItem!: StatusBarItem;
   private _countingFolder = "";
-  private _countingTargetNum = 0;
+  private _countingTarget = "";
   private _folderCount = {
     label: "",
     amountLength: { lengthInNumber: 0, lengthInSheet: 0 },
@@ -142,7 +142,7 @@ export class CharacterCounter {
     const docPath: string = editor.document.uri.fsPath.normalize();
     const activeCount = docLength.lengthInNumber;
     const activeheetCount = docLength.lengthInSheet;
-    const countingTarget = Intl.NumberFormat().format(this._countingTargetNum);
+    const countingTarget = this._countingTarget;
 
     let savedCount = 0;
     let savedSheetCount = 0;
@@ -186,22 +186,22 @@ export class CharacterCounter {
       progressIndex = this.writingProgress == 0 ? "±" : progressIndex;
 
       // 増減分のテキストを定義
-      if(getConfig().displayProgress){
-      writingProgressString =
-        " 進捗" +
-        progressIndex +
-        Intl.NumberFormat().format(this.writingProgress) +
-        "文字";
+      if (getConfig().displayProgress) {
+        writingProgressString =
+          " 進捗" +
+          progressIndex +
+          Intl.NumberFormat().format(this.writingProgress) +
+          "文字";
       }
       if (this.editDistance == -1) {
-        editDistance = `／$(compare-changes)$(sync)文字`;
+        editDistance = ` $(compare-changes)$(sync)文字`;
         this._updateEditDistanceDelay();
       } else if (this.keyPressFlag) {
-        editDistance = `／$(compare-changes)${Intl.NumberFormat().format(
+        editDistance = ` $(compare-changes)${Intl.NumberFormat().format(
           this.editDistance,
         )}$(sync)文字`;
       } else {
-        editDistance = `／$(compare-changes)${Intl.NumberFormat().format(
+        editDistance = ` $(compare-changes)${Intl.NumberFormat().format(
           this.editDistance,
         )}文字`;
       }
@@ -252,37 +252,29 @@ export class CharacterCounter {
     const numberOfSheetFloat = getLength(doc.getText()).lengthInSheet;
     const activeDocLengthInSheetStr = formatSheetsAndLines(numberOfSheetFloat);
 
-    function formatSheetsAndLines(sheetFloat: number): string {
-      if (sheetFloat == 0) {
-        return "0枚0行";
-      }
-      const sheetInt = Math.floor(sheetFloat);
-      const modLines = (sheetFloat - sheetInt) * 20;
-
-      // 行が0でない時だけsheetIntを増やす
-      const sheetsStr = `${Intl.NumberFormat().format(sheetInt + (modLines > 0 ? 1 : 0))}枚`;
-
-      // 行の出力は20行から0行に変更
-      const linesStr =
-        modLines > 0 ? `${Intl.NumberFormat().format(modLines)}行` : "20行";
-
-      return `${sheetsStr}${linesStr ? `${linesStr}` : ""}`;
-    }
-
     let targetNumberStr = "";
-    if (this._countingFolder != "") {
-      //締め切りフォルダーが設定されている時_countingTargetNum
-      let targetNumber = this._folderCount.amountLength.lengthInNumber;
 
-      targetNumberStr = Intl.NumberFormat().format(targetNumber);
+    if (this._countingFolder != "") {
+      //締め切りフォルダーが設定されている時
+      const isDeadLineInNumber = this._countingTarget.includes(".")
+        ? false
+        : true;
+      let targetNumber = isDeadLineInNumber
+        ? this._folderCount.amountLength.lengthInNumber
+        : this._folderCount.amountLength.lengthInSheet;
+
+      targetNumberStr = isDeadLineInNumber
+      ? Intl.NumberFormat().format(parseInt(countingTarget)) + "文字" + "中"
+      : formatSheetsAndLines(parseFloat(countingTarget)) + "中";
+
       if (this._isEditorChildOfTargetFolder) {
         targetNumber = targetNumber - savedCount + activeCount;
-        targetNumberStr = Intl.NumberFormat().format(targetNumber);
       }
-      if (this._countingTargetNum != 0) {
-        targetNumberStr += "/" + countingTarget;
-      }
-      targetNumberStr = `$(folder-opened) ${this._folderCount.label} ${targetNumberStr}`;
+      targetNumberStr += isDeadLineInNumber
+        ? Intl.NumberFormat().format(targetNumber) + "文字"
+        : formatSheetsAndLines(targetNumber);
+      
+      targetNumberStr = ` $(folder-opened)${this._folderCount.label} ${targetNumberStr}`;
     }
 
     const totalCountStr = Intl.NumberFormat().format(totalCount) + "文字";
@@ -318,8 +310,7 @@ export class CharacterCounter {
       const showProgress = getConfig().displayProgress;
       if (getConfig().displayCountOfSheet) {
         statusBarItemText +=
-          totalSheetCountStr +
-          (showNumber ? `(${totalCountStr})` : "");
+          totalSheetCountStr + (showNumber ? `(${totalCountStr})` : "");
       } else {
         statusBarItemText += totalCountStr;
       }
@@ -330,11 +321,12 @@ export class CharacterCounter {
 
       // アクティブテキストの追加
       if (getConfig().displayCountOfSheet) {
-        statusBarItemText += " $(file-text)" +
+        statusBarItemText +=
+          " $(file-text)" +
           activeCountSheetStr +
           (showNumber ? `(${activeCountStr})` : "");
       } else {
-        statusBarItemText += " $(file-text)" +activeCountStr;
+        statusBarItemText += " $(file-text)" + activeCountStr;
       }
       statusBarItemText += writingProgressString;
 
@@ -373,20 +365,20 @@ export class CharacterCounter {
 
   public _setCounterToFolder(
     pathToFolder: string,
-    targetCharacter: number,
+    targetCharacter: string,
   ): void {
     if (!fs.existsSync(pathToFolder)) {
       this._countingFolder = "";
-      this._countingTargetNum = 0;
+      this._countingTarget = "";
       countingFolderPath = "";
       this._updateProjectCharacterCount();
       this._setIfChildOfTarget();
       return;
     }
     countingFolderPath = pathToFolder;
-    countingTarget = Intl.NumberFormat().format(targetCharacter);
+    countingTarget = targetCharacter;
     this._countingFolder = pathToFolder;
-    this._countingTargetNum = targetCharacter;
+    this._countingTarget = targetCharacter;
     this._updateProjectCharacterCount();
     this._setIfChildOfTarget();
   }
@@ -624,6 +616,23 @@ export class CharacterCounter {
   public dispose(): void {
     this._statusBarItem.dispose();
   }
+}
+
+export function formatSheetsAndLines(sheetFloat: number): string {
+  if (sheetFloat == 0) {
+    return "0枚0行";
+  }
+  const sheetInt = Math.floor(sheetFloat);
+  const modLines = (sheetFloat - sheetInt) * 20;
+
+  // 行が0でない時だけsheetIntを増やす
+  const sheetsStr = `${Intl.NumberFormat().format(sheetInt + (modLines > 0 ? 1 : 0))}枚`;
+
+  // 行の出力は20行から0行に変更
+  const linesStr =
+    modLines > 0 ? `${Intl.NumberFormat().format(modLines)}行` : "20行";
+
+  return `${sheetsStr}${linesStr ? `${linesStr}` : ""}`;
 }
 
 // MARK: コントローラー

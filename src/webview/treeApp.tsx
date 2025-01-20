@@ -33,10 +33,12 @@ let isDraggingGlobal = false;
 // MARK: App
 export const App: React.FC = () => {
   const [treeData, setTreeData] = useState<TreeFileNode[]>([]);
+  const [displayNumber, setDisplayNumber] = useState(false);
+  const [displaySheet, setDisplaySheet] = useState(false);
   const [isOrdable, setIsOrdable] = useState(false);
   const [highlightedNode, setHighlightedNode] = useState<string | null>(null);
   const [insertingNode, setInsertingNode] = useState<"file" | "folder" | null>(
-    null
+    null,
   );
   const [isInserting, setIsInserting] = useState(false);
   const [draftFileType, setDraftFileType] = useState<".txt" | ".md">(".txt");
@@ -52,6 +54,8 @@ export const App: React.FC = () => {
       switch (message.command) {
         case "treeData":
           setTreeData(message.data); // データセット
+          setDisplayNumber(message.displayNumber);
+          setDisplaySheet(message.displaySheet);
           setDraftFileType(message.draftFileType);
           // vscode.postMessage({ command: "loadIsOrdable" });
           break;
@@ -92,6 +96,8 @@ export const App: React.FC = () => {
                 highlightedNode={highlightedNode}
                 onHighlight={setHighlightedNode}
                 isFirstSibling={index === 0}
+                displayNumber={displayNumber}
+                displaySheet={displaySheet}
                 isOrdable={isOrdable}
                 isInserting={isInserting}
                 setIsInserting={setIsInserting}
@@ -111,6 +117,8 @@ interface TreeViewProps {
   highlightedNode: string | null;
   onHighlight: (nodeDir: string) => void;
   isFirstSibling: boolean;
+  displayNumber: boolean;
+  displaySheet: boolean;
   isOrdable: boolean;
   insertingNode: "file" | "folder" | null;
   setIsInserting: any;
@@ -124,6 +132,8 @@ const TreeView: React.FC<TreeViewProps> = ({
   highlightedNode,
   onHighlight,
   isFirstSibling,
+  displayNumber,
+  displaySheet,
   isOrdable,
   insertingNode,
   setIsInserting,
@@ -157,7 +167,7 @@ const TreeView: React.FC<TreeViewProps> = ({
           const digit = match[0].length;
           const fileNumber = String(parseInt(match[0], 10) + 1).padStart(
             digit,
-            "0"
+            "0",
           );
 
           insertingNodeName =
@@ -273,7 +283,7 @@ const TreeView: React.FC<TreeViewProps> = ({
         isDraggingGlobal = false;
       },
     },
-    [node]
+    [node],
   );
 
   const [, dropBefore] = useDrop(
@@ -288,7 +298,7 @@ const TreeView: React.FC<TreeViewProps> = ({
         canDropBefore: monitor.canDrop(),
       }),
     },
-    [node]
+    [node],
   );
 
   const [, dropInside] = useDrop(
@@ -303,7 +313,7 @@ const TreeView: React.FC<TreeViewProps> = ({
         canDropInside: monitor.canDrop(),
       }),
     },
-    [node]
+    [node],
   );
 
   const [, dropAfter] = useDrop(
@@ -318,7 +328,7 @@ const TreeView: React.FC<TreeViewProps> = ({
         canDropAfter: monitor.canDrop(),
       }),
     },
-    [node]
+    [node],
   );
 
   // MARK: リネーム処理
@@ -436,7 +446,9 @@ const TreeView: React.FC<TreeViewProps> = ({
       onKeyDown={handleKeyDown}
     >
       <div
-        ref={isOrdable ? (drag as unknown as React.Ref<HTMLDivElement>) : undefined}
+        ref={
+          isOrdable ? (drag as unknown as React.Ref<HTMLDivElement>) : undefined
+        }
         onDragStart={isOrdable ? handleDragStart : undefined}
         onDragEnd={isOrdable ? handleDragEnd : undefined}
         className={`tree-node ${expanded ? "expanded" : ""} ${
@@ -471,7 +483,7 @@ const TreeView: React.FC<TreeViewProps> = ({
                     isOrdable
                       ? editValue.replace(
                           /^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/,
-                          "$1"
+                          "$1",
                         )
                       : editValue
                   }
@@ -491,12 +503,19 @@ const TreeView: React.FC<TreeViewProps> = ({
               {isOrdable
                 ? node.name.replace(
                     /^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/,
-                    "$1"
+                    "$1",
                   )
                 : node.name}
             </span>
           )}
-          <span className="chars">{node.length.lengthInNumber.toLocaleString()}文字</span>
+          <span className="chars">
+            {displaySheet
+              ? formatSheetsAndLines(node.length.lengthInSheet) + (
+                displayNumber ?
+                "(" + node.length.lengthInNumber.toLocaleString() +
+                "文字)" : "")
+              : displayNumber ? node.length.lengthInNumber.toLocaleString() + "文字" : ""}
+          </span>
         </div>
         {node.children && (
           <div className="tree-node-children">
@@ -507,6 +526,8 @@ const TreeView: React.FC<TreeViewProps> = ({
                 highlightedNode={highlightedNode}
                 onHighlight={onHighlight}
                 isFirstSibling={index === 0}
+                displayNumber={displayNumber}
+                displaySheet={displaySheet}
                 isOrdable={isOrdable}
                 isInserting={isInserting}
                 setIsInserting={setIsInserting}
@@ -563,6 +584,25 @@ const TreeView: React.FC<TreeViewProps> = ({
     </div>
   );
 };
+
+// MARK: ユーティリティ関数
+// charactorcount.ts からコピー
+function formatSheetsAndLines(sheetFloat: number): string {
+  if (sheetFloat == 0) {
+    return "0枚0行";
+  }
+  const sheetInt = Math.floor(sheetFloat);
+  const modLines = (sheetFloat - sheetInt) * 20;
+
+  // 行が0でない時だけsheetIntを増やす
+  const sheetsStr = `${Intl.NumberFormat().format(sheetInt + (modLines > 0 ? 1 : 0))}枚`;
+
+  // 行の出力は20行から0行に変更
+  const linesStr =
+    modLines > 0 ? `${Intl.NumberFormat().format(modLines)}行` : "20行";
+
+  return `${sheetsStr}${linesStr ? `${linesStr}` : ""}`;
+}
 
 // root.render を呼び出す
 const root = ReactDOM.createRoot(document.getElementById("root")!);
