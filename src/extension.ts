@@ -239,7 +239,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
       // InputBoxを呼び出す。awaitで完了を待つ。
       let result = await vscode.window.showInputBox({
-        prompt: `設定する文字数を入力してください。原稿用紙の枚数で指定するときは、少数で入力してください（20枚の時は20.0）。\n数字を入力せずにEnterを押すと締め切りフォルダーを解除します`,
+        prompt: `設定する文字数を入力してください。原稿用紙の枚数で指定するときは、小数で入力してください（20枚の時は20.0）。\n数字を入力せずにEnterを押すと締め切りフォルダーを解除します`,
         placeHolder: `現在の文字数：${currentLength}`,
       });
       // ここで入力を処理する
