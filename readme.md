@@ -198,11 +198,7 @@ Contributed by [yasudaz](https://github.com/yasudaz)](https://github.com/yasudaz
 
 ## PDF Features
 
-novel-writerは[Vivliostyle/CLI](https://vivliostyle.org/ja/)を用いて、選択しているテキストファイルのA5変型版（130mm×190mm）の縦書きPDFを出力します。以下のコマンドをでVivlioStyleをインストールしてからPDF出力を実行してください。
-
-```
-npm install @vivliostyle/cli -g
-```
+novel-writerは[Vivliostyle/CLI](https://vivliostyle.org/ja/)を用いて、選択しているテキストファイルのA5変型版（130mm×190mm）の縦書きPDFを出力します。
 
 1行が短く、ページあたりの行数が長い場合には段組で印刷します。
 
