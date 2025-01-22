@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -16,7 +16,7 @@
     "@types/react": "^19.0.7",
     "@types/react-dnd": "^3.0.2",
     "@types/react-dom": "^19.0.3",
-    "@vivliostyle/cli": "^8.17.2",
+    "@vivliostyle/cli": "^8.18.0",
     "fastest-levenshtein": "^1.0.16",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
@@ -27,6 +27,7 @@
     "react-dom": "^19.0.0",
     "simple-git": "^3.27.0",
     "tree-model": "^1.0.7",
+    "uuid": "^11.0.5",
     "ws": "^8.18.0"
   },
   "scripts": {
@@ -118,7 +119,6 @@
         "command": "draftTree.insertFolderDim",
         "title": "空のフォルダーを挿入",
         "icon": "resource/add-folder-dim.svg"
-      
       },
       {
         "command": "draftTree.activateDragAndDrop",
@@ -148,7 +148,9 @@
     "languages": [
       {
         "id": "novel",
-        "aliases": ["Novel"],
+        "aliases": [
+          "Novel"
+        ],
         "configuration": "./novel.language-configuration.json"
       }
     ],
@@ -263,7 +265,6 @@
           "default": true,
           "description": "原稿の文字数を表示する"
         }
-
       }
     },
     "menus": {
@@ -766,6 +767,7 @@
     "@types/ps-tree": "^1.1.6",
     "@types/sinon": "^17.0.3",
     "@types/text-encoding": "^0.0.40",
+    "@types/uuid": "^10.0.0",
     "@types/vscode": "^1.96.0",
     "@types/webpack-env": "^1.18.5",
     "@types/ws": "^8.5.13",

@@ -25,7 +25,7 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
     const folderUri = vscode.workspace.workspaceFolders[0].uri;
     const myPath = vscode.Uri.joinPath(folderUri, "publish.html");
     const myWorkingDirectory = folderUri;
-    const vivlioCommand = "vivliostyle";
+    const vivlioCommand = "npx @vivliostyle/cli";
     const vivlioSubCommand = preview ? "preview" : "build";
     const execPath = draftRoot().match(/^[a-z]:\\/)
       ? myPath.path.replace(/^\//, "")
@@ -48,7 +48,7 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
     }
     const vivlioExportPath = !preview
       ? path.normalize(
-          vscode.Uri.joinPath(myWorkingDirectory, `${fileName}.pdf`).fsPath
+          vscode.Uri.joinPath(myWorkingDirectory, `${fileName}.pdf`).fsPath,
         )
       : "";
 
@@ -69,14 +69,14 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
     if (!preview) {
       // PDF保存
       vscode.window.showInformationMessage(
-        `Vivliostyle起動中……\n初回起動には少々時間がかかります`
+        `Vivliostyle起動中……\n初回起動には少々時間がかかります`,
       );
       cp.exec(
         `${vivlioCommand} ${vivlioSubCommand} ${execPath} ${vivlioExportOption} "${vivlioExportPath}"`,
         (err, stdout, stderr) => {
           if (err) {
             output.appendLine(
-              `VivlioStyleの処理でエラーが発生しました: ${err.message}`
+              `VivlioStyleの処理でエラーが発生しました: ${err.message}`,
             );
             return;
           }
@@ -91,11 +91,11 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
             output.appendLine("PDFの保存が終わりました");
           }
           vscode.window.showInformationMessage(`PDFの保存が終わりました`);
-        }
+        },
       );
     } else {
       vscode.window.showInformationMessage(
-        `プレビュー起動中……\n初回起動には少々時間がかかります`
+        `プレビュー起動中……\n初回起動には少々時間がかかります`,
       );
 
       if (vivlioProcess == null) {
@@ -115,7 +115,7 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
 }
 
 function launchVivlioStylePreview(path: string) {
-  vivlioProcess = cp.exec(`vivliostyle preview "${path}"`);
+  vivlioProcess = cp.exec(`npx @vivliostyle/cli preview --http "${path}"`);
 
   if (vivlioProcess.stdout !== null) {
     vivlioProcess.stdout.on("data", (data) => {
@@ -133,7 +133,7 @@ function launchVivlioStylePreview(path: string) {
 
   vivlioProcess.on("error", (err) => {
     output.appendLine(
-      `VivlioStyleの処理でエラーが発生しました: ${err.message}`
+      `VivlioStyleの処理でエラーが発生しました: ${err.message}`,
     );
   });
 
@@ -150,7 +150,7 @@ async function getPrintContent(): Promise<string> {
 
   const myText = editorText("active").replace(
     /<span id="cursor">(.*?)<\/span>/g,
-    "$1"
+    "$1",
   );
   const previewSettings: NovelSettings = getConfig();
   const writingDirection = previewSettings.writingDirection;
@@ -178,7 +178,7 @@ async function getPrintContent(): Promise<string> {
   const projectTitle = vscode.workspace.workspaceFolders![0].name;
   const typeSettingHeight = fontSize * previewSettings.lineLength;
   const columnCount = Math.floor(
-    printBoxInlineLength / (typeSettingHeight + fontSize * 2)
+    printBoxInlineLength / (typeSettingHeight + fontSize * 2),
   );
   const pageStartingCss =
     previewSettings.pageStarting == "左"
@@ -186,7 +186,7 @@ async function getPrintContent(): Promise<string> {
       : "break-before: right;\n";
   console.log(
     "column",
-    `${printBoxInlineLength} / (${typeSettingHeight} + ${fontSize} * 2)`
+    `${printBoxInlineLength} / (${typeSettingHeight} + ${fontSize} * 2)`,
   );
   const originPageNumber = previewSettings.originPageNumber;
 
@@ -207,7 +207,7 @@ async function getPrintContent(): Promise<string> {
       previewSettings.numberFormatR
         .replace(/\${pageNumber}/, "counter(page)")
         .replace(/(.*)counter\(page\)(.*)/, '"$1"counter(page)"$2"') +
-      ";`"
+      ";`",
   );
   // const pageNumberFormatL = eval(
   //   "`" +
@@ -323,7 +323,7 @@ async function getPrintContent(): Promise<string> {
         font-weight: Extrabold;
         font-size: calc(${fontSizeWithUnit} * 1.6);
         /* 字下げ */
-        text-indent: calc(${fontSizeWithUnit} * 1 * ${previewSettings.writingDirection == 'horizontal-tb' ? 0 : 1});
+        text-indent: calc(${fontSizeWithUnit} * 1 * ${previewSettings.writingDirection == "horizontal-tb" ? 0 : 1});
         /* 直後の改ページ・改段禁止 */
       }
 
@@ -336,7 +336,7 @@ async function getPrintContent(): Promise<string> {
         font-weight: demi-bold;
         font-size: calc(${fontSizeWithUnit} * 1.2);
         /* 字下げ */
-        text-indent: calc(${fontSizeWithUnit} * 1 * ${previewSettings.writingDirection == 'horizontal-tb' ? 0 : 1});
+        text-indent: calc(${fontSizeWithUnit} * 1 * ${previewSettings.writingDirection == "horizontal-tb" ? 0 : 1});
         /* 直後の改ページ・改段禁止 */
         page-break-after:avoid;
       }
@@ -350,7 +350,7 @@ async function getPrintContent(): Promise<string> {
         font-weight: demi-bold;
         font-size: calc(${fontSizeWithUnit} * 1);
         /* 字下げ */
-        text-indent: calc(${fontSizeWithUnit} * 1 * ${previewSettings.writingDirection == 'horizontal-tb' ? 0 : 1});
+        text-indent: calc(${fontSizeWithUnit} * 1 * ${previewSettings.writingDirection == "horizontal-tb" ? 0 : 1});
         /* 直後の改ページ・改段禁止 */
         page-break-after:avoid;
       }
@@ -379,14 +379,14 @@ async function getPrintContent(): Promise<string> {
 
     div.indent-1 p:first-of-type, div.indent-2 p:first-of-type, div.indent-3 p:first-of-type{
       padding-block-start: calc( ${fontSizeWithUnit} * ${
-    previewSettings.lineHeightRate
-  });
+        previewSettings.lineHeightRate
+      });
       }
 
       div.indent-1 p:last-of-type, div.indent-2 p:last-of-type, div.indent-3 p:last-of-type{
       padding-block-end: calc( ${fontSizeWithUnit} * ${
-    previewSettings.lineHeightRate
-  });
+        previewSettings.lineHeightRate
+      });
       }
 
     
@@ -583,7 +583,7 @@ async function getPrintContent(): Promise<string> {
 
 function evaluateTemplate(
   template: string,
-  variables: Record<string, string>
+  variables: Record<string, string>,
 ): string {
   return template.replace(/\$\{(.*?)\}/g, (_, v) => variables[v] ?? "");
 }
