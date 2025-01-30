@@ -941,22 +941,25 @@ export async function moveWordBackward() {
   const tokens = kuromoji.tokenize(lineString);
   const bunsetsus = chunkBunsetsu(tokens);
 
-  const result = getCurrentBunsetsu(bunsetsus, selection);
+  const result = getSelectedBunsetsuRange(bunsetsus, selection);
   if (!result) return;
 
-  const { currentBunsetsu, bunsetsuIndex } = result;
+  const { selectedBunsetsus, startIndex } = result;
 
-  if (bunsetsuIndex > 0) {
-    const previousChunk = bunsetsus[bunsetsuIndex - 1];
+  if (startIndex > 0) {
+    const previousChunk = bunsetsus[startIndex - 1];
     const cursorOffset =
       selection.start.character -
-      (currentBunsetsu.bunsetsu[0].word_position - 1);
+      (selectedBunsetsus[0].bunsetsu[0].word_position - 1);
 
     swapChunks(
       editor,
       selection.start.line,
       previousChunk,
-      currentBunsetsu,
+      { 
+        bunsetsu: selectedBunsetsus.flatMap(b => b.bunsetsu), 
+        length: selectedBunsetsus.reduce((sum, b) => sum + b.length, 0) 
+      },
       cursorOffset,
       false,
     );
@@ -978,21 +981,24 @@ export async function moveWordForward() {
   const tokens = kuromoji.tokenize(lineString);
   const bunsetsus = chunkBunsetsu(tokens);
 
-  const result = getCurrentBunsetsu(bunsetsus, selection);
+  const result = getSelectedBunsetsuRange(bunsetsus, selection);
   if (!result) return;
 
-  const { currentBunsetsu, bunsetsuIndex } = result;
+  const { selectedBunsetsus, endIndex } = result;
 
-  if (bunsetsuIndex < bunsetsus.length - 1) {
-    const nextChunk = bunsetsus[bunsetsuIndex + 1];
+  if (endIndex < bunsetsus.length - 1) {
+    const nextChunk = bunsetsus[endIndex + 1];
     const cursorOffset =
       selection.start.character -
-      (currentBunsetsu.bunsetsu[0].word_position - 1);
+      (selectedBunsetsus[0].bunsetsu[0].word_position - 1);
 
     swapChunks(
       editor,
       selection.start.line,
-      currentBunsetsu,
+      {
+        bunsetsu: selectedBunsetsus.flatMap(b => b.bunsetsu),
+        length: selectedBunsetsus.reduce((sum, b) => sum + b.length, 0)
+      },
       nextChunk,
       cursorOffset,
       true,
@@ -1000,24 +1006,42 @@ export async function moveWordForward() {
   }
 }
 
-function getCurrentBunsetsu(
+function getSelectedBunsetsuRange(
   bunsetsus: { bunsetsu: IpadicFeatures[]; length: number }[],
   selection: vscode.Selection,
 ): {
-  currentBunsetsu: { bunsetsu: IpadicFeatures[]; length: number };
-  bunsetsuIndex: number;
+  selectedBunsetsus: { bunsetsu: IpadicFeatures[]; length: number }[];
+  startIndex: number;
+  endIndex: number;
 } | null {
+  let startIndex = -1;
+  let endIndex = -1;
+  const selectedBunsetsus: { bunsetsu: IpadicFeatures[]; length: number }[] = [];
+
   for (let i = 0; i < bunsetsus.length; i++) {
     const bunsetsuStart = bunsetsus[i].bunsetsu[0].word_position - 1;
     const bunsetsuEnd = bunsetsuStart + bunsetsus[i].length;
 
     if (
-      selection.start.character >= bunsetsuStart &&
-      selection.start.character < bunsetsuEnd
+      selection.start.character <= bunsetsuEnd &&
+      selection.end.character >= bunsetsuStart
     ) {
-      return { currentBunsetsu: bunsetsus[i], bunsetsuIndex: i };
+      if (startIndex === -1) {
+        startIndex = i;
+      }
+      endIndex = i;
+      selectedBunsetsus.push(bunsetsus[i]);
     }
   }
+
+  if (selectedBunsetsus.length > 0 && startIndex !== -1 && endIndex !== -1) {
+    return {
+      selectedBunsetsus,
+      startIndex,
+      endIndex,
+    };
+  }
+
   return null;
 }
 
