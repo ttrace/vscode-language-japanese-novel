@@ -892,7 +892,40 @@ function changeText(range: vscode.Range, text: string) {
   });
 }
 
-// カーソルのある単語を移動させる
+// 文節のグループ化処理
+function chunkBunsetsu(
+  tokens: IpadicFeatures[],
+): { bunsetsu: IpadicFeatures[]; length: number }[] {
+  const bunsetsuList: { bunsetsu: IpadicFeatures[]; length: number }[] = [];
+  let currentBunsetsu: IpadicFeatures[] = [];
+  let currentLength = 0;
+
+  tokens.forEach((token) => {
+    // 名詞、動詞、形容詞、副詞で新しい文節を始める判断をする
+    if (currentBunsetsu.length === 0 || isNewBunsetsuStart(token)) {
+      if (currentBunsetsu.length > 0) {
+        bunsetsuList.push({ bunsetsu: currentBunsetsu, length: currentLength });
+      }
+      currentBunsetsu = [token];
+      currentLength = token.surface_form.length;
+    } else {
+      currentBunsetsu.push(token);
+      currentLength += token.surface_form.length;
+    }
+  });
+
+  if (currentBunsetsu.length > 0) {
+    bunsetsuList.push({ bunsetsu: currentBunsetsu, length: currentLength });
+  }
+
+  return bunsetsuList;
+}
+
+function isNewBunsetsuStart(token: IpadicFeatures): boolean {
+  const startPos = ["名詞", "動詞", "形容詞", "副詞"];
+  return startPos.includes(token.pos);
+}
+
 // カレント文節を前に移動する関数
 export async function moveWordBackward() {
   const editor = vscode.window.activeTextEditor;
@@ -904,25 +937,28 @@ export async function moveWordBackward() {
 
   if (!selection.isSingleLine || !lineString) return;
 
-  const result = await getCurrentToken(lineString, selection);
-  if (!result) return;
-
   const kuromoji = await tokenizer();
   const tokens = kuromoji.tokenize(lineString);
-  const { currentToken, tokenIndex } = result;
+  const bunsetsus = chunkBunsetsu(tokens);
 
-  if (tokenIndex > 0) {
-    const previousToken = tokens[tokenIndex - 1]
+  const result = getCurrentBunsetsu(bunsetsus, selection);
+  if (!result) return;
+
+  const { currentBunsetsu, bunsetsuIndex } = result;
+
+  if (bunsetsuIndex > 0) {
+    const previousChunk = bunsetsus[bunsetsuIndex - 1];
     const cursorOffset =
-      selection.start.character - (currentToken.word_position - 1);
-    const isForward = false;
-    swapWords(
+      selection.start.character -
+      (currentBunsetsu.bunsetsu[0].word_position - 1);
+
+    swapChunks(
       editor,
       selection.start.line,
-      previousToken,
-      currentToken,
+      previousChunk,
+      currentBunsetsu,
       cursorOffset,
-      isForward,
+      false,
     );
   }
 }
@@ -938,100 +974,137 @@ export async function moveWordForward() {
 
   if (!selection.isSingleLine || !lineString) return;
 
-  const result = await getCurrentToken(lineString, selection);
-  if (!result) return;
-
   const kuromoji = await tokenizer();
   const tokens = kuromoji.tokenize(lineString);
-  const { currentToken, tokenIndex } = result;
+  const bunsetsus = chunkBunsetsu(tokens);
 
-  if (tokenIndex < tokens.length - 1) {
-    const nextToken = tokens[tokenIndex + 1];
+  const result = getCurrentBunsetsu(bunsetsus, selection);
+  if (!result) return;
+
+  const { currentBunsetsu, bunsetsuIndex } = result;
+
+  if (bunsetsuIndex < bunsetsus.length - 1) {
+    const nextChunk = bunsetsus[bunsetsuIndex + 1];
     const cursorOffset =
-      selection.start.character - (currentToken.word_position - 1);
-    const isForward = true;
-    swapWords(
+      selection.start.character -
+      (currentBunsetsu.bunsetsu[0].word_position - 1);
+
+    swapChunks(
       editor,
       selection.start.line,
-      currentToken,
-      nextToken,
+      currentBunsetsu,
+      nextChunk,
       cursorOffset,
-      isForward,
+      true,
     );
   }
 }
 
-// カーソル位置に基づいて `currentToken` を決定する関数
-async function getCurrentToken(
-  lineString: string,
+function getCurrentBunsetsu(
+  bunsetsus: { bunsetsu: IpadicFeatures[]; length: number }[],
   selection: vscode.Selection,
-): Promise<{ currentToken: IpadicFeatures; tokenIndex: number } | null> {
-  const kuromoji = await tokenizer();
-  const tokens = kuromoji.tokenize(lineString);
+): {
+  currentBunsetsu: { bunsetsu: IpadicFeatures[]; length: number };
+  bunsetsuIndex: number;
+} | null {
+  for (let i = 0; i < bunsetsus.length; i++) {
+    const bunsetsuStart = bunsetsus[i].bunsetsu[0].word_position - 1;
+    const bunsetsuEnd = bunsetsuStart + bunsetsus[i].length;
 
-  const currentTokenIndex = tokens.findIndex(
-    (token) =>
-      selection.start.character <
-      token.word_position + token.surface_form.length,
-  );
-
-  if (currentTokenIndex === -1) return null;
-
-  let currentToken;
-  if (
-    currentTokenIndex > 0 &&
-    selection.start.character === tokens[currentTokenIndex].word_position - 1
-  ) {
-    currentToken = tokens[currentTokenIndex - 1];
-    return { currentToken, tokenIndex: currentTokenIndex - 1 };
-  } else {
-    currentToken = tokens[currentTokenIndex];
-    return { currentToken, tokenIndex: currentTokenIndex };
+    if (
+      selection.start.character >= bunsetsuStart &&
+      selection.start.character < bunsetsuEnd
+    ) {
+      return { currentBunsetsu: bunsetsus[i], bunsetsuIndex: i };
+    }
   }
+  return null;
 }
 
-// swapWords 関数の調整
-async function swapWords(
+// 文節入れ替え
+// swapChunks 関数
+async function swapChunks(
   editor: vscode.TextEditor,
   line: number,
-  firstToken: IpadicFeatures,
-  secondToken: IpadicFeatures,
+  firstChunk: { bunsetsu: IpadicFeatures[]; length: number },
+  secondChunk: { bunsetsu: IpadicFeatures[]; length: number },
   cursorOffset: number,
   isForward: boolean,
 ) {
-  // トークンの入れ替え範囲
   const replaceRange = new vscode.Range(
-    new vscode.Position(line, firstToken.word_position - 1),
+    new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1),
     new vscode.Position(
       line,
-      secondToken.word_position - 1 + secondToken.surface_form.length,
+      secondChunk.bunsetsu[0].word_position - 1 + secondChunk.length,
     ),
   );
+  const highLightRange = isForward
+    ? new vscode.Range(
+        new vscode.Position(
+          line,
+          (firstChunk.bunsetsu[0].word_position -1) + secondChunk.length,
+        ),
+        new vscode.Position(
+          line,
+          (firstChunk.bunsetsu[0].word_position -1) + secondChunk.length + firstChunk.length,
+        ),
+      )
+    : new vscode.Range(
+        new vscode.Position(line, (firstChunk.bunsetsu[0].word_position -1)),
+        new vscode.Position(
+          line,
+          (firstChunk.bunsetsu[0].word_position -1) + secondChunk.length,
+        ),
+      );
 
-  // トークンを入れ替えます
-  const newLineText = `${secondToken.surface_form}${firstToken.surface_form}`;
+  // トークンを入れ替えた後の新しい行のテキスト
+  const firstSurface = firstChunk.bunsetsu
+    .map((token) => token.surface_form)
+    .join("");
+  const secondSurface = secondChunk.bunsetsu
+    .map((token) => token.surface_form)
+    .join("");
+  const newLineText = `${secondSurface}${firstSurface}`;
 
   await editor.edit((editBuilder) => {
     editBuilder.replace(replaceRange, newLineText);
+    highlightSwap(editor, highLightRange);
   });
 
   // トークン入れ替え後のカーソル位置を計算
   let newCursorPosition;
   if (isForward) {
-    // secondToken の開始位置に現在の cursorOffset を足して計算
     newCursorPosition = new vscode.Position(
       line,
-      ( (firstToken.word_position - 1) + secondToken.surface_form.length ) + cursorOffset,
+      firstChunk.bunsetsu[0].word_position -
+        1 +
+        secondChunk.length +
+        cursorOffset,
     );
   } else {
-    // firstToken の終了位置から surface_form の長さを引いた場所に cursorOffset を足して計算
     newCursorPosition = new vscode.Position(
       line,
-      (firstToken.word_position - 1) +
-        cursorOffset,
+      firstChunk.bunsetsu[0].word_position - 1 + cursorOffset,
     );
   }
 
-  // 新しいカーソル位置に移動
   editor.selection = new vscode.Selection(newCursorPosition, newCursorPosition);
+}
+
+function highlightSwap(editor: vscode.TextEditor, range: vscode.Range) {
+  const highlightDuration = 350; // ハイライト時間 (ミリ秒)
+  const decorationType = vscode.window.createTextEditorDecorationType({
+    // backgroundColor: "rgba(255, 223, 186, 0.2)", // ハイライト色 (半透明)
+    borderColor: "rgba(68, 130, 140, 0.5)", // ハイライト色 (半透明)
+    borderWidth: "1px", // ハイライトの境界線
+    borderStyle: "solid", // ハイライトの境界線のスタイル
+  });
+
+  // 選択されたテキストにデコレーションを適用
+  editor.setDecorations(decorationType, [range]);
+
+  // タイマーをセットしてデコレーションを削除
+  setTimeout(() => {
+    decorationType.dispose();
+  }, highlightDuration);
 }
