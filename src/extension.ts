@@ -17,6 +17,8 @@ import {
   changeTenseAspect,
   addRuby,
   addSesami,
+  moveWordForward,
+  moveWordBackward
 } from "./tokenize";
 import { exportpdf, previewpdf } from "./pdf";
 import { MarkdownFoldingProvider } from "./markdown";
@@ -117,6 +119,14 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand("Novel.add-sesami", addSesami)
   );
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand("Novel.word-transpose-forward", moveWordForward)
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("Novel.word-transpose-backward", moveWordBackward)
+  );
+  
   // MARK: 原稿ツリー
   draftWebViewProviderInstance = new DraftWebViewProvider(context);
 

@@ -71,6 +71,14 @@
         "title": "Novel:圏点挿入"
       },
       {
+        "command": "Novel.word-transpose-forward",
+        "title": "Novel:文節を後ろに"
+      },
+      {
+        "command": "Novel.word-transpose-backward",
+        "title": "Novel:文節を前に"
+      },
+      {
         "command": "Novel.launch-preview-server",
         "title": "Novel:プレビューサーバー起動"
       },
