@@ -1033,8 +1033,14 @@ function getSelectedBunsetsuRange(
         }
         endIndex = i;
         selectedBunsetsus.push(bunsetsus[i]);
-      }
+      } 
     }
+    if (selection.start.character === bunsetsuStart && selectedBunsetsus.length === 0) {
+      startIndex = i;
+      endIndex = i;
+      selectedBunsetsus.push(bunsetsus[i]);
+    }
+    
   }
 
   if (selectedBunsetsus.length > 0 && startIndex !== -1 && endIndex !== -1) {
