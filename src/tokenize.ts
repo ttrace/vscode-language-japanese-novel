@@ -892,6 +892,7 @@ function changeText(range: vscode.Range, text: string) {
   });
 }
 
+// カーソルのある単語を移動させる
 // カレント文節を前に移動する関数
 export async function moveWordBackward() {
   const editor = vscode.window.activeTextEditor;
@@ -906,12 +907,12 @@ export async function moveWordBackward() {
   const result = await getCurrentToken(lineString, selection);
   if (!result) return;
 
+  const kuromoji = await tokenizer();
+  const tokens = kuromoji.tokenize(lineString);
   const { currentToken, tokenIndex } = result;
 
   if (tokenIndex > 0) {
-    const previousToken = (await tokenizer()).tokenize(lineString)[
-      tokenIndex - 1
-    ];
+    const previousToken = tokens[tokenIndex - 1]
     const cursorOffset =
       selection.start.character - (currentToken.word_position - 1);
     const isForward = false;
@@ -940,10 +941,12 @@ export async function moveWordForward() {
   const result = await getCurrentToken(lineString, selection);
   if (!result) return;
 
+  const kuromoji = await tokenizer();
+  const tokens = kuromoji.tokenize(lineString);
   const { currentToken, tokenIndex } = result;
 
-  if (tokenIndex < (await tokenizer()).tokenize(lineString).length - 1) {
-    const nextToken = (await tokenizer()).tokenize(lineString)[tokenIndex + 1];
+  if (tokenIndex < tokens.length - 1) {
+    const nextToken = tokens[tokenIndex + 1];
     const cursorOffset =
       selection.start.character - (currentToken.word_position - 1);
     const isForward = true;
