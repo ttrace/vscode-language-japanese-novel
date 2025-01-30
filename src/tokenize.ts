@@ -35,17 +35,17 @@ export const legend = (function () {
     "label",
   ];
   tokenTypesLegend.forEach((tokenType, index) =>
-    tokenTypes.set(tokenType, index)
+    tokenTypes.set(tokenType, index),
   );
 
   const tokenModifiersLegend = ["dialogue", "quote", "aozora", "comment"];
   tokenModifiersLegend.forEach((tokenModifier, index) =>
-    tokenModifiers.set(tokenModifier, index)
+    tokenModifiers.set(tokenModifier, index),
   );
 
   return new vscode.SemanticTokensLegend(
     tokenTypesLegend,
-    tokenModifiersLegend
+    tokenModifiersLegend,
   );
 })();
 
@@ -64,7 +64,7 @@ export const tokenizer = () =>
 
 export function activateTokenizer(
   context: vscode.ExtensionContext,
-  kuromojiPath: string
+  kuromojiPath: string,
 ) {
   kuromojiDictPath = kuromojiPath;
   kuromojiBuilder = builder({
@@ -75,8 +75,8 @@ export function activateTokenizer(
     vscode.languages.registerDocumentSemanticTokensProvider(
       { language: "novel" },
       new DocumentSemanticTokensProvider(),
-      legend
-    )
+      legend,
+    ),
   );
 
   const tokenizeSetting = getConfig().semanticHighligting;
@@ -97,7 +97,7 @@ export class DocumentSemanticTokensProvider
   implements vscode.DocumentSemanticTokensProvider
 {
   async provideDocumentSemanticTokens(
-    document: vscode.TextDocument
+    document: vscode.TextDocument,
     // token: vscode.CancellationToken
   ): Promise<vscode.SemanticTokens> {
     //const allTokens = this._parseText(document.getText());
@@ -120,7 +120,9 @@ export class DocumentSemanticTokensProvider
             //const line = lines[i];
 
             // tokenizer.tokenize に文字列を渡すと、その文を形態素解析してくれます。
-            const kuromojiToken = tokenizer.tokenize(document.getText().replace(/\n\x20/g, "\n→"));
+            const kuromojiToken = tokenizer.tokenize(
+              document.getText().replace(/\n\x20/g, "\n→"),
+            );
 
             // console.dir(kuromojiToken);
             let lineOffset = 0;
@@ -135,7 +137,7 @@ export class DocumentSemanticTokensProvider
             let isComment = false;
             let indentIndex = 0;
             // let currentTokenModifire = ""; //現在（直前）のトークンモディファイア
-            let debugNum = {debug: false};
+            let debugNum = { debug: false };
             let previousToken: IpadicFeatures = {
               word_id: 0,
               word_type: "",
@@ -188,7 +190,7 @@ export class DocumentSemanticTokensProvider
                 isRuby = false;
                 isQuote = false;
                 isComment = false;
-                if(nextToken.surface_form == "→"){
+                if (nextToken.surface_form == "→") {
                   //lineOffset++;
                 }
                 //	console.log('line-feed:' + i + ": " + lineOffset);
@@ -210,7 +212,7 @@ export class DocumentSemanticTokensProvider
               }
               if (
                 mytoken.surface_form.match(
-                  /^(私|わたし|わたくし|我|われ|あたし|僕|ぼく|俺|おれ|貴方|あなた|あんた|お前|おまえ|君|きみ|てめえ|彼|かれ|彼女|彼女|あいつ|そいつ|こいつ|奴|やつ)$/
+                  /^(私|わたし|わたくし|我|われ|あたし|僕|ぼく|俺|おれ|貴方|あなた|あんた|お前|おまえ|君|きみ|てめえ|彼|かれ|彼女|彼女|あいつ|そいつ|こいつ|奴|やつ)$/,
                 ) &&
                 mytoken.pos_detail_1 == "代名詞"
               ) {
@@ -297,25 +299,25 @@ export class DocumentSemanticTokensProvider
                 kind = "bracket";
                 //  debugNum = {debug:true};
                 // console.log("debug",previousToken, mytoken);
-                if (openOffset === 0 || previousToken.surface_form === "。" ){
+                if (openOffset === 0 || previousToken.surface_form === "。") {
                   isDialogue = true;
                   tokenModifireType = "dialogue";
                 } else {
                   isRuby = true;
                   tokenModifireType = "aozora";
                 }
-              }//else {
-                 debugNum = {debug:false};
+              } //else {
+              debugNum = { debug: false };
               // }
-              
+
               if (isRuby == true) {
                 tokenModifireType = "aozora";
               }
               if (mytoken.surface_form === "》") {
                 kind = "bracket";
-                if(isRuby){
-                  isRuby = false
-                } else if(isDialogue) {
+                if (isRuby) {
+                  isRuby = false;
+                } else if (isDialogue) {
                   isDialogue = false;
                 }
               }
@@ -364,7 +366,7 @@ export class DocumentSemanticTokensProvider
                   openOffset,
                   wordLength,
                   encodeTokenType(kind),
-                  tokenModifierNum
+                  tokenModifierNum,
                 );
                 // if(debugNum.debug){
                 //   console.log(
@@ -384,7 +386,7 @@ export class DocumentSemanticTokensProvider
               }
               j++;
             }
-          }
+          },
         );
       } else {
         const builder = new vscode.SemanticTokensBuilder();
@@ -398,7 +400,7 @@ export class DocumentSemanticTokensProvider
     document: vscode.TextDocument,
     previousResultId: string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    token: vscode.CancellationToken
+    token: vscode.CancellationToken,
   ): Promise<vscode.SemanticTokens | vscode.SemanticTokensEdits> {
     //return new Promise((resolve, reject) => {
     // console.log("edit");
@@ -436,7 +438,7 @@ export class DocumentSemanticTokensProvider
 
   private _parseText() {
     const lineText = vscode.window.activeTextEditor?.document.lineAt(
-      vscode.window.activeTextEditor?.selection.active.line
+      vscode.window.activeTextEditor?.selection.active.line,
     );
     if (
       lineText != undefined &&
@@ -513,7 +515,7 @@ export function morphemeBuilder(text: string) {
       // const wordPatternRegex = new RegExp(regexString);
       // console.log("Regex" + wordPatternRegex);
       return regexString;
-    }
+    },
   );
 }
 
@@ -535,7 +537,7 @@ export async function changeTenseAspect() {
 
   //console.log(lineString, cursorPosition, kuromojiToken);
   const punctuationList = kuromojiToken.filter(
-    (t: { surface_form: string }) => t.surface_form === "。"
+    (t: { surface_form: string }) => t.surface_form === "。",
   );
   let targetSentence = 0;
   let processingSentence = 0;
@@ -572,16 +574,16 @@ export async function changeTenseAspect() {
       ) {
         const attributedVerbeForm = token.surface_form.replace(
           /(.+)[ぐ]/,
-          "$1いだ"
+          "$1いだ",
         );
         // range作成。元のトークンを置き換える場合
         const verbPositionStart = new Position(
           cursorPosition.line,
-          token.word_position - 1
+          token.word_position - 1,
         );
         const verbPositionEnd = new Position(
           cursorPosition.line,
-          token.word_position + token.surface_form.length - 1
+          token.word_position + token.surface_form.length - 1,
         );
         const verbRange = new Range(verbPositionStart, verbPositionEnd);
         changeText(verbRange, attributedVerbeForm);
@@ -593,16 +595,16 @@ export async function changeTenseAspect() {
       ) {
         const attributedVerbeForm = token.surface_form.replace(
           /(.+)[す]/,
-          "$1した"
+          "$1した",
         );
         // range作成。元のトークンを置き換える場合
         const verbPositionStart = new Position(
           cursorPosition.line,
-          token.word_position - 1
+          token.word_position - 1,
         );
         const verbPositionEnd = new Position(
           cursorPosition.line,
-          token.word_position + token.surface_form.length - 1
+          token.word_position + token.surface_form.length - 1,
         );
         const verbRange = new Range(verbPositionStart, verbPositionEnd);
         changeText(verbRange, attributedVerbeForm);
@@ -614,16 +616,16 @@ export async function changeTenseAspect() {
       ) {
         const attributedVerbeForm = token.surface_form.replace(
           /(.+)[くる]/,
-          "$1った"
+          "$1った",
         );
         // range作成。元のトークンを置き換える場合
         const verbPositionStart = new Position(
           cursorPosition.line,
-          token.word_position - 1
+          token.word_position - 1,
         );
         const verbPositionEnd = new Position(
           cursorPosition.line,
-          token.word_position + token.surface_form.length - 1
+          token.word_position + token.surface_form.length - 1,
         );
         const verbRange = new Range(verbPositionStart, verbPositionEnd);
         changeText(verbRange, attributedVerbeForm);
@@ -635,16 +637,16 @@ export async function changeTenseAspect() {
       ) {
         const attributedVerbeForm = token.surface_form.replace(
           /(.+)[ぬむぶ]/,
-          "$1んだ"
+          "$1んだ",
         );
         // range作成。元のトークンを置き換える場合
         const verbPositionStart = new Position(
           cursorPosition.line,
-          token.word_position - 1
+          token.word_position - 1,
         );
         const verbPositionEnd = new Position(
           cursorPosition.line,
-          token.word_position + token.surface_form.length - 1
+          token.word_position + token.surface_form.length - 1,
         );
         const verbRange = new Range(verbPositionStart, verbPositionEnd);
         changeText(verbRange, attributedVerbeForm);
@@ -656,16 +658,16 @@ export async function changeTenseAspect() {
       ) {
         const attributedVerbeForm = token.surface_form.replace(
           /(.+)う/,
-          "$1うた"
+          "$1うた",
         );
         // range作成。元のトークンを置き換える場合
         const verbPositionStart = new Position(
           cursorPosition.line,
-          token.word_position - 1
+          token.word_position - 1,
         );
         const verbPositionEnd = new Position(
           cursorPosition.line,
-          token.word_position + token.surface_form.length - 1
+          token.word_position + token.surface_form.length - 1,
         );
         const verbRange = new Range(verbPositionStart, verbPositionEnd);
         changeText(verbRange, attributedVerbeForm);
@@ -684,11 +686,11 @@ export async function changeTenseAspect() {
         // range作成。元のトークンを置き換える場合
         const verbPositionStart = new Position(
           cursorPosition.line,
-          token.word_position - 1
+          token.word_position - 1,
         );
         const verbPositionEnd = new Position(
           cursorPosition.line,
-          token.word_position + token.surface_form.length - 1
+          token.word_position + token.surface_form.length - 1,
         );
         const verbRange = new Range(verbPositionStart, verbPositionEnd);
         changeText(verbRange, attributedVerbeForm);
@@ -700,16 +702,16 @@ export async function changeTenseAspect() {
       ) {
         const attributedVerbeForm = token.surface_form.replace(
           /(.+)[くつう]/,
-          "$1った"
+          "$1った",
         );
         // range作成。元のトークンを置き換える場合
         const verbPositionStart = new Position(
           cursorPosition.line,
-          token.word_position - 1
+          token.word_position - 1,
         );
         const verbPositionEnd = new Position(
           cursorPosition.line,
-          token.word_position + token.surface_form.length - 1
+          token.word_position + token.surface_form.length - 1,
         );
         const verbRange = new Range(verbPositionStart, verbPositionEnd);
         changeText(verbRange, attributedVerbeForm);
@@ -721,16 +723,16 @@ export async function changeTenseAspect() {
       ) {
         const attributedVerbeForm = token.surface_form.replace(
           /(.+)[く]/,
-          "$1いた"
+          "$1いた",
         );
         // range作成。元のトークンを置き換える場合
         const verbPositionStart = new Position(
           cursorPosition.line,
-          token.word_position - 1
+          token.word_position - 1,
         );
         const verbPositionEnd = new Position(
           cursorPosition.line,
-          token.word_position + token.surface_form.length - 1
+          token.word_position + token.surface_form.length - 1,
         );
         const verbRange = new Range(verbPositionStart, verbPositionEnd);
         changeText(verbRange, attributedVerbeForm);
@@ -742,16 +744,16 @@ export async function changeTenseAspect() {
       ) {
         const attributedVerbeForm = token.surface_form.replace(
           /(.+)る/g,
-          "$1た"
+          "$1た",
         );
         // range作成。元のトークンを置き換える場合
         const verbPositionStart = new Position(
           cursorPosition.line,
-          token.word_position - 1
+          token.word_position - 1,
         );
         const verbPositionEnd = new Position(
           cursorPosition.line,
-          token.word_position + token.surface_form.length - 1
+          token.word_position + token.surface_form.length - 1,
         );
         const verbRange = new Range(verbPositionStart, verbPositionEnd);
         changeText(verbRange, attributedVerbeForm);
@@ -763,11 +765,11 @@ export async function changeTenseAspect() {
         const attributedVerbeForm = token.basic_form;
         const verbPositionStart = new Position(
           cursorPosition.line,
-          token.word_position - 1
+          token.word_position - 1,
         );
         const verbPositionEnd = new Position(
           cursorPosition.line,
-          nextToken.word_position + nextToken.surface_form.length - 1
+          nextToken.word_position + nextToken.surface_form.length - 1,
         );
         const verbRange = new Range(verbPositionStart, verbPositionEnd);
         // const endTime = performance.now();
@@ -819,7 +821,7 @@ export async function addRuby() {
   const frontWordsList = kuromojiToken.filter(
     (token: IpadicFeatures) =>
       selection.start.character <=
-      token.word_position - 1 + token.basic_form.length
+      token.word_position - 1 + token.basic_form.length,
   );
   // console.log("ルビ位置", selection.start.character);
   // console.log("カーソル前方の単語", frontWordsList);
@@ -842,11 +844,11 @@ export async function addRuby() {
   if (ruby == undefined) return;
   const replaceStart = new Position(
     selection.start.line,
-    targetWord.word_position - 1
+    targetWord.word_position - 1,
   );
   const replaceEnd = new Position(
     selection.start.line,
-    targetWord.word_position - 1 + targetWord.basic_form.length
+    targetWord.word_position - 1 + targetWord.basic_form.length,
   );
   const replaceRange = new Range(replaceStart, replaceEnd);
 
@@ -876,7 +878,7 @@ export async function addSesami() {
     // console.log("ルビ選択範囲あり", editor.document.getText(selection));
     const baseString = editor.document.getText(selection);
     const replaceRange = new Range(selection.start, selection.end);
-    const sesamiString =  `${baseString}［＃「${baseString}」に傍点］`;
+    const sesamiString = `${baseString}［＃「${baseString}」に傍点］`;
     changeText(replaceRange, sesamiString);
     return;
   }
@@ -888,4 +890,309 @@ function changeText(range: vscode.Range, text: string) {
   editor?.edit((TextEditorEdit: vscode.TextEditorEdit) => {
     TextEditorEdit.replace(range, text);
   });
+}
+
+// 文節のグループ化処理
+function chunkBunsetsu(
+  tokens: IpadicFeatures[],
+): { bunsetsu: IpadicFeatures[]; length: number }[] {
+  const bunsetsuList: { bunsetsu: IpadicFeatures[]; length: number }[] = [];
+  let currentBunsetsu: IpadicFeatures[] = [];
+  let currentLength = 0;
+
+  tokens.forEach((token, index) => {
+    // 名詞、動詞、形容詞、副詞で新しい文節を始める判断をする
+    if (currentBunsetsu.length === 0 || isNewBunsetsuStart(token, tokens[index - 1])) {
+      if (currentBunsetsu.length > 0) {
+        bunsetsuList.push({ bunsetsu: currentBunsetsu, length: currentLength });
+      }
+      currentBunsetsu = [token];
+      currentLength = token.surface_form.length;
+    } else {
+      currentBunsetsu.push(token);
+      currentLength += token.surface_form.length;
+    }
+  });
+
+  if (currentBunsetsu.length > 0) {
+    bunsetsuList.push({ bunsetsu: currentBunsetsu, length: currentLength });
+  }
+  return bunsetsuList;
+}
+
+function isNewBunsetsuStart(currentToken: IpadicFeatures, prevToken?: IpadicFeatures): boolean {
+  // console.log('文節確認', currentToken);
+  
+  if (prevToken && prevToken.pos === "記号" && currentToken.pos !== "記号") {
+    // 記号の後に、記号でないものが続いた場合は、新しい文節を開始する
+    return true;
+  }
+
+  if (currentToken.pos_detail_1 === "代名詞") {
+    // 代名詞は新しい文節を開始する
+    return true;
+  }
+
+  if (prevToken && prevToken.pos === "名詞" && prevToken.pos_detail_1 === "一般" && currentToken.pos === "名詞") {
+    // 普通の名詞が連続している場合は新しい文節を開始しない
+    return false;
+  }
+
+
+  if (currentToken.pos_detail_1 === "接尾") {
+    // 接尾詞は新しい文節を開始しない
+    return false;
+  }
+
+  if (currentToken.pos_detail_1 === "非自立") {
+    // 非自立の時は新しい文節を開始しない
+    return false;
+  }
+
+  if (currentToken.pos === "動詞" && currentToken.pos_detail_1 === "接尾") {
+    // 接尾動詞は新しい文節を開始しない
+    return false;
+  }
+  
+  if (prevToken && prevToken.pos_detail_1 === "サ変接続" && currentToken.conjugated_type === "サ変・スル") {
+    // サ変接続は一つの助詞にする
+    return false;
+  }
+
+  if (prevToken && prevToken.pos_detail_1 === "数" && currentToken.pos_detail_1 === "数") {
+    // 数詞が連続している場合は新しい文節を開始しない 
+    return false;
+  }
+
+
+  const startPos = ["名詞", "動詞", "形容詞", "副詞","記号","接頭詞"];
+  return startPos.includes(currentToken.pos);
+}
+
+// カレント文節を前に移動する関数
+export async function moveWordBackward() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+
+  const document = editor.document;
+  const lineString = document.lineAt(editor.selection.active.line).text;
+  const selection = editor.selection;
+
+  if (!selection.isSingleLine || !lineString) return;
+
+  const kuromoji = await tokenizer();
+  const tokens = kuromoji.tokenize(lineString);
+  const bunsetsus = chunkBunsetsu(tokens);
+
+  const result = getSelectedBunsetsuRange(bunsetsus, selection);
+  if (!result) return;
+
+  const { selectedBunsetsus, startIndex } = result;
+
+  if (startIndex > 0) {
+    const previousChunk = bunsetsus[startIndex - 1];
+    const cursorOffset =
+      selection.start.character -
+      (selectedBunsetsus[0].bunsetsu[0].word_position - 1);
+
+    swapChunks(
+      editor,
+      selection.start.line,
+      previousChunk,
+      { 
+        bunsetsu: selectedBunsetsus.flatMap(b => b.bunsetsu), 
+        length: selectedBunsetsus.reduce((sum, b) => sum + b.length, 0) 
+      },
+      cursorOffset,
+      false,
+    );
+  }
+}
+
+// カレント文節を後ろに移動する関数
+export async function moveWordForward() {
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+
+  const document = editor.document;
+  const lineString = document.lineAt(editor.selection.active.line).text;
+  const selection = editor.selection;
+
+  if (!selection.isSingleLine || !lineString) return;
+
+  const kuromoji = await tokenizer();
+  const tokens = kuromoji.tokenize(lineString);
+  const bunsetsus = chunkBunsetsu(tokens);
+
+  const result = getSelectedBunsetsuRange(bunsetsus, selection);
+  if (!result) return;
+
+  const { selectedBunsetsus, endIndex } = result;
+
+  if (endIndex < bunsetsus.length - 1) {
+    const nextChunk = bunsetsus[endIndex + 1];
+    const cursorOffset =
+      selection.start.character -
+      (selectedBunsetsus[0].bunsetsu[0].word_position - 1);
+
+    swapChunks(
+      editor,
+      selection.start.line,
+      {
+        bunsetsu: selectedBunsetsus.flatMap(b => b.bunsetsu),
+        length: selectedBunsetsus.reduce((sum, b) => sum + b.length, 0)
+      },
+      nextChunk,
+      cursorOffset,
+      true,
+    );
+  }
+}
+
+function getSelectedBunsetsuRange(
+  bunsetsus: { bunsetsu: IpadicFeatures[]; length: number }[],
+  selection: vscode.Selection,
+): {
+  selectedBunsetsus: { bunsetsu: IpadicFeatures[]; length: number }[];
+  startIndex: number;
+  endIndex: number;
+} | null {
+  let startIndex = -1;
+  let endIndex = -1;
+  const selectedBunsetsus: { bunsetsu: IpadicFeatures[]; length: number }[] = [];
+
+  for (let i = 0; i < bunsetsus.length; i++) {
+    const bunsetsuStart = bunsetsus[i].bunsetsu[0].word_position - 1;
+    const bunsetsuEnd = bunsetsuStart + bunsetsus[i].length;
+
+    if (
+      selection.start.character < bunsetsuEnd &&
+      selection.end.character > bunsetsuStart
+    ) {
+      // 境界が一致する場合を除外
+      if (!(selection.start.character === bunsetsuEnd || selection.end.character === bunsetsuStart)) {
+        if (startIndex === -1) {
+          startIndex = i;
+        }
+        endIndex = i;
+        selectedBunsetsus.push(bunsetsus[i]);
+      } 
+    }
+    if (selection.start.character === bunsetsuStart && selectedBunsetsus.length === 0) {
+      startIndex = i - 1;
+      endIndex = i - 1;
+      selectedBunsetsus.push(bunsetsus[i - 1]);
+    }
+    
+  }
+
+  if (selectedBunsetsus.length > 0 && startIndex !== -1 && endIndex !== -1) {
+    return {
+      selectedBunsetsus,
+      startIndex,
+      endIndex,
+    };
+  }
+
+  return null;
+}
+
+// 文節入れ替え
+// swapChunks 関数
+async function swapChunks(
+  editor: vscode.TextEditor,
+  line: number,
+  firstChunk: { bunsetsu: IpadicFeatures[]; length: number },
+  secondChunk: { bunsetsu: IpadicFeatures[]; length: number },
+  cursorOffset: number,
+  isForward: boolean,
+) {
+  const replaceRange = new vscode.Range(
+    new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1),
+    new vscode.Position(
+      line,
+      secondChunk.bunsetsu[0].word_position - 1 + secondChunk.length,
+    ),
+  );
+
+  // トークンを入れ替えた後の新しい行のテキスト
+  const firstSurface = firstChunk.bunsetsu
+    .map((token) => token.surface_form)
+    .join("");
+  const secondSurface = secondChunk.bunsetsu
+    .map((token) => token.surface_form)
+    .join("");
+  const newLineText = `${secondSurface}${firstSurface}`;
+
+  await editor.edit((editBuilder) => {
+    editBuilder.replace(replaceRange, newLineText);
+  });
+
+  // 選択範囲の有無をチェックして適切にカーソルを設定
+  const hasSelection = !editor.selection.isEmpty;
+  let newSelection: vscode.Selection;
+
+  if (hasSelection) {
+    const startOffset = isForward
+    ? (secondChunk.bunsetsu[0].word_position - 1) - firstChunk.length + secondChunk.length
+    : (firstChunk.bunsetsu[0].word_position - 1);
+    const endOffset = isForward
+    ? startOffset + firstChunk.length
+    : startOffset + secondChunk.length;
+    
+    newSelection = new vscode.Selection(
+      new vscode.Position(line, startOffset),
+      new vscode.Position(line, endOffset)
+    );
+  } else {
+    // トークン入れ替え後のカーソル位置を計算
+    let newCursorPosition;
+    if (isForward) {
+      newCursorPosition = new vscode.Position(
+        line,
+        firstChunk.bunsetsu[0].word_position - 1 + secondChunk.length + cursorOffset,
+      );
+    } else {
+      newCursorPosition = new vscode.Position(
+        line,
+        firstChunk.bunsetsu[0].word_position - 1 + cursorOffset,
+      );
+    }
+
+    newSelection = new vscode.Selection(newCursorPosition, newCursorPosition);
+  }
+
+  editor.selection = newSelection;
+
+  // デコレーション用のハイライトを更新
+  const highlightRange = isForward
+    ? new vscode.Range(
+        new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1 + secondChunk.length),
+        new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1 + secondChunk.length + firstChunk.length),
+      )
+    : new vscode.Range(
+        new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1),
+        new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1 + secondChunk.length),
+      );
+
+  highlightSwap(editor, highlightRange);
+}
+
+function highlightSwap(editor: vscode.TextEditor, range: vscode.Range) {
+  const highlightDuration = 350; // ハイライト時間 (ミリ秒)
+  const decorationType = vscode.window.createTextEditorDecorationType({
+    backgroundColor: "rgba(245, 165, 119, 0.3)", // ハイライト色 (半透明)
+    borderColor: "rgba(255, 206, 82, 0.5)", // ハイライト色 (半透明)
+    borderWidth: "2px", // ハイライトの境界線
+    borderStyle: "solid", // ハイライトの境界線のスタイル
+    borderRadius: "2px", // ハイライトの角丸
+  });
+
+  // 選択されたテキストにデコレーションを適用
+  editor.setDecorations(decorationType, [range]);
+
+  // タイマーをセットしてデコレーションを削除
+  setTimeout(() => {
+    decorationType.dispose();
+  }, highlightDuration);
 }

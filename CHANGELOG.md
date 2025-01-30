@@ -1,5 +1,10 @@
 # Changelog
 
+# 3.3.0
+
+- 文節の前後移動機能を追加しました
+    - ショートカットには、MacでCommand+←→、WindowsではCtrl+Alt+←→を割り当てています
+
 # 3.2.0
 
 - vivliostyle/cliの組み込み
