@@ -900,9 +900,9 @@ function chunkBunsetsu(
   let currentBunsetsu: IpadicFeatures[] = [];
   let currentLength = 0;
 
-  tokens.forEach((token) => {
+  tokens.forEach((token, index) => {
     // 名詞、動詞、形容詞、副詞で新しい文節を始める判断をする
-    if (currentBunsetsu.length === 0 || isNewBunsetsuStart(token)) {
+    if (currentBunsetsu.length === 0 || isNewBunsetsuStart(token, tokens[index - 1])) {
       if (currentBunsetsu.length > 0) {
         bunsetsuList.push({ bunsetsu: currentBunsetsu, length: currentLength });
       }
@@ -917,13 +917,50 @@ function chunkBunsetsu(
   if (currentBunsetsu.length > 0) {
     bunsetsuList.push({ bunsetsu: currentBunsetsu, length: currentLength });
   }
-
+  console.log('文節リスト', bunsetsuList);
   return bunsetsuList;
 }
 
-function isNewBunsetsuStart(token: IpadicFeatures): boolean {
-  const startPos = ["名詞", "動詞", "形容詞", "副詞"];
-  return startPos.includes(token.pos);
+function isNewBunsetsuStart(currentToken: IpadicFeatures, prevToken?: IpadicFeatures): boolean {
+  console.log('文節確認', currentToken);
+  
+  if (prevToken && prevToken.pos === "名詞" && prevToken.pos_detail_1 === "一般" && currentToken.pos === "名詞") {
+    // 普通の名詞が連続している場合は新しい文節を開始しない
+    return false;
+  }
+
+  if (currentToken.pos_detail_1 === "接尾") {
+    // 接尾詞は新しい文節を開始しない
+    return false;
+  }
+
+  if (currentToken.pos_detail_1 === "非自立") {
+    // 非自立の時は新しい文節を開始しない
+    return false;
+  }
+
+  if (currentToken.pos === "動詞" && currentToken.pos_detail_1 === "接尾") {
+    // 接尾動詞は新しい文節を開始しない
+    return false;
+  }
+  
+  if (prevToken && prevToken.pos_detail_1 === "サ変接続" && currentToken.conjugated_type === "サ変・スル") {
+    // サ変接続は一つの助詞にする
+    return false;
+  }
+
+  if (prevToken && prevToken.pos_detail_1 === "数" && currentToken.pos_detail_1 === "数") {
+    // 数詞が連続している場合は新しい文節を開始しない 
+    return false;
+  }
+
+  if (prevToken && prevToken.pos === "記号" && currentToken.pos !== "記号") {
+    // 記号の後に、記号でないものが続いた場合は、新しい文節を開始する
+    return true;
+  }
+
+  const startPos = ["名詞", "動詞", "形容詞", "副詞","記号","接頭詞"];
+  return startPos.includes(currentToken.pos);
 }
 
 // カレント文節を前に移動する関数
@@ -1036,9 +1073,9 @@ function getSelectedBunsetsuRange(
       } 
     }
     if (selection.start.character === bunsetsuStart && selectedBunsetsus.length === 0) {
-      startIndex = i;
-      endIndex = i;
-      selectedBunsetsus.push(bunsetsus[i]);
+      startIndex = i - 1;
+      endIndex = i - 1;
+      selectedBunsetsus.push(bunsetsus[i - 1]);
     }
     
   }
@@ -1138,10 +1175,11 @@ async function swapChunks(
 function highlightSwap(editor: vscode.TextEditor, range: vscode.Range) {
   const highlightDuration = 350; // ハイライト時間 (ミリ秒)
   const decorationType = vscode.window.createTextEditorDecorationType({
-    // backgroundColor: "rgba(255, 223, 186, 0.2)", // ハイライト色 (半透明)
-    borderColor: "rgba(68, 130, 140, 0.5)", // ハイライト色 (半透明)
-    borderWidth: "1px", // ハイライトの境界線
+    backgroundColor: "rgba(245, 165, 119, 0.3)", // ハイライト色 (半透明)
+    borderColor: "rgba(255, 206, 82, 0.5)", // ハイライト色 (半透明)
+    borderWidth: "2px", // ハイライトの境界線
     borderStyle: "solid", // ハイライトの境界線のスタイル
+    borderRadius: "2px", // ハイライトの角丸
   });
 
   // 選択されたテキストにデコレーションを適用
