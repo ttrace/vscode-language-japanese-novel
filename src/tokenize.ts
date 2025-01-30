@@ -1023,14 +1023,17 @@ function getSelectedBunsetsuRange(
     const bunsetsuEnd = bunsetsuStart + bunsetsus[i].length;
 
     if (
-      selection.start.character <= bunsetsuEnd &&
-      selection.end.character >= bunsetsuStart
+      selection.start.character < bunsetsuEnd &&
+      selection.end.character > bunsetsuStart
     ) {
-      if (startIndex === -1) {
-        startIndex = i;
+      // 境界が一致する場合を除外
+      if (!(selection.start.character === bunsetsuEnd || selection.end.character === bunsetsuStart)) {
+        if (startIndex === -1) {
+          startIndex = i;
+        }
+        endIndex = i;
+        selectedBunsetsus.push(bunsetsus[i]);
       }
-      endIndex = i;
-      selectedBunsetsus.push(bunsetsus[i]);
     }
   }
 
@@ -1062,24 +1065,6 @@ async function swapChunks(
       secondChunk.bunsetsu[0].word_position - 1 + secondChunk.length,
     ),
   );
-  const highLightRange = isForward
-    ? new vscode.Range(
-        new vscode.Position(
-          line,
-          (firstChunk.bunsetsu[0].word_position -1) + secondChunk.length,
-        ),
-        new vscode.Position(
-          line,
-          (firstChunk.bunsetsu[0].word_position -1) + secondChunk.length + firstChunk.length,
-        ),
-      )
-    : new vscode.Range(
-        new vscode.Position(line, (firstChunk.bunsetsu[0].word_position -1)),
-        new vscode.Position(
-          line,
-          (firstChunk.bunsetsu[0].word_position -1) + secondChunk.length,
-        ),
-      );
 
   // トークンを入れ替えた後の新しい行のテキスト
   const firstSurface = firstChunk.bunsetsu
@@ -1092,27 +1077,56 @@ async function swapChunks(
 
   await editor.edit((editBuilder) => {
     editBuilder.replace(replaceRange, newLineText);
-    highlightSwap(editor, highLightRange);
   });
 
-  // トークン入れ替え後のカーソル位置を計算
-  let newCursorPosition;
-  if (isForward) {
-    newCursorPosition = new vscode.Position(
-      line,
-      firstChunk.bunsetsu[0].word_position -
-        1 +
-        secondChunk.length +
-        cursorOffset,
+  // 選択範囲の有無をチェックして適切にカーソルを設定
+  const hasSelection = !editor.selection.isEmpty;
+  let newSelection: vscode.Selection;
+
+  if (hasSelection) {
+    const startOffset = isForward
+    ? (secondChunk.bunsetsu[0].word_position - 1) - firstChunk.length + secondChunk.length
+    : (firstChunk.bunsetsu[0].word_position - 1);
+    const endOffset = isForward
+    ? startOffset + firstChunk.length
+    : startOffset + secondChunk.length;
+    
+    newSelection = new vscode.Selection(
+      new vscode.Position(line, startOffset),
+      new vscode.Position(line, endOffset)
     );
   } else {
-    newCursorPosition = new vscode.Position(
-      line,
-      firstChunk.bunsetsu[0].word_position - 1 + cursorOffset,
-    );
+    // トークン入れ替え後のカーソル位置を計算
+    let newCursorPosition;
+    if (isForward) {
+      newCursorPosition = new vscode.Position(
+        line,
+        firstChunk.bunsetsu[0].word_position - 1 + secondChunk.length + cursorOffset,
+      );
+    } else {
+      newCursorPosition = new vscode.Position(
+        line,
+        firstChunk.bunsetsu[0].word_position - 1 + cursorOffset,
+      );
+    }
+
+    newSelection = new vscode.Selection(newCursorPosition, newCursorPosition);
   }
 
-  editor.selection = new vscode.Selection(newCursorPosition, newCursorPosition);
+  editor.selection = newSelection;
+
+  // デコレーション用のハイライトを更新
+  const highlightRange = isForward
+    ? new vscode.Range(
+        new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1 + secondChunk.length),
+        new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1 + secondChunk.length + firstChunk.length),
+      )
+    : new vscode.Range(
+        new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1),
+        new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1 + secondChunk.length),
+      );
+
+  highlightSwap(editor, highlightRange);
 }
 
 function highlightSwap(editor: vscode.TextEditor, range: vscode.Range) {
