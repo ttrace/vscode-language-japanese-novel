@@ -917,17 +917,27 @@ function chunkBunsetsu(
   if (currentBunsetsu.length > 0) {
     bunsetsuList.push({ bunsetsu: currentBunsetsu, length: currentLength });
   }
-  console.log('文節リスト', bunsetsuList);
   return bunsetsuList;
 }
 
 function isNewBunsetsuStart(currentToken: IpadicFeatures, prevToken?: IpadicFeatures): boolean {
-  console.log('文節確認', currentToken);
+  // console.log('文節確認', currentToken);
   
+  if (prevToken && prevToken.pos === "記号" && currentToken.pos !== "記号") {
+    // 記号の後に、記号でないものが続いた場合は、新しい文節を開始する
+    return true;
+  }
+
+  if (currentToken.pos_detail_1 === "代名詞") {
+    // 代名詞は新しい文節を開始する
+    return true;
+  }
+
   if (prevToken && prevToken.pos === "名詞" && prevToken.pos_detail_1 === "一般" && currentToken.pos === "名詞") {
     // 普通の名詞が連続している場合は新しい文節を開始しない
     return false;
   }
+
 
   if (currentToken.pos_detail_1 === "接尾") {
     // 接尾詞は新しい文節を開始しない
@@ -954,10 +964,6 @@ function isNewBunsetsuStart(currentToken: IpadicFeatures, prevToken?: IpadicFeat
     return false;
   }
 
-  if (prevToken && prevToken.pos === "記号" && currentToken.pos !== "記号") {
-    // 記号の後に、記号でないものが続いた場合は、新しい文節を開始する
-    return true;
-  }
 
   const startPos = ["名詞", "動詞", "形容詞", "副詞","記号","接頭詞"];
   return startPos.includes(currentToken.pos);

@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -150,6 +150,18 @@
         "command": "Novel.add-ruby",
         "key": "ctrl+r",
         "mac": "cmd+r",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "Novel.word-transpose-forward",
+        "key": "ctrl+alt+right",
+        "mac": "cmd+right",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "Novel.word-transpose-backward",
+        "key": "ctrl+alt+left",
+        "mac": "cmd+left",
         "when": "editorTextFocus"
       }
     ],
