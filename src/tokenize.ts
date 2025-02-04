@@ -1242,9 +1242,7 @@ async function swapChunks(
           targetChunkPosition - replacingChunk.length + cursorOffset
         : preSelectedChunk !== ""
           ? // 選択範囲の前方境界が文頭の先頭と一致している場合は、選択部分をreplacingChunkの前に移動
-            targetChunkPosition -
-            replacingChunk.length +
-            preSelectedChunk.length
+            targetChunkPosition
           : targetChunkPosition - replacingChunk.length;
   }
   selectionEndOffset = selectionStartOffset + selectionLength;
@@ -1309,7 +1307,7 @@ async function swapChunks(
 }
 
 function highlightSwap(editor: vscode.TextEditor, range: vscode.Range) {
-  const highlightDuration = 350; // ハイライト時間 (ミリ秒)
+  const highlightDuration = 150; // ハイライト時間 (ミリ秒)
   const decorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: "rgba(245, 165, 119, 0.3)", // ハイライト色 (半透明)
     borderColor: "rgba(255, 206, 82, 0.5)", // ハイライト色 (半透明)
