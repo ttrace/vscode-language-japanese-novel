@@ -352,9 +352,7 @@ export class DocumentSemanticTokensProvider
 
               closeOffset = openOffset + wordLength;
               previousToken = mytoken;
-              // const tokenData = parseTextToken(
-              //   document.getText().substring(openOffset, closeOffset)
-              // );
+
               const tokenModifierNum = encodeTokenModifiers([
                 tokenModifireType,
               ]);
@@ -368,13 +366,6 @@ export class DocumentSemanticTokensProvider
                   encodeTokenType(kind),
                   tokenModifierNum,
                 );
-                // if(debugNum.debug){
-                //   console.log(
-                //     "debug",
-                //     previousToken
-                //   );
-                // }
-                //	console.log(i + ':' + j + '/' + openOffset + ':' + mytoken.surface_form);
               }
               openOffset = closeOffset;
               if (j == kuromojiToken.length - 1) {
@@ -772,10 +763,6 @@ export async function changeTenseAspect() {
           nextToken.word_position + nextToken.surface_form.length - 1,
         );
         const verbRange = new Range(verbPositionStart, verbPositionEnd);
-        // const endTime = performance.now();
-        //        console.log("処理時間！", endTime - startTime);
-
-        //console.log(cursorPosition.character, processingSentence, attributedVerbeForm);
         changeText(verbRange, attributedVerbeForm);
       }
     }
@@ -902,7 +889,10 @@ function chunkBunsetsu(
 
   tokens.forEach((token, index) => {
     // 名詞、動詞、形容詞、副詞で新しい文節を始める判断をする
-    if (currentBunsetsu.length === 0 || isNewBunsetsuStart(token, tokens[index - 1])) {
+    if (
+      currentBunsetsu.length === 0 ||
+      isNewBunsetsuStart(token, tokens[index - 1])
+    ) {
       if (currentBunsetsu.length > 0) {
         bunsetsuList.push({ bunsetsu: currentBunsetsu, length: currentLength });
       }
@@ -920,9 +910,12 @@ function chunkBunsetsu(
   return bunsetsuList;
 }
 
-function isNewBunsetsuStart(currentToken: IpadicFeatures, prevToken?: IpadicFeatures): boolean {
+function isNewBunsetsuStart(
+  currentToken: IpadicFeatures,
+  prevToken?: IpadicFeatures,
+): boolean {
   // console.log('文節確認', currentToken);
-  
+
   if (prevToken && prevToken.pos === "記号" && currentToken.pos !== "記号") {
     // 記号の後に、記号でないものが続いた場合は、新しい文節を開始する
     return true;
@@ -933,11 +926,15 @@ function isNewBunsetsuStart(currentToken: IpadicFeatures, prevToken?: IpadicFeat
     return true;
   }
 
-  if (prevToken && prevToken.pos === "名詞" && prevToken.pos_detail_1 === "一般" && currentToken.pos === "名詞") {
+  if (
+    prevToken &&
+    prevToken.pos === "名詞" &&
+    prevToken.pos_detail_1 === "一般" &&
+    currentToken.pos === "名詞"
+  ) {
     // 普通の名詞が連続している場合は新しい文節を開始しない
     return false;
   }
-
 
   if (currentToken.pos_detail_1 === "接尾") {
     // 接尾詞は新しい文節を開始しない
@@ -953,19 +950,26 @@ function isNewBunsetsuStart(currentToken: IpadicFeatures, prevToken?: IpadicFeat
     // 接尾動詞は新しい文節を開始しない
     return false;
   }
-  
-  if (prevToken && prevToken.pos_detail_1 === "サ変接続" && currentToken.conjugated_type === "サ変・スル") {
+
+  if (
+    prevToken &&
+    prevToken.pos_detail_1 === "サ変接続" &&
+    currentToken.conjugated_type === "サ変・スル"
+  ) {
     // サ変接続は一つの助詞にする
     return false;
   }
 
-  if (prevToken && prevToken.pos_detail_1 === "数" && currentToken.pos_detail_1 === "数") {
-    // 数詞が連続している場合は新しい文節を開始しない 
+  if (
+    prevToken &&
+    prevToken.pos_detail_1 === "数" &&
+    currentToken.pos_detail_1 === "数"
+  ) {
+    // 数詞が連続している場合は新しい文節を開始しない
     return false;
   }
 
-
-  const startPos = ["名詞", "動詞", "形容詞", "副詞","記号","接頭詞"];
+  const startPos = ["名詞", "動詞", "形容詞", "副詞", "記号", "接頭詞"];
   return startPos.includes(currentToken.pos);
 }
 
@@ -987,23 +991,32 @@ export async function moveWordBackward() {
   const result = getSelectedBunsetsuRange(bunsetsus, selection);
   if (!result) return;
 
-  const { selectedBunsetsus, startIndex } = result;
+  const {
+    selectedBunsetsus,
+    startIndex,
+    endIndex,
+    startIndexOffset,
+    selectionLength,
+  } = result;
 
   if (startIndex > 0) {
     const previousChunk = bunsetsus[startIndex - 1];
     const cursorOffset =
       selection.start.character -
       (selectedBunsetsus[0].bunsetsu[0].word_position - 1);
+    const targetChunk = {
+      bunsetsu: selectedBunsetsus.flatMap((b) => b.bunsetsu),
+      length: selectedBunsetsus.reduce((sum, b) => sum + b.length, 0),
+    };
 
     swapChunks(
       editor,
       selection.start.line,
+      targetChunk,
       previousChunk,
-      { 
-        bunsetsu: selectedBunsetsus.flatMap(b => b.bunsetsu), 
-        length: selectedBunsetsus.reduce((sum, b) => sum + b.length, 0) 
-      },
       cursorOffset,
+      startIndexOffset,
+      selectionLength,
       false,
     );
   }
@@ -1027,7 +1040,13 @@ export async function moveWordForward() {
   const result = getSelectedBunsetsuRange(bunsetsus, selection);
   if (!result) return;
 
-  const { selectedBunsetsus, endIndex } = result;
+  const {
+    selectedBunsetsus,
+    startIndex,
+    endIndex,
+    startIndexOffset,
+    selectionLength,
+  } = result;
 
   if (endIndex < bunsetsus.length - 1) {
     const nextChunk = bunsetsus[endIndex + 1];
@@ -1035,15 +1054,19 @@ export async function moveWordForward() {
       selection.start.character -
       (selectedBunsetsus[0].bunsetsu[0].word_position - 1);
 
+    const targetChunk = {
+      bunsetsu: selectedBunsetsus.flatMap((b) => b.bunsetsu),
+      length: selectedBunsetsus.reduce((sum, b) => sum + b.length, 0),
+    };
+
     swapChunks(
       editor,
       selection.start.line,
-      {
-        bunsetsu: selectedBunsetsus.flatMap(b => b.bunsetsu),
-        length: selectedBunsetsus.reduce((sum, b) => sum + b.length, 0)
-      },
+      targetChunk,
       nextChunk,
       cursorOffset,
+      startIndexOffset,
+      selectionLength,
       true,
     );
   }
@@ -1056,11 +1079,17 @@ function getSelectedBunsetsuRange(
   selectedBunsetsus: { bunsetsu: IpadicFeatures[]; length: number }[];
   startIndex: number;
   endIndex: number;
+  startIndexOffset: number;
+  selectionLength: number;
 } | null {
   let startIndex = -1;
   let endIndex = -1;
-  const selectedBunsetsus: { bunsetsu: IpadicFeatures[]; length: number }[] = [];
+  let startIndexOffset = -1;
+  let selectionLength = 0;
+  const selectedBunsetsus: { bunsetsu: IpadicFeatures[]; length: number }[] =
+    [];
 
+  let selectedChars = 0;
   for (let i = 0; i < bunsetsus.length; i++) {
     const bunsetsuStart = bunsetsus[i].bunsetsu[0].word_position - 1;
     const bunsetsuEnd = bunsetsuStart + bunsetsus[i].length;
@@ -1070,20 +1099,42 @@ function getSelectedBunsetsuRange(
       selection.end.character > bunsetsuStart
     ) {
       // 境界が一致する場合を除外
-      if (!(selection.start.character === bunsetsuEnd || selection.end.character === bunsetsuStart)) {
+      if (
+        !(
+          selection.start.character === bunsetsuEnd ||
+          selection.end.character === bunsetsuStart
+        )
+      ) {
         if (startIndex === -1) {
           startIndex = i;
+          startIndexOffset = selection.start.character - bunsetsuStart; // 開始オフセットを計算
         }
         endIndex = i;
+        selectionLength =
+          selectedChars -
+          startIndexOffset +
+          (selection.end.character - bunsetsuStart); // 終了オフセットを常に最新に
         selectedBunsetsus.push(bunsetsus[i]);
-      } 
+        selectedChars += bunsetsus[i].length;
+
+        // 選択範囲がない場合はオフセットを-1にする
+        if (selection.start.character === selection.end.character) {
+          startIndexOffset = -1;
+          selectionLength = 0;
+        }
+      }
     }
-    if (selection.start.character === bunsetsuStart && selectedBunsetsus.length === 0) {
+    // カーソルが文節境界にある場合直前の単語を返す
+    if (
+      selection.start.character === bunsetsuStart &&
+      selectedBunsetsus.length === 0
+    ) {
       startIndex = i - 1;
       endIndex = i - 1;
+      startIndexOffset = -1;
+      selectionLength = 0;
       selectedBunsetsus.push(bunsetsus[i - 1]);
     }
-    
   }
 
   if (selectedBunsetsus.length > 0 && startIndex !== -1 && endIndex !== -1) {
@@ -1091,9 +1142,10 @@ function getSelectedBunsetsuRange(
       selectedBunsetsus,
       startIndex,
       endIndex,
+      startIndexOffset,
+      selectionLength,
     };
   }
-
   return null;
 }
 
@@ -1102,27 +1154,98 @@ function getSelectedBunsetsuRange(
 async function swapChunks(
   editor: vscode.TextEditor,
   line: number,
-  firstChunk: { bunsetsu: IpadicFeatures[]; length: number },
-  secondChunk: { bunsetsu: IpadicFeatures[]; length: number },
+  targetChunk: { bunsetsu: IpadicFeatures[]; length: number },
+  replacingChunk: { bunsetsu: IpadicFeatures[]; length: number },
   cursorOffset: number,
+  targetChunkOffset: number,
+  selectionLength: number,
   isForward: boolean,
 ) {
-  const replaceRange = new vscode.Range(
-    new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1),
-    new vscode.Position(
-      line,
-      secondChunk.bunsetsu[0].word_position - 1 + secondChunk.length,
-    ),
-  );
+  const replaceRange = isForward
+    ? new vscode.Range(
+        new vscode.Position(line, targetChunk.bunsetsu[0].word_position - 1),
+        new vscode.Position(
+          line,
+          replacingChunk.bunsetsu[0].word_position - 1 + replacingChunk.length,
+        ),
+      )
+    : new vscode.Range(
+        new vscode.Position(line, replacingChunk.bunsetsu[0].word_position - 1),
+        new vscode.Position(
+          line,
+          targetChunk.bunsetsu[0].word_position - 1 + targetChunk.length,
+        ),
+      );
 
   // トークンを入れ替えた後の新しい行のテキスト
-  const firstSurface = firstChunk.bunsetsu
+  const targetSurfaceText = targetChunk.bunsetsu
     .map((token) => token.surface_form)
     .join("");
-  const secondSurface = secondChunk.bunsetsu
+  const selectionStartIndex = targetChunkOffset === -1 ? 0 : targetChunkOffset;
+
+  const preSelectedChunk = targetSurfaceText.slice(0, selectionStartIndex);
+  const selectedChunk =
+    selectionLength === 0
+      ? targetSurfaceText
+      : targetSurfaceText.slice(
+          selectionStartIndex,
+          selectionStartIndex + selectionLength,
+        );
+  const postSelectedChunk =
+    selectionLength === 0
+      ? ""
+      : targetSurfaceText.slice(targetChunkOffset + selectionLength);
+
+  const secondBunsetsu = replacingChunk.bunsetsu
     .map((token) => token.surface_form)
     .join("");
-  const newLineText = `${secondSurface}${firstSurface}`;
+
+  let newLineText;
+
+  let selectionStartOffset: number;
+  let selectionEndOffset: number;
+  const targetChunkPosition = targetChunk.bunsetsu[0].word_position - 1;
+
+  if (isForward) {
+    // 選択部分をtargetChunkの後部に移動
+    newLineText =
+      selectionLength === 0
+        ? // 選択範囲がない場合は、replacingChunkの先頭にtargetChunkを追加
+          `${secondBunsetsu}${targetSurfaceText}`
+        : postSelectedChunk !== ""
+          ? // 選択範囲の後方境界が文末の終端と一致している場合は、選択部分をreplacingChunkの後ろに移動
+            `${preSelectedChunk}${postSelectedChunk}${selectedChunk}${secondBunsetsu}`
+          : `${preSelectedChunk}${secondBunsetsu}${selectedChunk}`;
+
+    selectionStartOffset =
+      selectionLength === 0
+        ? // 選択範囲がない場合
+          targetChunkPosition + replacingChunk.length + cursorOffset
+        : postSelectedChunk !== ""
+          ? // 選択範囲の後方境界が文末の終端と一致している場合は、選択部分をreplacingChunkの後ろに移動
+            targetChunkPosition +
+            preSelectedChunk.length +
+            postSelectedChunk.length
+          : targetChunkPosition +
+            preSelectedChunk.length +
+            secondBunsetsu.length;
+  } else {
+    newLineText =
+      selectionLength === 0
+        ? `${targetSurfaceText}${secondBunsetsu}`
+        : preSelectedChunk !== ""
+          ? `${secondBunsetsu}${selectedChunk}${preSelectedChunk}${postSelectedChunk}`
+          : `${selectedChunk}${secondBunsetsu}${postSelectedChunk}`;
+    selectionStartOffset =
+      selectionLength === 0
+        ? // 選択範囲がない場合
+          targetChunkPosition - replacingChunk.length + cursorOffset
+        : preSelectedChunk !== ""
+          ? // 選択範囲の前方境界が文頭の先頭と一致している場合は、選択部分をreplacingChunkの前に移動
+            targetChunkPosition
+          : targetChunkPosition - replacingChunk.length;
+  }
+  selectionEndOffset = selectionStartOffset + selectionLength;
 
   await editor.edit((editBuilder) => {
     editBuilder.replace(replaceRange, newLineText);
@@ -1133,53 +1256,58 @@ async function swapChunks(
   let newSelection: vscode.Selection;
 
   if (hasSelection) {
-    const startOffset = isForward
-    ? (secondChunk.bunsetsu[0].word_position - 1) - firstChunk.length + secondChunk.length
-    : (firstChunk.bunsetsu[0].word_position - 1);
-    const endOffset = isForward
-    ? startOffset + firstChunk.length
-    : startOffset + secondChunk.length;
-    
     newSelection = new vscode.Selection(
-      new vscode.Position(line, startOffset),
-      new vscode.Position(line, endOffset)
+      new vscode.Position(line, selectionStartOffset),
+      new vscode.Position(line, selectionEndOffset),
     );
   } else {
-    // トークン入れ替え後のカーソル位置を計算
-    let newCursorPosition;
-    if (isForward) {
-      newCursorPosition = new vscode.Position(
-        line,
-        firstChunk.bunsetsu[0].word_position - 1 + secondChunk.length + cursorOffset,
-      );
-    } else {
-      newCursorPosition = new vscode.Position(
-        line,
-        firstChunk.bunsetsu[0].word_position - 1 + cursorOffset,
-      );
-    }
-
-    newSelection = new vscode.Selection(newCursorPosition, newCursorPosition);
+    newSelection = new vscode.Selection(
+      new vscode.Position(line, selectionStartOffset),
+      new vscode.Position(line, selectionEndOffset),
+    );
   }
 
   editor.selection = newSelection;
 
   // デコレーション用のハイライトを更新
-  const highlightRange = isForward
-    ? new vscode.Range(
-        new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1 + secondChunk.length),
-        new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1 + secondChunk.length + firstChunk.length),
-      )
-    : new vscode.Range(
-        new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1),
-        new vscode.Position(line, firstChunk.bunsetsu[0].word_position - 1 + secondChunk.length),
-      );
+  let highlightRange: vscode.Range;
+  if (selectionLength === 0) {
+    highlightRange = isForward
+      ? new vscode.Range(
+          new vscode.Position(
+            line,
+            targetChunk.bunsetsu[0].word_position - 1 + replacingChunk.length,
+          ),
+          new vscode.Position(
+            line,
+            targetChunk.bunsetsu[0].word_position -
+              1 +
+              replacingChunk.length +
+              targetChunk.length,
+          ),
+        )
+      : new vscode.Range(
+          new vscode.Position(
+            line,
+            replacingChunk.bunsetsu[0].word_position - 1,
+          ),
+          new vscode.Position(
+            line,
+            replacingChunk.bunsetsu[0].word_position - 1 + targetChunk.length,
+          ),
+        );
+  } else {
+    highlightRange = new vscode.Range(
+      new vscode.Position(line, selectionStartOffset),
+      new vscode.Position(line, selectionEndOffset),
+    );
+  }
 
   highlightSwap(editor, highlightRange);
 }
 
 function highlightSwap(editor: vscode.TextEditor, range: vscode.Range) {
-  const highlightDuration = 350; // ハイライト時間 (ミリ秒)
+  const highlightDuration = 150; // ハイライト時間 (ミリ秒)
   const decorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: "rgba(245, 165, 119, 0.3)", // ハイライト色 (半透明)
     borderColor: "rgba(255, 206, 82, 0.5)", // ハイライト色 (半透明)
