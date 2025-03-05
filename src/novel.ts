@@ -194,9 +194,9 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
     });
   }
 
-  private sendIsOrdable(webview: vscode.Webview) {
-    const configuration = vscode.workspace.getConfiguration();
-    const renumberSetting = configuration.get("Novel.DraftTree.renumber");
+  private async sendIsOrdable(webview: vscode.Webview) {
+    // const configuration = vscode.workspace.getConfiguration();
+    const renumberSetting = (await waitForConfiguration()).get("renumber");
     webview.postMessage({
       command: "configIsOrdable",
       data: renumberSetting,
@@ -500,6 +500,18 @@ async function closeFileInEditor(fileUri: vscode.Uri) {
   }
 }
 
+// Configの読み込み
+async function waitForConfiguration(): Promise<vscode.WorkspaceConfiguration> {
+  // ここでは、たとえば設定が特定の値になっているかを監視する例です
+  return new Promise((resolve) => {
+    const interval = setInterval(() => {
+      const configuration = vscode.workspace.getConfiguration("Novel.DraftTree");
+      resolve(configuration);
+    }, 100);
+  });
+}
+
+
 // MARK: ファイルのリネーム
 async function renameFile(targetPath: string, newName: string) {
   // console.log(`ファイル名変更： ${targetPath} を ${newName} に変更`);
@@ -508,7 +520,8 @@ async function renameFile(targetPath: string, newName: string) {
   const oldFileName = path.basename(targetPath);
   const targetFileDir = vscode.Uri.file(path.dirname(targetPath));
   let newFileName = newName;
-  if (configuration.get("Novel.DraftTree.renumber") == true) {
+  const ifRenumber = (await waitForConfiguration()).get("renumber");
+  if (ifRenumber) {
     newFileName = oldFileName.replace(
       /^(\d+[-_\s]*)*(.+?)(\.(txt|md))?$/,
       `$1${newName}$3`
@@ -537,7 +550,8 @@ async function insertFile(
   const targetFileUri = vscode.Uri.file(targetPath);
   const documentFileType = configuration.get("Novel.general.filetype");
   // 並び替えなし
-  if (configuration.get("Novel.DraftTree.renumber") == false) {
+  const ifRenumber = (await waitForConfiguration()).get("renumber");
+  if (!ifRenumber) {
     // 並び替えなしでファイルを作成
     if (insertingNodeType == "file") {
       // 拡張子が一致しない場合、拡張子を付与する
