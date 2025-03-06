@@ -504,10 +504,8 @@ async function closeFileInEditor(fileUri: vscode.Uri) {
 async function waitForConfiguration(): Promise<vscode.WorkspaceConfiguration> {
   // ここでは、たとえば設定が特定の値になっているかを監視する例です
   return new Promise((resolve) => {
-    const interval = setInterval(() => {
       const configuration = vscode.workspace.getConfiguration("Novel.DraftTree");
       resolve(configuration);
-    }, 100);
   });
 }
 
