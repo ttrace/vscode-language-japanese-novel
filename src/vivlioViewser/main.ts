@@ -9,6 +9,12 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const vscode = (window as any).acquireVsCodeApi();
 
+// Ensure the wrapper element exists
+const wrapper = document.getElementById("vivlio-wrapper");
+if (!wrapper) {
+  throw new Error("Wrapper element not found");
+}
+
 window.addEventListener("message", async (event: MessageEvent) => {
   const message = event.data;
   switch (message.command) {
@@ -21,10 +27,41 @@ window.addEventListener("message", async (event: MessageEvent) => {
       const linenumber = message.lineNumber;
       const positionUrl = "#l-" + linenumber;
 
+      // Callback function to execute when mutations are observed
+      const mutationCallback: MutationCallback = (mutationsList) => {
+          for (const mutation of mutationsList) {
+            console.log("Vivlio Loading",mutation);
+          if (
+            mutation.type === "attributes" &&
+            mutation.attributeName === "data-vivliostyle-viewer-status"
+          ) {
+            const target = mutation.target as HTMLElement;
+            const status = target.getAttribute(
+              "data-vivliostyle-viewer-status",
+            );
+            
+            if (status === "interactive") {
+              console.log("Viewer status is complete. Loading line...");
+              // Assuming you have a variable `linenumber` available in the scope
+              loadInternalLine(Viewer, linenumber);
+              observer.disconnect();
+            }
+          }
+        }
+      };
+
+      const observer = new MutationObserver(mutationCallback);
+      const vivlioObserveconfig = {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      };
+      observer.observe(wrapper, vivlioObserveconfig);
+
       Viewer.loadDocument({ url });
-       setTimeout(function(){
-          loadInternalLine(Viewer, linenumber);
-       },500);
+    //   setTimeout(function () {
+    //     loadInternalLine(Viewer, linenumber);
+    //   }, 500);
 
       break;
   }
