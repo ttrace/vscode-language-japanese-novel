@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Page using Vivliostyle</title>
+    <style>
+        /* 必要なCSSを追加します */
+        body {
+            font-family: Arial, sans-serif;
+            padding:0;
+            margin:0;
+        }
+        #viewer {
+            width: 100%;
+            height: 100vh;
+            margin:0;
+        }
+        [data-vivliostyle-viewer-viewport] [data-vivliostyle-spread-container]{
+            flex-direction:row-reverse
+        }
+    </style>
+</head>
+<body>
+    <div id="viewer">loading...</div>
+</body>
+</html>

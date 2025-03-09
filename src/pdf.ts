@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
+import * as fs from "fs";
 import { editorText } from "./editor";
 import { getConfig, NovelSettings } from "./config";
 import * as cp from "child_process";
@@ -94,84 +95,134 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
         },
       );
     } else {
-      vscode.window.showInformationMessage(
-        `プレビュー起動中……\n初回起動には少々時間がかかります`,
-      );
+      launchVivlioStylePreviewOnPanel();
+      // vscode.window.showInformationMessage(
+      //   `プレビュー起動中……\n初回起動には少々時間がかかります`,
+      // );
 
-      if (vivlioProcess == null) {
-        if (myPath.fsPath.match(/^[a-z]:/)) {
-          // Windowsの場合、パスをエスケープシーケンスで囲む必要がある
-          //const adjustedPath = myPath.path.replace(/^\/[a-zA-Z]:\//, "").replace(/\//g,"\\\\");
-          launchVivlioStylePreview(`${execPath}`);
-        } else {
-          // 他のプラットフォームの場合、そのまま実行
-          launchVivlioStylePreview(myPath.fsPath);
-        }
-      } else {
-        vscode.window.showInformationMessage(`プレビューが更新されました`);
-      }
+      // if (vivlioProcess == null) {
+      //   if (myPath.fsPath.match(/^[a-z]:/)) {
+      //     // Windowsの場合、パスをエスケープシーケンスで囲む必要がある
+      //     //const adjustedPath = myPath.path.replace(/^\/[a-zA-Z]:\//, "").replace(/\//g,"\\\\");
+      //     launchVivlioStylePreview(`${execPath}`);
+      //   } else {
+      //     // 他のプラットフォームの場合、そのまま実行
+      //     launchVivlioStylePreview(myPath.fsPath);
+      //   }
+      // } else {
+      //   vscode.window.showInformationMessage(`プレビューが更新されました`);
+      // }
     }
   }
 }
 
-function launchVivlioStylePreview(path: string) {
-  vivlioProcess = cp.exec(`npx @vivliostyle/cli preview --http "${path}"`);
-  launchVivlioStylePreviewOnPanel();
-
-  if (vivlioProcess.stdout !== null) {
-    vivlioProcess.stdout.on("data", (data) => {
-      output.appendLine(`Vivlio出力1: ${path}`);
-      output.appendLine(`Vivlio出力: ${data}`);
-    });
-  }
-
-  if (vivlioProcess.stderr !== null) {
-    vivlioProcess.stderr.on("data", (data) => {
-      output.appendLine(`Vivlioエラー出力1: ${path}`);
-      output.appendLine(`Vivlioエラー出力2: ${data}`);
-    });
-  }
-
-  vivlioProcess.on("error", (err) => {
-    output.appendLine(
-      `VivlioStyleの処理でエラーが発生しました: ${err.message}`,
-    );
-  });
-
-  vivlioProcess.on("close", (code) => {
-    if (code !== 0) {
-      output.appendLine(`プロセスはコード ${code} で終了しました`);
-    }
-    vscode.window.showInformationMessage(`プレビューが終わりました`);
-  });
-}
+let currentPanel: vscode.WebviewPanel | undefined = undefined; // 既存のWebViewを追跡
 
 function launchVivlioStylePreviewOnPanel() {
+  console.log("launchVivlioStylePreviewOnPanel");
+
+  // 既存のWebViewがpdfPreviewであるか確認
+  if (currentPanel && currentPanel.viewType === "pdfPreview") {
+    sendMessageToPanel(currentPanel);
+    currentPanel.reveal(vscode.ViewColumn.Two); // 既存のパネルを表示
+    return;
+  }
+
   const panel = vscode.window.createWebviewPanel(
-    "pdfPreview", // Identifies the type of the webview. Used internally
-    "PDFプレビュー", //http://" + serversHostname + ":" + servicePort, // Title of the panel displayed to the user
-    vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
+    "pdfPreview",
+    "PDFプレビュー",
+    vscode.ViewColumn.Two,
     {
       enableScripts: true,
-    }, // Webview options. More on these later.
+    },
   );
 
-  panel.webview.html = `<!DOCTYPE html>
-  <html>
-      <head>
-          <style>
-          body{
-              width:100vw;
-              height:100vh;
-              padding:0;
-              overflow-y:hidden;
-          }
-          </style>
-      </head>
-      <body>
-          <iframe src="http://localhost:13002/lib/index.html#src=http://localhost:13003/publish.html&bookMode=true&renderAllPages=true" frameBorder="0" style="margin:none;width:100%;min-width: 100%; min-height: 100%" />
-      </body>
-  </html>`;
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (!workspaceFolders) {
+    vscode.window.showErrorMessage("ワークスペースが開かれていません。");
+    return;
+  }
+
+  const htmlFilePath = path.join(
+    vscode.extensions.getExtension("TaiyoFujii.novel-writer")?.extensionPath ||
+      "",
+    "dist",
+    "vivlioViewer",
+    "index.html",
+  );
+  const htmlContent = fs.readFileSync(htmlFilePath, "utf8");
+
+  const extensionPath = vscode.extensions.getExtension(
+    "TaiyoFujii.novel-writer",
+  )?.extensionPath;
+
+  if (extensionPath) {
+    panel.webview.html = htmlContent
+      .replace(
+        /src="(.*?)"/g,
+        (_, src) =>
+          `src="${panel.webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, "dist", "vivlioViewer", src)))}"`,
+      )
+      .replace(
+        /href="(.*?)"/g,
+        (_, href) =>
+          `href="${panel.webview.asWebviewUri(vscode.Uri.file(path.join(extensionPath, "dist", "vivlioViewer", href)))}"`,
+      );
+
+    // WebViewの作成後にメッセージを送信
+    sendMessageToPanel(panel);
+
+    // パネルが閉じられたときにcurrentPanelをクリア
+    panel.onDidDispose(() => {
+      currentPanel = undefined;
+    });
+
+    // 現在のパネルを追跡
+    currentPanel = panel;
+  } else {
+    vscode.window.showErrorMessage("Extension path is undefined.");
+  }
+}
+
+// メッセージ送信ロジックを関数化
+interface PanelMessage {
+  command: string;
+  content: string;
+}
+
+function sendMessageToPanel(panel: vscode.WebviewPanel) {
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (!workspaceFolders) {
+    vscode.window.showErrorMessage("ワークスペースが開かれていません。");
+    return;
+  }
+
+  const publishFilePath = path.join(
+    workspaceFolders[0].uri.fsPath,
+    "publish.html",
+  );
+  try {
+    const publishContent = fs.readFileSync(publishFilePath, "utf8");
+
+    const activeEditor = vscode.window.activeTextEditor;
+    let lineNumber;
+    if (activeEditor) {
+      const visibleRange = activeEditor.visibleRanges[0];
+      const startLine = visibleRange.start.line;
+      lineNumber = startLine + 1;
+    } else {
+      lineNumber = 1;
+    }
+    panel.webview.postMessage({
+      command: "loadDocument",
+      content: publishContent,
+      lineNumber: lineNumber,
+    });
+  } catch (error) {
+    vscode.window.showErrorMessage(
+      "ファイルを読み込めませんでした: " + (error as Error).message,
+    );
+  }
 }
 
 async function getPrintContent(): Promise<string> {
@@ -235,6 +286,7 @@ async function getPrintContent(): Promise<string> {
       html {
       orphans: 1;
       widows: 1;
+      color: black;
       }
 
       body{
