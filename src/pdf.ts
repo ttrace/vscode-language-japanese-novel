@@ -208,8 +208,20 @@ function sendMessageToPanel(panel: vscode.WebviewPanel) {
     let lineNumber;
     if (activeEditor) {
       const visibleRange = activeEditor.visibleRanges[0];
-      const startLine = visibleRange.start.line;
-      lineNumber = startLine + 1;
+      // カーソル位置を取得
+      const cursorPosition = activeEditor.selection.active;
+
+      // カーソルが画面内にある場合、その行番号を優先する
+      if (
+        cursorPosition.line >= visibleRange.start.line &&
+        cursorPosition.line <= visibleRange.end.line
+      ) {
+        lineNumber = cursorPosition.line + 1;
+      } else {
+        // カーソルが画面外の場合は最上部の行番号を利用する
+        const startLine = visibleRange.start.line;
+        lineNumber = startLine + 1;
+      }
     } else {
       lineNumber = 1;
     }

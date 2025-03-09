@@ -40,7 +40,7 @@ window.addEventListener("message", async (event: MessageEvent) => {
               "data-vivliostyle-viewer-status",
             );
             
-            if (status === "interactive") {
+            if (status === "complete") {
               console.log("Viewer status is complete. Loading line...");
               // Assuming you have a variable `linenumber` available in the scope
               loadInternalLine(Viewer, linenumber);
