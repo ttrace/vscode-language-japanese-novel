@@ -483,8 +483,7 @@ function launchserver(originEditor: vscode.TextEditor) {
         message.match(/^{"label":"jump"/)
       ) {
         const messageObject = JSON.parse(message);
-        //行のタップを検知した時
-        //const originalEditor = vscode.window.activeTextEditor;
+
 
         const targetLine = parseInt(messageObject.id.split("-")[1]);
         const targetPosition = new vscode.Position(

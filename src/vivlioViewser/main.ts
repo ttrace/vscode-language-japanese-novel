@@ -25,12 +25,18 @@ window.addEventListener("message", async (event: MessageEvent) => {
       const url = URL.createObjectURL(blob);
 
       const linenumber = message.lineNumber;
-      const positionUrl = "#l-" + linenumber;
 
       // Callback function to execute when mutations are observed
       const mutationCallback: MutationCallback = (mutationsList) => {
-          for (const mutation of mutationsList) {
-            console.log("Vivlio Loading",mutation);
+        for (const mutation of mutationsList) {
+          if (mutation.addedNodes[0] instanceof Element) {
+            const element = mutation.addedNodes[0] as Element;
+            console.log("Vivlio Loading", mutation.addedNodes[0] as Element);
+            if (element.getAttribute("data-vivliostyle-page-box")) {
+              if (loadInternalLine(Viewer, linenumber)) observer.disconnect();
+            }
+          }
+
           if (
             mutation.type === "attributes" &&
             mutation.attributeName === "data-vivliostyle-viewer-status"
@@ -39,7 +45,8 @@ window.addEventListener("message", async (event: MessageEvent) => {
             const status = target.getAttribute(
               "data-vivliostyle-viewer-status",
             );
-            
+            const loading = document.getElementById('loading');
+            if (loading) loading.remove();
             if (status === "complete") {
               console.log("Viewer status is complete. Loading line...");
               // Assuming you have a variable `linenumber` available in the scope
@@ -59,10 +66,11 @@ window.addEventListener("message", async (event: MessageEvent) => {
       observer.observe(wrapper, vivlioObserveconfig);
 
       Viewer.loadDocument({ url });
-    //   setTimeout(function () {
-    //     loadInternalLine(Viewer, linenumber);
-    //   }, 500);
 
+      break;
+    case "goToLine":
+      const linenumberToGo = message.lineNumber;
+      loadInternalLine(Viewer, linenumberToGo);
       break;
   }
 });
@@ -94,21 +102,45 @@ const options = {
 const Viewer = new CoreViewer(settings, options);
 
 document.addEventListener("click", (event) => {
-  const page = (event.target as Element)?.closest(
-    "[data-vivliostyle-spread-container]",
-  );
-  if (!page) return; // クリックされた要素にターゲットがない場合は終了
-  const rect = page.getBoundingClientRect();
-  const clickX = event.clientX - rect.left;
-  const halfWidth = rect.width / 2;
-
-  if (clickX < halfWidth) {
-    // 左半分をクリックした場合
-    Viewer.navigateToPage(Navigation.NEXT);
-  } else {
-    // 右半分をクリックした場合
-    Viewer.navigateToPage(Navigation.PREVIOUS);
+  // クリックされた要素から最も近い、data-vivliostyle-idを持つ親要素を探す
+  const targetElement = (event.target as Element)?.closest('[id^="l-"]');
+  if (!targetElement) {
+    console.error("data-vivliostyle-id attribute not found in ancestors.");
+    return;
   }
+
+  const linenNumberToGo = targetElement.id.replace(/^l-([0-9]+)$/, "$1");
+  console.log(targetElement, linenNumberToGo);
+
+  // 選択された文字のオフセットを取得
+  const selection = window.getSelection();
+  if (!selection) return;
+  const range = selection.getRangeAt(0);
+  // const offset = range ? range.startOffset : 0;
+
+  // テキストノードを収集して全体のテキストを結合
+  let totalText = "";
+  let clickedOffsetInNode = 0;
+  const walker = document.createTreeWalker(
+    targetElement,
+    NodeFilter.SHOW_TEXT,
+    null
+  );
+
+  while (walker.nextNode()) {
+    const currentNode = walker.currentNode;
+    if (currentNode === range.startContainer) {
+      clickedOffsetInNode = totalText.length + range.startOffset;
+    }
+    totalText += currentNode.textContent;
+  }
+
+  // VS Codeにメッセージを送信
+  vscode.postMessage({
+    command: "previewClicked",
+    linenNumberToGo,
+    offset: clickedOffsetInNode,
+  });
 });
 
 document.onkeydown = (e) => {
@@ -125,15 +157,23 @@ document.onkeydown = (e) => {
 };
 
 function loadInternalLine(view: CoreViewer, lineNumber: number) {
-  console.log(`Navigating to line number: ${lineNumber}`);
   // 指定された行番号 ID の要素を探す
   const elementId = `l-${lineNumber}`;
   const targetElement = document.getElementById(elementId);
 
   if (!targetElement) {
     console.error(`Element with ID ${elementId} not found.`);
-    return; // 要素がない場合は処理を終了
+    return false; // 要素がない場合は処理を終了
   }
+
+  // クラスを一時的に付与して強調表示
+  const highlightClass = "highlight";
+  targetElement.classList.add(highlightClass);
+
+  // 設定した時間後にクラスを削除
+  setTimeout(() => {
+    targetElement.classList.remove(highlightClass);
+  }, 1100); // 3秒後にクラスを削除
 
   // 要素の親を探し、ページインデックスを取得
   let pageContainer = targetElement.closest(
@@ -149,7 +189,9 @@ function loadInternalLine(view: CoreViewer, lineNumber: number) {
         // ページへの移動
         try {
           view.navigateToPage(Navigation.EPAGE, pageNumber);
+
           console.log(`Navigated to page index: ${pageNumber}`);
+          return true;
         } catch (error) {
           console.error(`Error navigating to page: ${error}`);
         }

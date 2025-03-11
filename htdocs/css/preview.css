@@ -120,8 +120,16 @@ h1 + h2 {
   margin-block-start: 16pt;
 }
 
-ruby > rt {
+body.vertical-rl ruby > rt {
   font-size: 0.5em;
+  width: 0.75em;
+  transform: translateX(0.2em);
+}
+
+body.horizontal-tb ruby > rt {
+  font-size: 0.5em;
+  width: 0.75em;
+  transform: translateY(-0.2em);
 }
 
 p {

@@ -169,7 +169,7 @@ function inline_tagggedHTML(paragraph: string){
     );
     lineText = lineText.replace(
       /([一-鿏々-〇]+?)《(.+?)》/g,
-      "<ruby>$1<rt>$2</rt></ruby>"
+      "<ruby data-ruby=\"$2\">$1<rt>$2</rt></ruby>"
     );
     lineText = lineText.replace(
       /(.+?)［＃「\1」に傍点］/g,

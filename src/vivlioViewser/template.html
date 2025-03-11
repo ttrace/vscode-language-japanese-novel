@@ -16,12 +16,34 @@
         height: 100vh;
         margin: 0;
       }
+      #loading {
+        width: 100%;
+        text-align: center;
+        position:absolute;
+        top: 50vh;
+      }
       [data-vivliostyle-viewer-viewport] [data-vivliostyle-spread-container] {
         flex-direction: row-reverse;
+      }
+      .highlight {
+        background-color: rgb(255, 203, 139);
+        animation: fadeOutHighlight 1s ease-out forwards;
+      }
+      @keyframes fadeOutHighlight {
+        0% {
+          background-color: rgb(255, 203, 139);
+        }
+        100% {
+          background-color: transparent;
+        }
       }
     </style>
   </head>
   <body>
-    <div id="vivlio-wrapper"><div id="viewer">loading...</div></div>
+    <div id="vivlio-wrapper">
+      <div id="loading">loading...</div>
+      <div id="viewer">
+      </div>
+    </div>
   </body>
 </html>

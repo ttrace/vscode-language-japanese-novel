@@ -223,7 +223,7 @@ const TreeView: React.FC<TreeViewProps> = ({
       }
     } else {
       setTimeout(() => {
-        (treeNodeRef.current as unknown as HTMLDivElement).focus();
+        // (treeNodeRef.current as unknown as HTMLDivElement).focus();
       }, 100);
     }
   };

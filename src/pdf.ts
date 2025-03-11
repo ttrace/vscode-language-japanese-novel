@@ -96,37 +96,21 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
       );
     } else {
       launchVivlioStylePreviewOnPanel();
-      // vscode.window.showInformationMessage(
-      //   `プレビュー起動中……\n初回起動には少々時間がかかります`,
-      // );
-
-      // if (vivlioProcess == null) {
-      //   if (myPath.fsPath.match(/^[a-z]:/)) {
-      //     // Windowsの場合、パスをエスケープシーケンスで囲む必要がある
-      //     //const adjustedPath = myPath.path.replace(/^\/[a-zA-Z]:\//, "").replace(/\//g,"\\\\");
-      //     launchVivlioStylePreview(`${execPath}`);
-      //   } else {
-      //     // 他のプラットフォームの場合、そのまま実行
-      //     launchVivlioStylePreview(myPath.fsPath);
-      //   }
-      // } else {
-      //   vscode.window.showInformationMessage(`プレビューが更新されました`);
-      // }
     }
   }
 }
 
 let currentPanel: vscode.WebviewPanel | undefined = undefined; // 既存のWebViewを追跡
+let currentEdior: vscode.TextEditor | undefined = undefined; // Vivliostyleを開いたエディターを追跡;
 
 function launchVivlioStylePreviewOnPanel() {
-  console.log("launchVivlioStylePreviewOnPanel");
-
   // 既存のWebViewがpdfPreviewであるか確認
   if (currentPanel && currentPanel.viewType === "pdfPreview") {
     sendMessageToPanel(currentPanel);
     currentPanel.reveal(vscode.ViewColumn.Two); // 既存のパネルを表示
     return;
   }
+  currentEdior = vscode.window.activeTextEditor;
 
   const panel = vscode.window.createWebviewPanel(
     "pdfPreview",
@@ -190,6 +174,8 @@ interface PanelMessage {
   content: string;
 }
 
+let selectionChangeDisposable: vscode.Disposable | undefined;
+
 function sendMessageToPanel(panel: vscode.WebviewPanel) {
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders) {
@@ -229,6 +215,122 @@ function sendMessageToPanel(panel: vscode.WebviewPanel) {
       command: "loadDocument",
       content: publishContent,
       lineNumber: lineNumber,
+    });
+
+    // すでにイベントハンドラーが登録されている場合は解除
+    if (selectionChangeDisposable) {
+      selectionChangeDisposable.dispose();
+    }
+
+    let isNavigatingFromWebView = false;
+    let isTypingOrDeleting = false;
+    let lastLineNumber: number | null = null;
+    // 追加: テキストエディターの選択が変更された時のイベントハンドラーを設定
+    vscode.window.onDidChangeTextEditorSelection((event) => {
+      if (isNavigatingFromWebView || isTypingOrDeleting) {
+        // WebViewからの行移動イベント時には、通常の動作を一時的にキャンセルする
+        isNavigatingFromWebView = false;
+        return;
+      }
+      const newSelection = event.selections[0];
+      if (newSelection && event.textEditor === activeEditor) {
+        const newLineNumber = newSelection.active.line;
+
+        // もし新しい行番号が前回と同じであれば、何もせず終了
+        if (lastLineNumber !== null && newLineNumber === lastLineNumber) {
+          return;
+        }
+
+        // 行番号を更新
+        lastLineNumber = newLineNumber;
+        panel.webview.postMessage({
+          command: "goToLine",
+          lineNumber: newLineNumber,
+        });
+      }
+    });
+
+    // テキストエディタ内での内容変更（タイピングや削除）を監視
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      if (
+        vscode.window.activeTextEditor &&
+        event.document === vscode.window.activeTextEditor.document
+      ) {
+        isTypingOrDeleting = true;
+
+        // 少しの待機時間後にフラグをリセット
+        setTimeout(() => {
+          isTypingOrDeleting = false;
+        }, 300); // 500ms後にリセット。状況に応じて調整可。
+      }
+    });
+
+    panel.webview.onDidReceiveMessage(async (messageFromPreview) => {
+      if (!messageFromPreview) {
+        console.error("No message received.");
+        return;
+      }
+
+      const { command, linenNumberToGo, offset } = messageFromPreview;
+
+      if (!command) {
+        console.error("Command not found in message.");
+        return;
+      }
+
+      switch (command) {
+        case "previewClicked":
+          const lineNumber = parseInt(linenNumberToGo);
+          const position = new vscode.Position(lineNumber, offset);
+          const range = new vscode.Range(position, position);
+          if (activeEditor) {
+            isNavigatingFromWebView = true; // フラグを設定してイベントの発火を無効化
+            // エディターをアクティブにする
+            vscode.window.showTextDocument(activeEditor.document, {
+              viewColumn: activeEditor.viewColumn,
+            });
+            const activeLineMovingEditor = vscode.window.activeTextEditor;
+            if (!activeLineMovingEditor) return;
+            activeLineMovingEditor.revealRange(
+              range,
+              vscode.TextEditorRevealType.AtTop,
+            );
+            activeLineMovingEditor.selection = new vscode.Selection(
+              position,
+              position,
+            );
+
+            const lineStart = new vscode.Position(lineNumber, 0);
+            const lineEnd = new vscode.Position(
+              lineNumber,
+              activeLineMovingEditor.document.lineAt(lineNumber).text.length,
+            );
+            const hightlightRange = new vscode.Range(lineStart, lineEnd);
+            // console.log(hightlightRange);
+            const highlightDuration = 500; // ハイライト時間 (ミリ秒)
+            const decorationType = vscode.window.createTextEditorDecorationType(
+              {
+                backgroundColor: "rgba(245, 165, 119, 0.3)", // ハイライト色 (半透明)
+                borderStyle: "none", // ハイライトの境界線のスタイル
+                borderRadius: "2px", // ハイライトの角丸
+              },
+            );
+
+            // 選択されたテキストにデコレーションを適用
+            activeLineMovingEditor.setDecorations(decorationType, [
+              hightlightRange,
+            ]);
+
+            // タイマーをセットしてデコレーションを削除
+            setTimeout(() => {
+              decorationType.dispose();
+            }, highlightDuration);
+          } else {
+            console.error("エディターが見つかりません");
+          }
+
+          break;
+      }
     });
   } catch (error) {
     vscode.window.showErrorMessage(
@@ -295,6 +397,9 @@ async function getPrintContent(): Promise<string> {
 
   let printCss = `<style>
       @charset "UTF-8";
+      :root {
+        --font-size: ${fontSizeWithUnit}
+      }
       html {
       orphans: 1;
       widows: 1;
@@ -438,10 +543,16 @@ async function getPrintContent(): Promise<string> {
         margin-block-start: calc(${fontSizeWithUnit} * 1.75);
       }
       
-      ruby > rt {
-      font-size: 6.5q;
+      body.vertical-rl ruby > rt {
+        font-size: 0.5em;
+        width: 0.75em;
       }
-  
+
+      body.horizontal-tb ruby > rt {
+        font-size: 0.5em;
+        width: 0.75em;
+      }
+
       p {
         font-size: ${fontSizeWithUnit};
         line-height: 1.75;
@@ -648,7 +759,7 @@ async function getPrintContent(): Promise<string> {
       <title>${projectTitle}</title>
       ${printCss}
   </head>
-  <body>
+  <body class="${previewSettings.writingDirection}">
   <div id="draft">
   ${myText}
   </div>
