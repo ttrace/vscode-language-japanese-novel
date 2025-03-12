@@ -9,154 +9,187 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const vscode = (window as any).acquireVsCodeApi();
 
-// Ensure the wrapper element exists
-const wrapper = document.getElementById("vivlio-wrapper");
-if (!wrapper) {
-  throw new Error("Wrapper element not found");
-}
+document.addEventListener("DOMContentLoaded", () => {
+  const wrapper = document.getElementById("vivlio-wrapper");
+  const viewer = document.getElementById("viewer");
+  const pagebar = document.querySelector("div#pages");
 
-window.addEventListener("message", async (event: MessageEvent) => {
-  const message = event.data;
-  switch (message.command) {
-    case "loadDocument":
-      const documentContent = message.content;
-      // HTML文字列をBlobに変換し、そのURLを生成
-      const blob = new Blob([documentContent], { type: "text/html" });
-      const url = URL.createObjectURL(blob);
+  if (wrapper && viewer && pagebar) {
+    // 初期エレメントがあるかどうか
+    window.addEventListener("message", async (event: MessageEvent) => {
+      const message = event.data;
+      switch (message.command) {
+        case "loadDocument":
+          pagebar.innerHTML = "";
+          const pageDirection = message.pageProgression;
+          // data-page-direction 属性に値を設定
+          const bodyElement = document.querySelector("body");
+          bodyElement?.setAttribute("data-page-direction", pageDirection);
+          const documentContent = message.content;
+          // HTML文字列をBlobに変換し、そのURLを生成
+          const blob = new Blob([documentContent], { type: "text/html" });
+          const url = URL.createObjectURL(blob);
 
-      const linenumber = message.lineNumber;
+          const linenumber = message.lineNumber;
 
-      // Callback function to execute when mutations are observed
-      const mutationCallback: MutationCallback = (mutationsList) => {
-        for (const mutation of mutationsList) {
-          if (mutation.addedNodes[0] instanceof Element) {
-            const element = mutation.addedNodes[0] as Element;
-            console.log("Vivlio Loading", mutation.addedNodes[0] as Element);
-            if (element.getAttribute("data-vivliostyle-page-box")) {
-              if (loadInternalLine(Viewer, linenumber)) observer.disconnect();
+          // Callback function to execute when mutations are observed
+          let loadInternalLineCalled = false;
+          let previousPageNumber = -1;
+
+          const mutationCallback: MutationCallback = async (mutationsList) => {
+            for (const mutation of mutationsList) {
+              if (mutation.addedNodes[0] instanceof Element) {
+                const element = mutation.addedNodes[0] as Element;
+                // console.log("Vivlio Loading", mutation.addedNodes[0] as Element);
+                if (element.getAttribute("data-vivliostyle-page-container")) {
+                  const page = element;
+                  const pageIndex = element.getAttribute(
+                    "data-vivliostyle-page-index",
+                  );
+                  console.log("Vivlio page", pageIndex, page);
+                  if (pageIndex !== null && !isNaN(parseInt(pageIndex))) {
+                    const pageNumber = parseInt(pageIndex);
+                    if (pageNumber != previousPageNumber) {
+                      // ページアイテム作成
+                      const pageButton = document.createElement("div");
+                      const pageCount = `${pageNumber + 1}`;
+                      pageButton.id = "p-" + pageCount;
+                      pageButton.className = "page-button";
+                      pageButton.textContent = pageCount;
+                      pagebar.appendChild(pageButton);
+                      previousPageNumber = pageNumber;
+                      pageButton.addEventListener("click", () => {
+                        Viewer.navigateToPage(Navigation.EPAGE, pageNumber);
+                        console.log("Navigate to", pageNumber);
+                        pageActivate(pageNumber);
+                      });
+                      // // ページジャンプ処理をフラグで制御
+                      // if (!loadInternalLineCalled) {
+                      //   loadInternalLineCalled = true;
+                      //   const isFound = await loadInternalLine(
+                      //     Viewer,
+                      //     linenumber,
+                      //   );
+                      //   loadInternalLineCalled = isFound ? false : true;
+                      // }
+                    }
+                  }
+                }
+              }
+
+              if (
+                mutation.type === "attributes" &&
+                mutation.attributeName === "data-vivliostyle-viewer-status"
+              ) {
+                const target = mutation.target as HTMLElement;
+                const status = target.getAttribute(
+                  "data-vivliostyle-viewer-status",
+                );
+                const loading = document.getElementById("loading");
+                if (loading) loading.remove();
+                if (status === "complete") {
+                  // console.log("Viewer status is complete. Loading line...");
+                  // Assuming you have a variable `linenumber` available in the scope
+                  // loadInternalLine(Viewer, linenumber);
+                  observer.disconnect();
+                }
+              }
             }
-          }
+          };
 
-          if (
-            mutation.type === "attributes" &&
-            mutation.attributeName === "data-vivliostyle-viewer-status"
-          ) {
-            const target = mutation.target as HTMLElement;
-            const status = target.getAttribute(
-              "data-vivliostyle-viewer-status",
-            );
-            const loading = document.getElementById('loading');
-            if (loading) loading.remove();
-            if (status === "complete") {
-              console.log("Viewer status is complete. Loading line...");
-              // Assuming you have a variable `linenumber` available in the scope
-              loadInternalLine(Viewer, linenumber);
-              observer.disconnect();
-            }
-          }
-        }
-      };
+          const observer = new MutationObserver(mutationCallback);
+          const vivlioObserveconfig = {
+            attributes: true,
+            childList: true,
+            subtree: true,
+          };
+          observer.observe(wrapper, vivlioObserveconfig);
 
-      const observer = new MutationObserver(mutationCallback);
-      const vivlioObserveconfig = {
-        attributes: true,
-        childList: true,
-        subtree: true,
-      };
-      observer.observe(wrapper, vivlioObserveconfig);
+          Viewer.loadDocument({ url });
 
-      Viewer.loadDocument({ url });
+          break;
+        case "goToLine":
+          const linenumberToGo = message.lineNumber;
+          loadInternalLine(Viewer, linenumberToGo);
+          break;
+      }
+    });
 
-      break;
-    case "goToLine":
-      const linenumberToGo = message.lineNumber;
-      loadInternalLine(Viewer, linenumberToGo);
-      break;
-  }
-});
-
-const config = {
-  title: "My printed page",
-  printCallback: (iframeWin: { print: () => any }) => iframeWin.print(), // optional: only needed if calling something other than window.print() for printing.
-  errorCallback: (error: any) => console.error(error), // add errorCallback property
-  hideIframe: false, // add hideIframe property
-  removeIframe: true, // add removeIframe property
-};
-
-const viewer = document.getElementById("viewer");
-if (!viewer) {
-  throw new Error("Viewer element not found");
-}
-
-const settings = {
-  viewportElement: viewer as HTMLElement,
-};
-
-const options = {
-  autoResize: true,
-  fitToScreen: true,
-  renderAllPages: true,
-  pageViewMode: "autoSpread" as PageViewMode,
-};
-
-const Viewer = new CoreViewer(settings, options);
-
-document.addEventListener("click", (event) => {
-  // クリックされた要素から最も近い、data-vivliostyle-idを持つ親要素を探す
-  const targetElement = (event.target as Element)?.closest('[id^="l-"]');
-  if (!targetElement) {
-    console.error("data-vivliostyle-id attribute not found in ancestors.");
-    return;
-  }
-
-  const linenNumberToGo = targetElement.id.replace(/^l-([0-9]+)$/, "$1");
-  console.log(targetElement, linenNumberToGo);
-
-  // 選択された文字のオフセットを取得
-  const selection = window.getSelection();
-  if (!selection) return;
-  const range = selection.getRangeAt(0);
-  // const offset = range ? range.startOffset : 0;
-
-  // テキストノードを収集して全体のテキストを結合
-  let totalText = "";
-  let clickedOffsetInNode = 0;
-  const walker = document.createTreeWalker(
-    targetElement,
-    NodeFilter.SHOW_TEXT,
-    null
-  );
-
-  while (walker.nextNode()) {
-    const currentNode = walker.currentNode;
-    if (currentNode === range.startContainer) {
-      clickedOffsetInNode = totalText.length + range.startOffset;
+    if (!viewer) {
+      throw new Error("Viewer element not found");
     }
-    totalText += currentNode.textContent;
-  }
 
-  // VS Codeにメッセージを送信
-  vscode.postMessage({
-    command: "previewClicked",
-    linenNumberToGo,
-    offset: clickedOffsetInNode,
-  });
+    const settings = {
+      viewportElement: viewer as HTMLElement,
+    };
+
+    const options = {
+      autoResize: true,
+      fitToScreen: true,
+      renderAllPages: true,
+      pageViewMode: "autoSpread" as PageViewMode,
+    };
+
+    const Viewer = new CoreViewer(settings, options);
+
+    document.addEventListener("click", (event) => {
+      // クリックされた要素から最も近い、data-vivliostyle-idを持つ親要素を探す
+      const targetElement = (event.target as Element)?.closest('[id^="l-"]');
+      if (!targetElement) {
+        console.error("data-vivliostyle-id attribute not found in ancestors.");
+        return;
+      }
+
+      const linenNumberToGo = targetElement.id.replace(/^l-([0-9]+)$/, "$1");
+      console.log(targetElement, linenNumberToGo);
+
+      // 選択された文字のオフセットを取得
+      const selection = window.getSelection();
+      if (!selection) return;
+      const range = selection.getRangeAt(0);
+      // const offset = range ? range.startOffset : 0;
+
+      // テキストノードを収集して全体のテキストを結合
+      let totalText = "";
+      let clickedOffsetInNode = 0;
+      const walker = document.createTreeWalker(
+        targetElement,
+        NodeFilter.SHOW_TEXT,
+        null,
+      );
+
+      while (walker.nextNode()) {
+        const currentNode = walker.currentNode;
+        if (currentNode === range.startContainer) {
+          clickedOffsetInNode = totalText.length + range.startOffset;
+        }
+        totalText += currentNode.textContent;
+      }
+
+      // VS Codeにメッセージを送信
+      vscode.postMessage({
+        command: "previewClicked",
+        linenNumberToGo,
+        offset: clickedOffsetInNode,
+      });
+    });
+
+    document.onkeydown = (e) => {
+      if (e.key === "ArrowRight") {
+        Viewer.navigateToPage(Navigation.PREVIOUS);
+        console.log("LR?", Viewer.getCurrentPageProgression());
+        console.log(
+          document?.querySelector("[data-vivliostyle-spread-container]")
+            ?.childElementCount,
+        );
+      } else if (e.key === "ArrowLeft") {
+        Viewer.navigateToPage(Navigation.NEXT);
+      }
+    };
+  }
 });
 
-document.onkeydown = (e) => {
-  if (e.key === "ArrowRight") {
-    Viewer.navigateToPage(Navigation.PREVIOUS);
-    console.log("LR?", Viewer.getCurrentPageProgression());
-    console.log(
-      document?.querySelector("[data-vivliostyle-spread-container]")
-        ?.childElementCount,
-    );
-  } else if (e.key === "ArrowLeft") {
-    Viewer.navigateToPage(Navigation.NEXT);
-  }
-};
-
-function loadInternalLine(view: CoreViewer, lineNumber: number) {
+async function loadInternalLine(view: CoreViewer, lineNumber: number) {
   // 指定された行番号 ID の要素を探す
   const elementId = `l-${lineNumber}`;
   const targetElement = document.getElementById(elementId);
@@ -189,7 +222,7 @@ function loadInternalLine(view: CoreViewer, lineNumber: number) {
         // ページへの移動
         try {
           view.navigateToPage(Navigation.EPAGE, pageNumber);
-
+          pageActivate(pageNumber);
           console.log(`Navigated to page index: ${pageNumber}`);
           return true;
         } catch (error) {
@@ -204,4 +237,15 @@ function loadInternalLine(view: CoreViewer, lineNumber: number) {
   } else {
     console.error("Parent page container not found.");
   }
+}
+
+function pageActivate(pageNumber: number) {
+  const pageButtonId = `p-${pageNumber + 1}`;
+  const pageButton = document.getElementById(pageButtonId);
+  const pageButtons = document.querySelectorAll(".page-button");
+  pageButtons.forEach((button) => {
+    button.classList.remove("active");
+  });
+  // pageButtonに.activeクラスを追加
+  pageButton?.classList.add("active");
 }

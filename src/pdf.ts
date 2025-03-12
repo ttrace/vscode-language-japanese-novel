@@ -118,6 +118,7 @@ function launchVivlioStylePreviewOnPanel() {
     vscode.ViewColumn.Two,
     {
       enableScripts: true,
+      retainContextWhenHidden: true
     },
   );
 
@@ -177,6 +178,7 @@ interface PanelMessage {
 let selectionChangeDisposable: vscode.Disposable | undefined;
 
 function sendMessageToPanel(panel: vscode.WebviewPanel) {
+  const previewSettings: NovelSettings = getConfig();
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders) {
     vscode.window.showErrorMessage("ワークスペースが開かれていません。");
@@ -215,6 +217,7 @@ function sendMessageToPanel(panel: vscode.WebviewPanel) {
       command: "loadDocument",
       content: publishContent,
       lineNumber: lineNumber,
+      pageProgression: previewSettings.writingDirection
     });
 
     // すでにイベントハンドラーが登録されている場合は解除

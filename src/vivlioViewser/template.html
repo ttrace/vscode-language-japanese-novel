@@ -13,13 +13,13 @@
       }
       #viewer {
         width: 100%;
-        height: 100vh;
+        height: calc(100vh - 2em); /*スクロールバー回避分*/
         margin: 0;
       }
       #loading {
         width: 100%;
         text-align: center;
-        position:absolute;
+        position: absolute;
         top: 50vh;
       }
       [data-vivliostyle-viewer-viewport] [data-vivliostyle-spread-container] {
@@ -37,13 +37,54 @@
           background-color: transparent;
         }
       }
+      #pages {
+        position: fixed;
+        bottom: 0;
+        width: 100vw;
+        max-width: 100vw;
+        overflow-x: hidden;
+        height: 3em;
+        display: flex;
+        flex-direction: row; /* 横並び */
+        justify-content: center; /* 子要素を均等に配置 */
+        align-items: center; /* 垂直方向に中央揃え */
+      }
+      .page-button {
+        margin: 0 0.2em;
+        padding: 0.1em;
+        border: 1px solid #5d5d5d; /* ボーダーで視覚的に区切る */
+        background-color: rgb(206, 206, 206);
+        color: rgb(49, 49, 49);
+        cursor: pointer;
+        font-size: 1em;
+        width: 1.2em;
+        height: 1.75em;
+        display: flex;
+        justify-content: center; /* 水平方向の中央寄せ */
+        align-items: center; /* 垂直方向の中央寄せ */
+        transition: transform 0.2s linear;
+      }
+
+      .page-button:hover {
+      }
+
+      .page-button.active {
+        transform: translateY(-0.2em);
+        border: 1px solid #3e3e3e; /* ボーダーで視覚的に区切る */
+        background-color: white;
+        color: black;
+      }
+
+      body[data-page-direction="vertical-rl"] #pages {
+        flex-direction: row-reverse;
+      }
     </style>
   </head>
   <body>
     <div id="vivlio-wrapper">
       <div id="loading">loading...</div>
-      <div id="viewer">
-      </div>
+      <div id="viewer"></div>
+      <div id="pages"></div>
     </div>
   </body>
 </html>
