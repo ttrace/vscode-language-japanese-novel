@@ -104,12 +104,20 @@ let currentPanel: vscode.WebviewPanel | undefined = undefined; // 既存のWebVi
 let currentEdior: vscode.TextEditor | undefined = undefined; // Vivliostyleを開いたエディターを追跡;
 
 function launchVivlioStylePreviewOnPanel() {
+  const activeEditor = vscode.window.activeTextEditor;
+
+  if (!activeEditor) {
+    vscode.window.showErrorMessage("アクティブなエディターがありません。");
+    return;
+  }
+
   // 既存のWebViewがpdfPreviewであるか確認
   if (currentPanel && currentPanel.viewType === "pdfPreview") {
-    sendMessageToPanel(currentPanel);
+    sendMessageToPanel(currentPanel, activeEditor); // activeEditorを渡す
     currentPanel.reveal(vscode.ViewColumn.Two); // 既存のパネルを表示
     return;
   }
+
   currentEdior = vscode.window.activeTextEditor;
 
   const panel = vscode.window.createWebviewPanel(
@@ -118,7 +126,7 @@ function launchVivlioStylePreviewOnPanel() {
     vscode.ViewColumn.Two,
     {
       enableScripts: true,
-      retainContextWhenHidden: true
+      retainContextWhenHidden: true,
     },
   );
 
@@ -155,7 +163,7 @@ function launchVivlioStylePreviewOnPanel() {
       );
 
     // WebViewの作成後にメッセージを送信
-    sendMessageToPanel(panel);
+    sendMessageToPanel(panel, activeEditor);
 
     // パネルが閉じられたときにcurrentPanelをクリア
     panel.onDidDispose(() => {
@@ -177,7 +185,7 @@ interface PanelMessage {
 
 let selectionChangeDisposable: vscode.Disposable | undefined;
 
-function sendMessageToPanel(panel: vscode.WebviewPanel) {
+function sendMessageToPanel(panel: vscode.WebviewPanel, editor: vscode.TextEditor) {
   const previewSettings: NovelSettings = getConfig();
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders) {
@@ -192,7 +200,7 @@ function sendMessageToPanel(panel: vscode.WebviewPanel) {
   try {
     const publishContent = fs.readFileSync(publishFilePath, "utf8");
 
-    const activeEditor = vscode.window.activeTextEditor;
+    const activeEditor = editor;
     let lineNumber;
     if (activeEditor) {
       const visibleRange = activeEditor.visibleRanges[0];
@@ -217,7 +225,7 @@ function sendMessageToPanel(panel: vscode.WebviewPanel) {
       command: "loadDocument",
       content: publishContent,
       lineNumber: lineNumber,
-      pageProgression: previewSettings.writingDirection
+      pageProgression: previewSettings.writingDirection,
     });
 
     // すでにイベントハンドラーが登録されている場合は解除

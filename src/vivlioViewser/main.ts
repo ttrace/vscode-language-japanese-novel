@@ -5,9 +5,11 @@ import {
   Navigation,
   PageViewMode,
 } from "@vivliostyle/core";
+import './styles.scss';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const vscode = (window as any).acquireVsCodeApi();
+let pageDirection = "vertical-rl";
 
 document.addEventListener("DOMContentLoaded", () => {
   const wrapper = document.getElementById("vivlio-wrapper");
@@ -21,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
       switch (message.command) {
         case "loadDocument":
           pagebar.innerHTML = "";
-          const pageDirection = message.pageProgression;
+          pageDirection = message.pageProgression;
           // data-page-direction 属性に値を設定
           const bodyElement = document.querySelector("body");
           bodyElement?.setAttribute("data-page-direction", pageDirection);
@@ -55,23 +57,19 @@ document.addEventListener("DOMContentLoaded", () => {
                       const pageCount = `${pageNumber + 1}`;
                       pageButton.id = "p-" + pageCount;
                       pageButton.className = "page-button";
-                      pageButton.textContent = pageCount;
+                      // pageButton.textContent = pageCount;
+                      const pageIndex = document.createElement("span");
+                      if(pageNumber > 98) pageIndex.classList.add("century");
+                      pageIndex.textContent = pageCount;
+                      pageButton.appendChild(pageIndex);
                       pagebar.appendChild(pageButton);
                       previousPageNumber = pageNumber;
+                      changeRootCssVariable("--total-page-numbers", pageNumber);
                       pageButton.addEventListener("click", () => {
                         Viewer.navigateToPage(Navigation.EPAGE, pageNumber);
                         console.log("Navigate to", pageNumber);
                         pageActivate(pageNumber);
                       });
-                      // // ページジャンプ処理をフラグで制御
-                      // if (!loadInternalLineCalled) {
-                      //   loadInternalLineCalled = true;
-                      //   const isFound = await loadInternalLine(
-                      //     Viewer,
-                      //     linenumber,
-                      //   );
-                      //   loadInternalLineCalled = isFound ? false : true;
-                      // }
                     }
                   }
                 }
@@ -87,10 +85,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 );
                 const loading = document.getElementById("loading");
                 if (loading) loading.remove();
+
+                // 前ページの読み込みが終わった時の処理
                 if (status === "complete") {
-                  // console.log("Viewer status is complete. Loading line...");
-                  // Assuming you have a variable `linenumber` available in the scope
-                  // loadInternalLine(Viewer, linenumber);
+                  const currentPageIndex = searchActivePage();
+                  pageActivate(currentPageIndex);
                   observer.disconnect();
                 }
               }
@@ -176,16 +175,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.onkeydown = (e) => {
       if (e.key === "ArrowRight") {
-        Viewer.navigateToPage(Navigation.PREVIOUS);
-        console.log("LR?", Viewer.getCurrentPageProgression());
-        console.log(
-          document?.querySelector("[data-vivliostyle-spread-container]")
-            ?.childElementCount,
-        );
+        const currentPageIndex = searchActivePage();
+        if (pageDirection == "vertical-rl") {
+          Viewer.navigateToPage(Navigation.PREVIOUS);
+          pageActivate(currentPageIndex - 1);
+        } else {
+          Viewer.navigateToPage(Navigation.NEXT);
+          pageActivate(currentPageIndex + 1);
+        }
       } else if (e.key === "ArrowLeft") {
-        Viewer.navigateToPage(Navigation.NEXT);
+        const currentPageIndex = searchActivePage();
+        if (pageDirection == "vertical-rl") {
+          Viewer.navigateToPage(Navigation.NEXT);
+          pageActivate(currentPageIndex + 1);
+        } else {
+          Viewer.navigateToPage(Navigation.PREVIOUS);
+          pageActivate(currentPageIndex - 1);
+        }
+
       }
     };
+
+    function searchActivePage() {
+      const pages = document.querySelectorAll(
+        "[data-vivliostyle-page-container]",
+      );
+      for (const page of Array.from(pages)) {
+        const style = window.getComputedStyle(page);
+        if (style.display === "block") {
+          const pageIndex = page.getAttribute("data-vivliostyle-page-index");
+          if (pageIndex) {
+            return parseInt(pageIndex, 10); // 要素インデックスを数値に変換して返す
+          }
+        }
+      }
+      return -1; // 全ての要素をチェックした後も条件に合致しなかった場合
+    }
   }
 });
 
@@ -240,12 +265,60 @@ async function loadInternalLine(view: CoreViewer, lineNumber: number) {
 }
 
 function pageActivate(pageNumber: number) {
+  const pageButtons = document.querySelectorAll(".page-button");
+  if (pageNumber < 0) return;
+  if (pageNumber >= pageButtons.length) return;
   const pageButtonId = `p-${pageNumber + 1}`;
   const pageButton = document.getElementById(pageButtonId);
-  const pageButtons = document.querySelectorAll(".page-button");
+
   pageButtons.forEach((button) => {
-    button.classList.remove("active");
+    button.classList.remove(
+      "active",
+      "besides",
+      "besides-1",
+      "besides-2",
+      "besides-3",
+      "besides-4",
+      "besides-5",
+      "besides-6",
+      "besides-7",
+      "besides-8"
+    );
   });
-  // pageButtonに.activeクラスを追加
+
   pageButton?.classList.add("active");
+
+  let activeIndex = -1; // 初期値を-1に設定（見つからなかった場合の値）
+
+  if (pageButton) {
+    pageButtons.forEach((button, index) => {
+      if (button === pageButton) {
+        activeIndex = index; // インデックスを更新
+      }
+    });
+  }
+
+  // 前の三つのボタンに 'besides' クラスを追加
+  let besideIndex = 0;
+  for (let i = Math.max(0, activeIndex - 4); i < activeIndex; i++) {
+    besideIndex++;
+    const className = `besides-${besideIndex}`;
+    pageButtons[i].classList.add(className);
+  }
+
+  besideIndex = 4;
+  // 後ろの三つのボタンに 'besides' クラスを追加
+  for (
+    let i = activeIndex + 1;
+    i <= Math.min(pageButtons.length - 1, activeIndex + 4);
+    i++
+  ) {
+    besideIndex++;
+    const className = `besides-${besideIndex}`;
+    pageButtons[i].classList.add(className);
+  }
+}
+
+function changeRootCssVariable(varName: string, value: any) {
+  document.documentElement.style.setProperty(varName, value);
 }
