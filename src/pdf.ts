@@ -12,11 +12,14 @@ const output = vscode.window.createOutputChannel("Novel");
 
 let vivlioProcess: cp.ChildProcess | null = null;
 
-export function previewpdf() {
-  exportpdf(true);
+export function previewpdf(context: vscode.ExtensionContext) {
+  exportpdf(context, true);
 }
 
-export async function exportpdf(preview: boolean | undefined): Promise<void> {
+export async function exportpdf(
+  context: vscode.ExtensionContext,
+  preview: boolean | undefined,
+): Promise<void> {
   if (!vscode.workspace.workspaceFolders) {
     vscode.window.showWarningMessage(`ワークスペースが見つかりません`);
     return;
@@ -95,7 +98,7 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
         },
       );
     } else {
-      launchVivlioStylePreviewOnPanel();
+      launchVivlioStylePreviewOnPanel(context);
     }
   }
 }
@@ -103,7 +106,7 @@ export async function exportpdf(preview: boolean | undefined): Promise<void> {
 let currentPanel: vscode.WebviewPanel | undefined = undefined; // 既存のWebViewを追跡
 let currentEdior: vscode.TextEditor | undefined = undefined; // Vivliostyleを開いたエディターを追跡;
 
-function launchVivlioStylePreviewOnPanel() {
+function launchVivlioStylePreviewOnPanel(context: vscode.ExtensionContext) {
   const activeEditor = vscode.window.activeTextEditor;
 
   if (!activeEditor) {
@@ -129,6 +132,16 @@ function launchVivlioStylePreviewOnPanel() {
       retainContextWhenHidden: true,
     },
   );
+
+  const colorTheme = vscode.window.activeColorTheme.kind;
+  const iconfile =
+    colorTheme === vscode.ColorThemeKind.Dark
+      ? "preview-pdf-dark.svg"
+      : "preview-pdf-light.svg";
+  const iconPath = vscode.Uri.file(
+    path.join(context.extensionPath, "media", iconfile),
+  );
+  panel.iconPath = iconPath;
 
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders) {
@@ -185,7 +198,10 @@ interface PanelMessage {
 
 let selectionChangeDisposable: vscode.Disposable | undefined;
 
-function sendMessageToPanel(panel: vscode.WebviewPanel, editor: vscode.TextEditor) {
+function sendMessageToPanel(
+  panel: vscode.WebviewPanel,
+  editor: vscode.TextEditor,
+) {
   const previewSettings: NovelSettings = getConfig();
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders) {

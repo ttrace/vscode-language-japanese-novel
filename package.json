@@ -57,7 +57,11 @@
       },
       {
         "command": "Novel.vertical-preview",
-        "title": "Novel:縦書きプレビュー"
+        "title": "Novel:縦書きプレビュー",
+        "icon": {
+          "light": "media/preview-html-light.svg",
+          "dark": "media/preview-html-dark.svg"
+        }
       },
       {
         "command": "Novel.change-tenseAspect",
@@ -85,7 +89,11 @@
       },
       {
         "command": "Novel.preview-pdf",
-        "title": "Novel:PDFプレビュー"
+        "title": "Novel:PDFプレビュー",
+        "icon": {
+          "light": "media/preview-pdf-light.svg",
+          "dark": "media/preview-pdf-dark.svg"
+        }
       },
       {
         "command": "Novel.export-pdf",
@@ -289,6 +297,18 @@
       }
     },
     "menus": {
+      "editor/title": [
+        {
+          "command": "Novel.vertical-preview",
+          "when": "editorLangId == novel",
+          "group": "navigation"
+        },
+        {
+          "command": "Novel.preview-pdf",
+          "when": "editorLangId == novel",
+          "group": "navigation"
+        }
+      ],
       "explorer/context": [
         {
           "when": "explorerResourceIsFolder == true",
