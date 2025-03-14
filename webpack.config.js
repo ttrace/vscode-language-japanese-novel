@@ -90,5 +90,40 @@ const webviewConfig = {
 	]
 };
 
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const vivlioView = {
+	mode: 'none',
+	entry: './src/vivlioViewser/main.ts',
+	output: {
+		filename: 'vivlio.js',
+		path: path.resolve(__dirname, 'dist/vivlioViewer')
+	},
+	resolve: {
+		extensions: ['.ts'],
+	},
+	module: {
+		rules: [
+			{
+				test: /\.tsx?$/,
+				exclude: /node_modules/,
+				use: 'ts-loader'
+			},
+			{
+				test: /\.scss$/,
+				use: ['style-loader', 'css-loader', 'sass-loader']
+			}
+		]
+	},
+	plugins: [
+		new webpack.DefinePlugin({
+			'process.env.NODE_ENV': JSON.stringify('production')
+		}),
+		new HtmlWebpackPlugin({
+			template: './src/vivlioViewser/template.html', // テンプレートHTMLファイル
+			filename: 'index.html',          // 出力HTMLファイル名
+		  }),
+	]
+}
+
 // eslint-disable-next-line no-undef
-module.exports = [webExtensionConfig, webviewConfig];
+module.exports = [webExtensionConfig, webviewConfig,vivlioView];

@@ -7,14 +7,16 @@ Visual Studio Codeで小説を執筆するための機能拡張です。
 - [サイドパネル・ステータスバー機能拡張](#side-panel)
     - [原稿ツリー編集](#原稿ツリー編集)
     - [文字数カウント](#文字数カウント)
-- [原稿用紙プレビュー](#preview)
+- [原稿プレビュー](#preview)
 - [PDF出力](#pdf-features)
 - [FAQ](#faq)
 - [References](#references)
 - [Sponsors](#sponsors)
 - [付録](#appendix)
 
-![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/highlight-and-vertical.png)
+![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/highlight-and-vertical.png "品詞ハイライトと原稿用紙プレビューを実行")
+![カラーリング](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/highlight-and-vertica-light.png "ハイライトを無効にしてPDFプレビュー")
+
 
 GitHubスポンサー
 novel-writerの開発は[こちらの方々](#sponsors)に応援いただいています。
@@ -159,17 +161,32 @@ Gitを利用しているときにファイルの連番を変更すると、た�
 
 ## Preview
 
+novel-writerには、原稿用紙と印刷イメージ二つのプレビューがあります。ダークモードに対応し、リアルタイムで更新する原稿用紙と、実際の書籍を彷彿とさせる印刷プレビューは、エディター上のボタンから簡単にアクセスできます。
+
+![プレビューボタン](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/preview-buttons.png)
+
+
 ### 原稿用紙プレビュー
 
-コマンドパレットの\[Novel:縦書きプレビュー\]で、現在使っているエディタのテキストを、原稿用紙プレビューすることができます。原稿の表示方法は、縦書きと横書き、一行あたりの文字数を指定することができます。
-プレビュー画面はlocalhost:8080に出力していますので、ブラウザーや同じLANの他コンピュターから閲覧することもできます。  
+コマンドパレットの\[Novel:原稿用紙プレビュー\]、またはエディター上部の![原稿用紙プレビューボタン](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/draft-prefview-button.png)をクリックすると、エディタのテキストを原稿用紙プレビューすることができます。原稿の表示方法は、縦書きと横書き、一行あたりの文字数を指定することができます。
+プレビュー画面はlocalhost:8080で動作するWebサーバーですので、ブラウザーや同じLANの他コンピュターから閲覧することもできます。  
 小さな画面で書く場合、またはVS Codeのウインドウを無駄に使いたくない場合には、\[Novel:プレビューサーバーを起動\]を実行して、別画面のブラウザーやブラウザーや他のコンピューター、スマートフォン、タブレットのブラウザーから縦書きプレビューを閲覧することもできます。
 
 縦書きプレビューでは、二桁のASCII数字を縦中横に組んで表示します。
 
+![原稿用紙プレビュー](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/draftsheet-preview.png)
+
+### PDFプレビュー
+
+コマンドパレットの\[Novel:PDFプレビュー\]、またはエディター上部の![PDFプレビューボタン](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/pdf-prefview-button.png)をクリックすると、エディタのテキストを原稿用紙プレビューすることができます。
+リアルタイムで変更を反映しないので、原稿の修正を反映したい時はPDFプレビューを再度実行してください。
+プレビュー画面がアクティブな時は、カーソルキーの左右でもページを送ることができます。
+
+![PDFプレビュー](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/pdf-preview.png)
+
 #### プレビュー画面との画面連動
 
-縦書きプレビューでクリック（あるいはタップ）すると、エディタがスクロールしてタップした行を選択します。長いテキストを推敲するときにご利用ください。
+プレビューでクリック（あるいはタップ）すると、エディタがスクロールしてタップした行を選択します。長いテキストを推敲するときにご利用ください。
 
 #### プレビュー設定
 
@@ -190,7 +207,7 @@ Extension Settings で、文字サイズと一行あたりの文字数、ペー�
 
 
 ###### プレビューフォントの設定
-プレビューフォントの設定が可能です。
+原稿用紙プレビューではフォントを設定できます。
 
 Contributed by [yasudaz](https://github.com/yasudaz)](https://github.com/yasudaz)
 
@@ -202,9 +219,9 @@ Contributed by [yasudaz](https://github.com/yasudaz)](https://github.com/yasudaz
 
 出力するHTMLを検索置換することができます。オリジナルのタグを挿入する場合などにご利用ください。  
 
-## PDF Features
+## PDF 出力
 
-novel-writerは[Vivliostyle/CLI](https://vivliostyle.org/ja/)を用いて、選択しているテキストファイルのA5変型版（130mm×190mm）の縦書きPDFを出力します。
+novel-writerは[Vivliostyle/CLI](https://vivliostyle.org/ja/)を用いて、選択しているテキストファイルのA5変型版（130mm×190mm）の縦書きPDFを出力します。またPDFのプレビューを「PDFプレビュー」からも実行できます。
 
 1行が短く、ページあたりの行数が長い場合には段組で印刷します。
 

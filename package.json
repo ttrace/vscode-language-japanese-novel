@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "3.3.2",
+  "version": "3.4.0",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -17,6 +17,7 @@
     "@types/react-dnd": "^3.0.2",
     "@types/react-dom": "^19.0.3",
     "@vivliostyle/cli": "^8.18.0",
+    "@vivliostyle/core": "^2.31.1",
     "fastest-levenshtein": "^1.0.16",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
@@ -56,7 +57,11 @@
       },
       {
         "command": "Novel.vertical-preview",
-        "title": "Novel:縦書きプレビュー"
+        "title": "Novel:原稿用紙プレビュー",
+        "icon": {
+          "light": "media/preview-html-light.svg",
+          "dark": "media/preview-html-dark.svg"
+        }
       },
       {
         "command": "Novel.change-tenseAspect",
@@ -84,7 +89,11 @@
       },
       {
         "command": "Novel.preview-pdf",
-        "title": "Novel:PDFプレビュー"
+        "title": "Novel:PDFプレビュー",
+        "icon": {
+          "light": "media/preview-pdf-light.svg",
+          "dark": "media/preview-pdf-dark.svg"
+        }
       },
       {
         "command": "Novel.export-pdf",
@@ -248,7 +257,7 @@
         "Novel.preview.animate": {
           "type": "boolean",
           "default": true,
-          "description": "縦書きプレビューのスクロールをアニメーション表示する"
+          "description": "原稿用紙プレビューのスクロールをアニメーション表示する"
         },
         "Novel.editor.semanticHighligting": {
           "type": "boolean",
@@ -288,6 +297,18 @@
       }
     },
     "menus": {
+      "editor/title": [
+        {
+          "command": "Novel.vertical-preview",
+          "when": "editorLangId == novel",
+          "group": "navigation"
+        },
+        {
+          "command": "Novel.preview-pdf",
+          "when": "editorLangId == novel",
+          "group": "navigation"
+        }
+      ],
       "explorer/context": [
         {
           "when": "explorerResourceIsFolder == true",
@@ -299,7 +320,8 @@
         {
           "command": "draftTree.insertFile",
           "when": "view == draftTree && isFileSelectedOnTree == true",
-          "group": "navigation"
+          "group": "navigation",
+          "icon": "resource/icon.png"
         },
         {
           "command": "draftTree.insertFileDim",
@@ -348,7 +370,8 @@
         {
           "type": "webview",
           "id": "draftTree",
-          "name": "原稿ツリー"
+          "name": "原稿ツリー",
+          "icon": "resource/icon.png"
         }
       ]
     },
@@ -796,9 +819,11 @@
     "@vscode/test-web": "^0.0.65",
     "bufferutil": "^4.0.9",
     "child_process": "^1.0.2",
+    "css-loader": "^7.1.2",
     "eslint": "^9.18.0",
     "fs": "^0.0.1-security",
     "glob": "^11.0.1",
+    "html-webpack-plugin": "^5.6.3",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
     "mocha": "^11.0.1",
@@ -806,13 +831,16 @@
     "node-levenshtein": "^3.0.7",
     "path": "^0.12.7",
     "ps-tree": "^1.2.0",
+    "sass": "^1.85.1",
+    "sass-loader": "^16.0.5",
     "sinon": "^19.0.2",
+    "style-loader": "^4.0.0",
     "ts-loader": "^9.5.2",
     "typescript": "^5.7.3",
     "utf-8-validate": "^6.0.5",
     "util": "^0.12.5",
     "vscode-test": "^1.5.2",
-    "webpack": "^5.97.1",
+    "webpack": "^5.98.0",
     "webpack-cli": "^6.0.1",
     "webpack-env": "^0.8.0",
     "xhr2": "^0.2.1"

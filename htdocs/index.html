@@ -25,6 +25,7 @@
       // オブザーバーの作成
       const observer = new MutationObserver((records) => {
         const writingMode = previewsettings.writingDirection;
+        $("body").addClass(writingMode);
         const scrollPrevious =
           writingMode === "vertical-rl"
             ? $("#draft p").scrollLeft()

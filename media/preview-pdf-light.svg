@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 360 360" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <g id="プレビューアイコンライト">
+        <g transform="matrix(1.18929,0,0,1.20858,1.28543,-39.5212)">
+            <path d="M60.887,134.969L60.887,45.216L227.343,45.216L276.876,90.856L276.876,322.738L60.887,322.738L60.887,284.441" style="fill:none;stroke:black;stroke-width:15.01px;"/>
+        </g>
+        <g transform="matrix(1.07054,0,0,1.08791,-18.6184,-1.64652)">
+            <path d="M320.641,71.554L265.614,71.554L265.614,20.852L320.641,71.554Z"/>
+        </g>
+        <g transform="matrix(1.11092,0,0,1.11092,6.52881,-24.9615)">
+            <path d="M233.216,86.879L282.749,86.879L233.216,86.879Z" style="fill:none;stroke:rgb(88,88,88);stroke-width:3.6px;"/>
+        </g>
+        <g transform="matrix(1.11092,0,0,1.11092,6.52881,-24.9615)">
+            <path d="M233.216,41.239L233.216,86.879L233.216,41.239Z" style="fill:none;stroke:rgb(88,88,88);stroke-width:3.6px;"/>
+        </g>
+        <g transform="matrix(1.11092,0,0,1.11092,28.7473,-58.2892)">
+            <rect x="19.189" y="99.105" width="149.693" height="63.073" style="fill:rgb(187,0,0);"/>
+        </g>
+        <g transform="matrix(1.24509,0,0,1.24509,14.7732,-66.1691)">
+            <g transform="matrix(1.04775,0,0,1,-2.14634,0)">
+                <g transform="matrix(52.0029,0,0,52.0029,138.646,141.539)">
+                </g>
+                <text x="44.95px" y="141.539px" style="font-family:'EurostileBold', 'Eurostile', sans-serif;font-weight:700;font-size:52.003px;fill:white;">PDF</text>
+            </g>
+        </g>
+        <g transform="matrix(1.07054,0,0,1.08791,-12.6889,-51.075)">
+            <g transform="matrix(0.915046,0,0,1,11.1809,0)">
+                <path d="M247.215,243.586C247.215,243.586 206.559,303.745 131.612,303.745C56.665,303.745 16.008,243.586 16.008,243.586C16.008,243.586 56.665,183.428 131.612,183.428C206.559,183.428 247.215,243.586 247.215,243.586Z" style="fill:white;stroke:black;stroke-width:17.39px;"/>
+            </g>
+            <g transform="matrix(0.715567,0,0,0.715567,37.2241,69.2839)">
+                <ellipse cx="130.871" cy="243.586" rx="62.801" ry="60.163" style="fill:white;stroke:black;stroke-width:23.31px;"/>
+            </g>
+        </g>
+    </g>
+</svg>

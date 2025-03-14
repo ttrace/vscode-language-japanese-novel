@@ -224,12 +224,12 @@ export class CharacterCounter {
       }
 
       this.totalWritingProgress = totalCount - this.totalCountPrevious;
-      console.log(
-        "進捗デバッグ",
-        totalCount,
-        activeCount,
-        this.totalCountPrevious,
-      );
+      // console.log(
+      //   "進捗デバッグ",
+      //   totalCount,
+      //   activeCount,
+      //   this.totalCountPrevious,
+      // );
       // 総量：増減分のプラス記号、±記号を定義
       let progressTotalIndex = this.totalWritingProgress > 0 ? "+" : "";
       progressTotalIndex =
@@ -663,7 +663,7 @@ export class CharacterCounterController {
       this._characterCounter.ifEditDistance &&
       !this._characterCounter.isEditDistanceInCalc
     ) {
-      console.log(`Git読んだ直後：${this._characterCounter.ifEditDistance}`);
+      // console.log(`Git読んだ直後：${this._characterCounter.ifEditDistance}`);
       this._characterCounter._updateEditDistanceDelay();
     }
   }

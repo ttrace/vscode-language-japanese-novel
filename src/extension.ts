@@ -9,7 +9,11 @@ import { getConfig } from "./config";
 import compileDocs, { draftRoot, ifFileInDraft } from "./compile";
 import { draftsObject, resetCounter } from "./compile"; // filelist オブジェクトもある
 import { DraftWebViewProvider } from "./novel";
-import { CharacterCounter, CharacterCounterController, formatSheetsAndLines } from "./charactorcount";
+import {
+  CharacterCounter,
+  CharacterCounterController,
+  formatSheetsAndLines,
+} from "./charactorcount";
 export * from "./charactorcount";
 import { editorText, previewBesideSection, MyCodelensProvider } from "./editor";
 import {
@@ -18,7 +22,7 @@ import {
   addRuby,
   addSesami,
   moveWordForward,
-  moveWordBackward
+  moveWordBackward,
 } from "./tokenize";
 import { exportpdf, previewpdf } from "./pdf";
 import { MarkdownFoldingProvider } from "./markdown";
@@ -85,56 +89,67 @@ function emptyPort(callback: any) {
 // MARK: NWアクティベーション
 export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.compile-draft", compileDocs)
+    vscode.commands.registerCommand("Novel.compile-draft", compileDocs),
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.vertical-preview", verticalpreview)
+    vscode.commands.registerCommand("Novel.vertical-preview", () =>
+      verticalpreview(context),
+    ),
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.export-pdf", exportpdf)
+    vscode.commands.registerCommand("Novel.export-pdf", () =>
+      exportpdf(context, false),
+    ),
   );
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.preview-pdf", previewpdf)
+    vscode.commands.registerCommand("Novel.preview-pdf", () =>
+      previewpdf(context),
+    ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "Novel.launch-preview-server",
-      launchHeadlessServer
-    )
+    vscode.commands.registerCommand("Novel.launch-preview-server", () =>
+      launchHeadlessServer(context),
+    ),
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "Novel.change-tenseAspect",
-      changeTenseAspect
-    )
+      changeTenseAspect,
+    ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.add-ruby", addRuby)
+    vscode.commands.registerCommand("Novel.add-ruby", addRuby),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.add-sesami", addSesami)
+    vscode.commands.registerCommand("Novel.add-sesami", addSesami),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.word-transpose-forward", moveWordForward)
+    vscode.commands.registerCommand(
+      "Novel.word-transpose-forward",
+      moveWordForward,
+    ),
   );
 
   context.subscriptions.push(
-    vscode.commands.registerCommand("Novel.word-transpose-backward", moveWordBackward)
+    vscode.commands.registerCommand(
+      "Novel.word-transpose-backward",
+      moveWordBackward,
+    ),
   );
-  
+
   // MARK: 原稿ツリー
   draftWebViewProviderInstance = new DraftWebViewProvider(context);
 
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       "draftTree",
-      draftWebViewProviderInstance
-    )
+      draftWebViewProviderInstance,
+    ),
   );
 
   isDndActive = configuration.get("Novel.DraftTree.renumber") ?? false;
@@ -152,21 +167,21 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "draftTree.activateDragAndDrop",
-      toggleDragAndDrop
-    )
+      toggleDragAndDrop,
+    ),
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "draftTree.deactivateDragAndDrop",
-      toggleDragAndDrop
-    )
+      toggleDragAndDrop,
+    ),
   );
 
   const insertFile = (fileType: "file" | "folder") => {
     draftWebViewProviderInstance.insertFile(
       draftWebViewProviderInstance._webviewView!.webview,
-      fileType
+      fileType,
     );
   };
 
@@ -174,29 +189,29 @@ export function activate(context: vscode.ExtensionContext): void {
   context.subscriptions.push(
     vscode.commands.registerCommand("draftTree.insertFile", () => {
       insertFile("file");
-    })
+    }),
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand("draftTree.insertFolder", () => {
       insertFile("folder");
-    })
+    }),
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand("draftTree.insertFileDim", () => {
       vscode.window.showInformationMessage(
-        "ファイル挿入する位置を選択してください"
+        "ファイル挿入する位置を選択してください",
       );
-    })
+    }),
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand("draftTree.insertFolderDim", () => {
       vscode.window.showInformationMessage(
-        "フォルダーを挿入する位置を選択してください"
+        "フォルダーを挿入する位置を選択してください",
       );
-    })
+    }),
   );
 
   // MARK: 品詞ハイライトの初期化
@@ -214,7 +229,7 @@ export function activate(context: vscode.ExtensionContext): void {
   characterCounter.deadlineCountPrevious =
     typeof storedDeadlineCount == "string" ? parseInt(storedDeadlineCount) : 0;
   const storedDeadlineCountDate = context.workspaceState.get(
-    "totalCountDeadlineDate"
+    "totalCountDeadlineDate",
   );
   characterCounter.deadlineCountPreviousDate =
     typeof storedDeadlineCountDate == "number"
@@ -228,10 +243,7 @@ export function activate(context: vscode.ExtensionContext): void {
     typeof deadLineFolderPath == "string" &&
     typeof deadLineTextCount == "string"
   ) {
-    characterCounter._setCounterToFolder(
-      deadLineFolderPath,
-      deadLineTextCount
-    );
+    characterCounter._setCounterToFolder(deadLineFolderPath, deadLineTextCount);
   }
 
   //締め切りカウンター
@@ -262,14 +274,14 @@ export function activate(context: vscode.ExtensionContext): void {
           deadlineFolderPath = path;
           deadlineTextCount = result;
           console.log("saving memento", deadlineFolderPath, deadlineTextCount);
-          let targetTextPrompt = '';
-          if(result.includes(".")){
+          let targetTextPrompt = "";
+          if (result.includes(".")) {
             targetTextPrompt = formatSheetsAndLines(parseFloat(result));
           } else {
-            targetTextPrompt = result + '文字';
+            targetTextPrompt = result + "文字";
           }
           vscode.window.showInformationMessage(
-            `目標を: ${targetTextPrompt}に設定しました`
+            `目標を: ${targetTextPrompt}に設定しました`,
           );
           characterCounter._setCounterToFolder(path, deadlineTextCount);
         } catch (error) {
@@ -289,14 +301,14 @@ export function activate(context: vscode.ExtensionContext): void {
       }
       //ツリービュー更新
       vscode.commands.executeCommand("draftTree.refresh");
-    })
+    }),
   );
 
   // 進捗のリセット
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.reset-progress", async () => {
       characterCounter._resetWritingProtgress();
-    })
+    }),
   );
 
   documentRoot = vscode.Uri.joinPath(context.extensionUri, "htdocs");
@@ -305,18 +317,18 @@ export function activate(context: vscode.ExtensionContext): void {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vscode.commands.registerCommand("Novel.openfile", (args: any) => {
       vscode.commands.executeCommand("vscode.open", args);
-    })
+    }),
   );
 
   const provider = new MarkdownFoldingProvider();
   vscode.languages.registerFoldingRangeProvider(
     { language: "novel" },
-    provider
+    provider,
   );
 
   const codeLensProviderDisposable = vscode.languages.registerCodeLensProvider(
     { language: "novel", scheme: "file" },
-    new MyCodelensProvider()
+    new MyCodelensProvider(),
   );
 
   context.subscriptions.push(codeLensProviderDisposable);
@@ -350,14 +362,14 @@ export function activate(context: vscode.ExtensionContext): void {
       if (editor) {
         setTypeAsNovel(editor.document);
       }
-    })
+    }),
   );
 
   // 新規ドキュメントのオープンに対して処理を聞き取る
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument((document) => {
       setTypeAsNovel(document);
-    })
+    }),
   );
 
   function setTypeAsNovel(document: vscode.TextDocument | undefined) {
@@ -390,7 +402,10 @@ export function getDraftWebViewProviderInstance(): DraftWebViewProvider {
 let latestEditor: vscode.TextEditor;
 
 // MARK: プレビューサーバー起動
-function launchserver(originEditor: vscode.TextEditor) {
+function launchserver(
+  context: vscode.ExtensionContext,
+  originEditor: vscode.TextEditor,
+) {
   latestEditor = originEditor;
   console.log("サーバー起動", latestEditor);
 
@@ -483,26 +498,24 @@ function launchserver(originEditor: vscode.TextEditor) {
         message.match(/^{"label":"jump"/)
       ) {
         const messageObject = JSON.parse(message);
-        //行のタップを検知した時
-        //const originalEditor = vscode.window.activeTextEditor;
 
         const targetLine = parseInt(messageObject.id.split("-")[1]);
         const targetPosition = new vscode.Position(
           targetLine,
-          messageObject.cursor
+          messageObject.cursor,
         );
         latestEditor.selection = new vscode.Selection(
           targetPosition,
-          targetPosition
+          targetPosition,
         );
 
         latestEditor.revealRange(
           latestEditor.selection,
-          vscode.TextEditorRevealType.InCenter
+          vscode.TextEditorRevealType.InCenter,
         );
         vscode.window.showTextDocument(
           latestEditor.document,
-          latestEditor.viewColumn
+          latestEditor.viewColumn,
         );
         ws.send(editorText(latestEditor));
       }
@@ -572,8 +585,18 @@ function launchserver(originEditor: vscode.TextEditor) {
       vscode.ViewColumn.Two, // Editor column to show the new webview panel in.
       {
         enableScripts: true,
-      } // Webview options. More on these later.
+      }, // Webview options. More on these later.
     );
+
+    const colorTheme = vscode.window.activeColorTheme.kind;
+    const iconfile =
+      colorTheme === vscode.ColorThemeKind.Dark
+        ? "preview-html-dark.svg"
+        : "preview-html-light.svg";
+    const iconPath = vscode.Uri.file(
+      path.join(context.extensionPath, "media", iconfile),
+    );
+    panel.iconPath = iconPath;
 
     panel.webview.html = `<!DOCTYPE html>
   <html>
@@ -593,7 +616,7 @@ function launchserver(originEditor: vscode.TextEditor) {
   </html>`;
   } else {
     vscode.window.showInformationMessage(
-      `http://${serversHostname}:${servicePort} でサーバーを起動しました`
+      `http://${serversHostname}:${servicePort} でサーバーを起動しました`,
     );
   }
 }
@@ -630,18 +653,18 @@ const publishWebsocketsDelay: any = {
   },
 };
 
-function verticalpreview() {
+function verticalpreview(context: vscode.ExtensionContext) {
   const originEditor = vscode.window.activeTextEditor;
   WebViewPanel = true;
   if (typeof originEditor != "undefined") {
-    launchserver(originEditor);
+    launchserver(context, originEditor);
   }
 }
 
-function launchHeadlessServer() {
+function launchHeadlessServer(context: vscode.ExtensionContext) {
   const originEditor = vscode.window.activeTextEditor;
   if (typeof originEditor != "undefined") {
-    launchserver(originEditor);
+    launchserver(context, originEditor);
   }
 }
 
