@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "3.4.0-beta14",
+  "version": "3.4.0-beta15",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -57,7 +57,7 @@
       },
       {
         "command": "Novel.vertical-preview",
-        "title": "Novel:縦書きプレビュー",
+        "title": "Novel:原稿用紙プレビュー",
         "icon": {
           "light": "media/preview-html-light.svg",
           "dark": "media/preview-html-dark.svg"
@@ -257,7 +257,7 @@
         "Novel.preview.animate": {
           "type": "boolean",
           "default": true,
-          "description": "縦書きプレビューのスクロールをアニメーション表示する"
+          "description": "原稿用紙プレビューのスクロールをアニメーション表示する"
         },
         "Novel.editor.semanticHighligting": {
           "type": "boolean",

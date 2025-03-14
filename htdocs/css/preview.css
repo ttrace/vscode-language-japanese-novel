@@ -8,14 +8,22 @@
 html {
   font-family: "游明朝", "YuMincho", serif;
   font-weight: Medium;
+  text-spacing: none;
+}
+
+body {
   text-align: justify;
   hanging-punctuation: allow-end;
-  text-spacing: none;
-  overflow-inline: hidden;
+  overflow-y: hidden;
+}
+
+body.ltr{
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 #draft {
-  inline-size: calc(100vh - 2rem);
+  inline-size: calc(100vh - 3rem);
   margin-inline-start: 1em;
 }
 
@@ -407,7 +415,6 @@ div.comment {
   display: block;
   border-radius: 1em;
   border: 1pt solid rgb(241, 189, 0);
-  padding: 0 1em;
   position: absolute;
   margin-inline-start: -2em;
   background-color: rgb(255, 123, 0);
@@ -415,21 +422,22 @@ div.comment {
   font-family: sans-serif;
   font-size: 0.5em;
   line-height: 1;
-  padding:2px;
+  margin-top: -1em;
+  padding: 2px;
 }
 
 div.comment::before {
   content: "";
   position: absolute;
-  inset-inline-end: 1em;
-  inset-block-start: -30px;
+  inset-inline-end: 3em;
+  inset-block-start: -20px;
   display: block;
   block-size: 0;
   inline-size: 0;
-  border-inline-start: 15px solid transparent;
-  border-inline-end: 15px solid transparent;
-  border-block-end: 15px solid rgb(241, 189, 0);
-  border-block-start: 15px solid transparent;
+  border-inline-start: 3px solid transparent;
+  border-inline-end: 6px solid transparent;
+  border-block-end: 10px solid rgb(241, 189, 0);
+  border-block-start: 10px solid transparent;
 }
 
 .line-numbers {
