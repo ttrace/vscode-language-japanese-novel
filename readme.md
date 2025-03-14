@@ -90,8 +90,7 @@ novel-writerは、日本語の小説で使われる連体形文末辞（〜し�
 
 ### 文節の前後移動
 
-novel-writerはカーソルのある文節を前後に移動させる機能を持っています。選択範囲があれば、その部分を前後に移動させます。
-標準のキーボードショートカットは、MacではCommandキー+←→、WindowsやLinuxではCtrl+Alt+←→を割り当てています。
+novel-writerは、選択範囲やカーソルのある文節を前後に移動させる機能を持っています。標準のキーボードショートカットは、MacではCommand+Option+←→、WindowsやLinuxではCtrl+Alt+←→を割り当てています。この機能はNovel以外のテキストでも有効です。
 ![文節の前後移動](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/word-transpose.gif)
 
 ### テキスト結合
@@ -179,8 +178,10 @@ novel-writerには、原稿用紙と印刷イメージ二つのプレビュー�
 ### PDFプレビュー
 
 コマンドパレットの\[Novel:PDFプレビュー\]、またはエディター上部の![PDFプレビューボタン](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/pdf-prefview-button.png)をクリックすると、エディタのテキストを原稿用紙プレビューすることができます。
-リアルタイムで変更を反映しないので、原稿の修正を反映したい時はPDFプレビューを再度実行してください。
+リアルタイムで変更を反映しないので、原稿の修正を反映したい時はPDFプレビューを再度実行してください。100ページを超えるような原稿を縦書きで読み込むような時は、PDFプレビューを利用することをお勧めします。
 プレビュー画面がアクティブな時は、カーソルキーの左右でもページを送ることができます。
+
+PDFプレビューには、[CSS組版ライブラリ、Vivliostyle](https://vivliostyle.org/ja/)のCore APIを利用しています。
 
 ![PDFプレビュー](https://github.com/ttrace/vscode-language-japanese-novel/raw/main/resource/pdf-preview.png)
 
