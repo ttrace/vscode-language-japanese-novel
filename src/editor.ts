@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { getConfig } from "./config";
-import { draftRoot, draftsObject,fileList, ifFileInDraft } from "./compile";
+import { draftRoot, draftsObject, fileList, ifFileInDraft } from "./compile";
 
 export type OriginEditor = vscode.TextEditor | "active" | undefined;
 
@@ -23,7 +23,7 @@ export function editorText(originEditor: OriginEditor): string {
       text.slice(0, cursorOffset) +
       '<span id="cursor" class="blank">↩︎</span>' +
       text.slice(cursorOffset);
-  } else if ((text.slice(cursorOffset, cursorOffset + 1)).match(/(》］)/)) {
+  } else if (text.slice(cursorOffset, cursorOffset + 1).match(/(》］)/)) {
     cursorTaggedHtml =
       text.slice(0, cursorOffset) +
       '<span id="cursor">' +
@@ -47,6 +47,18 @@ export function editorText(originEditor: OriginEditor): string {
     // インラインのHTML変換
     paragraph = inline_tagggedHTML(paragraph);
 
+    const lineLength = getConfig().lineLength;
+    let additionalClass = "";
+
+    // 区切り文字でparagraphを分割
+    const parts = paragraph.split("<ruby");
+
+    // 最初の部分の長さがlineLength以内かを確認
+    console.log(paragraph, parts.length);
+    if (parts.length > 1 && parts[0].length <= lineLength) {
+      additionalClass = " ruby-offset";
+    }
+
     if (paragraph.match(/^\s*$/)) {
       myHTML += `<p id="l-${lineNumber}" class="blank">_${paragraph}</p>`;
     } else if (
@@ -55,7 +67,7 @@ export function editorText(originEditor: OriginEditor): string {
     ) {
       myHTML += `<p id="l-${lineNumber}" class="blank">_</p><span id="cursor">`;
     } else {
-      myHTML += `<p id="l-${lineNumber}">${paragraph}</p>`;
+      myHTML += `<p id="l-${lineNumber}" class="${additionalClass}">${paragraph}</p>`;
     }
     lineNumber++;
   });
@@ -81,117 +93,115 @@ export function markUpHtml(myHtml: string) {
   // Markdown見出し
   taggedHTML = taggedHTML.replace(
     /<p (id="l-[0-9]+")># (.+?)<\/p>/g,
-    '<h1 $1>$2</h1>'
+    "<h1 $1>$2</h1>",
   );
   taggedHTML = taggedHTML.replace(
     /<p (id="l-[0-9]+")>## (.+?)<\/p>/g,
-    '<h2 $1>$2</h2>'
+    "<h2 $1>$2</h2>",
   );
   taggedHTML = taggedHTML.replace(
     /<p (id="l-[0-9]+")>### (.+?)<\/p>/g,
-    '<h3 $1>$2</h3>'
+    "<h3 $1>$2</h3>",
   );
   taggedHTML = taggedHTML.replace(
     /<p (id="l-[0-9]+")>#### (.+?)<\/p>/g,
-    '<h4 $1>$2</h4>'
+    "<h4 $1>$2</h4>",
   );
   taggedHTML = taggedHTML.replace(
     /<p (id="l-[0-9]+")>##### (.+?)<\/p>/g,
-    '<h5 $1>$2</h5>'
+    "<h5 $1>$2</h5>",
   );
   taggedHTML = taggedHTML.replace(
     /<p (id="l-[0-9]+")>###### (.+?)<\/p>/g,
-    '<h6 $1>$2</h6>'
+    "<h6 $1>$2</h6>",
   );
   // 青空文庫注記法通常見出し
   taggedHTML = taggedHTML.replace(
     /<p (id="l-[0-9]+")>(.+?)［＃「\2」は大見出し］<\/p>/g,
-    '<h1 $1>$2</h1>'
+    "<h1 $1>$2</h1>",
   );
   taggedHTML = taggedHTML.replace(
     /<p (id="l-[0-9]+")>(.+?)［＃「\2」は中見出し］<\/p>/g,
-    '<h2 $1>$2</h2>'
+    "<h2 $1>$2</h2>",
   );
   taggedHTML = taggedHTML.replace(
     /<p (id="l-[0-9]+")>(.+?)［＃「\2」は小見出し］<\/p>/g,
-    '<h3 $1>$2</h3>'
+    "<h3 $1>$2</h3>",
   );
-
 
   taggedHTML = taggedHTML.replace(
     /<p id="l-[0-9]+">［＃ここから[１1一]文字下げ］<\/p>/g,
-    '<div class="indent-1">'
+    '<div class="indent-1">',
   );
   taggedHTML = taggedHTML.replace(
     /<p id="l-[0-9]+">［＃ここから[２2二]文字下げ］<\/p>/g,
-    '<div class="indent-2">'
+    '<div class="indent-2">',
   );
   taggedHTML = taggedHTML.replace(
     /<p id="l-[0-9]+">［＃ここから[３3三]文字下げ］<\/p>/g,
-    '<div class="indent-3">'
+    '<div class="indent-3">',
   );
   taggedHTML = taggedHTML.replace(
     /<p id="l-[0-9]+">［＃ここで字下げ終わり］<\/p>/g,
-    "</div>"
+    "</div>",
   );
 
   taggedHTML = taggedHTML.replace(
     /<p id="l-[0-9]+">［＃ここで字下げ終わり］<\/p>/g,
-    "</div>"
+    "</div>",
   );
   taggedHTML = taggedHTML.replace(
     /<!-- (.+?) -->/g,
-    '<div class="comment">$1</div>'
+    '<div class="comment">$1</div>',
   );
-
 
   return taggedHTML;
 }
 
 // region: インライン変換
-function inline_tagggedHTML(paragraph: string){
+function inline_tagggedHTML(paragraph: string) {
   let lineText = paragraph;
 
-    // 自動縦中横
-    lineText = lineText.replace(
-      /(?<![0-9\sa-zA-Z"'():])([0-9][0-9])(?![0-9\sa-zA-Z"'():])/g,
-      '<span class="tcy">$1</span>'
-    );
-    // 青空縦中横
-    lineText = lineText.replace(
-      /(.+?)［＃「\1」は縦中横］/g,
-      '<span class="tcy">$1</span>'
-    );
+  // 自動縦中横
+  lineText = lineText.replace(
+    /(?<![0-9\sa-zA-Z"'():])([0-9][0-9])(?![0-9\sa-zA-Z"'():])/g,
+    '<span class="tcy">$1</span>',
+  );
+  // 青空縦中横
+  lineText = lineText.replace(
+    /(.+?)［＃「\1」は縦中横］/g,
+    '<span class="tcy">$1</span>',
+  );
 
-    lineText = lineText.replace(
-      /[｜|]([^｜|\n]+?)《([^《]+?)》/g,
-      "<ruby>$1<rt>$2</rt></ruby>"
-    );
-    lineText = lineText.replace(
-      /([一-鿏々-〇]+?)《(.+?)》/g,
-      "<ruby data-ruby=\"$2\">$1<rt>$2</rt></ruby>"
-    );
-    lineText = lineText.replace(
-      /(.+?)［＃「\1」に傍点］/g,
-      '<em class="side-dot">$1</em>'
-    );
-    // 地付き、字上げ処理
-    lineText = lineText.replace(
-      /［＃地付き］(.+)$/g,
-      '<span class="bottom">$1</span>'
-    );
-    lineText = lineText.replace(
-      /［＃地から[1１]字上げ］(.+)$/g,
-      '<span class="bottom-1">$1</span>'
-    );
-    lineText = lineText.replace(
-      /［＃地から[2２]字上げ］(.+)$/g,
-      '<span class="bottom-2">$1</span>'
-    );
-    lineText = lineText.replace(
-      /［＃地から[3３]字上げ］(.+)$/g,
-      '<span class="bottom-3">$1</span>'
-    );
+  lineText = lineText.replace(
+    /[｜|]([^｜|\n]+?)《([^《]+?)》/g,
+    "<ruby>$1<rt>$2</rt></ruby>",
+  );
+  lineText = lineText.replace(
+    /([一-鿏々-〇]+?)《(.+?)》/g,
+    '<ruby data-ruby="$2">$1<rt>$2</rt></ruby>',
+  );
+  lineText = lineText.replace(
+    /(.+?)［＃「\1」に傍点］/g,
+    '<em class="side-dot">$1</em>',
+  );
+  // 地付き、字上げ処理
+  lineText = lineText.replace(
+    /［＃地付き］(.+)$/g,
+    '<span class="bottom">$1</span>',
+  );
+  lineText = lineText.replace(
+    /［＃地から[1１]字上げ］(.+)$/g,
+    '<span class="bottom-1">$1</span>',
+  );
+  lineText = lineText.replace(
+    /［＃地から[2２]字上げ］(.+)$/g,
+    '<span class="bottom-2">$1</span>',
+  );
+  lineText = lineText.replace(
+    /［＃地から[3３]字上げ］(.+)$/g,
+    '<span class="bottom-3">$1</span>',
+  );
   return lineText;
 }
 
@@ -278,7 +288,7 @@ export async function previewBesideSection(editor: vscode.TextEditor) {
 
 export class MyCodelensProvider implements vscode.CodeLensProvider {
   async provideCodeLenses(
-    document: vscode.TextDocument
+    document: vscode.TextDocument,
   ): Promise<vscode.CodeLens[]> {
     return new Promise((resolve) => {
       if (!getConfig().sceneNav) return;
@@ -313,16 +323,16 @@ export class MyCodelensProvider implements vscode.CodeLensProvider {
             edit.insert(
               new vscode.Position(
                 editor.document.lineCount,
-                lastLine!.range.contains.length
+                lastLine!.range.contains.length,
               ),
-              "\n"
+              "\n",
             );
             lastLine = editor?.document.lineAt(editor.document.lineCount - 1);
           });
         }
         const taleOfDocument = new vscode.Range(
           lastLine!.range.end,
-          lastLine!.range.end
+          lastLine!.range.end,
         );
 
         const CodeLenses = [];
@@ -360,7 +370,7 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
   // console.log("draftsObject",draftsObject(draftRoot()));
   const docIndex = myFileList.files.findIndex(
     // (e) => e.dir == document.fileName
-    (e) => e.dir?.normalize("NFC") == document.fileName.normalize("NFC")
+    (e) => e.dir?.normalize("NFC") == document.fileName.normalize("NFC"),
   );
   let prevDocIndex = null;
   let nextDocIndex = null;

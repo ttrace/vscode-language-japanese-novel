@@ -25,7 +25,7 @@ import {
   moveWordBackward,
 } from "./tokenize";
 import { exportpdf, previewpdf } from "./pdf";
-import { MarkdownFoldingProvider } from "./markdown";
+import { MarkdownFoldingProvider, MarkdownSymbolProvider } from "./markdown";
 
 //リソースとなるhtmlファイル
 //let html: Buffer;
@@ -324,6 +324,14 @@ export function activate(context: vscode.ExtensionContext): void {
   vscode.languages.registerFoldingRangeProvider(
     { language: "novel" },
     provider,
+  );
+
+  const symbolProvider = new MarkdownSymbolProvider();
+  context.subscriptions.push(
+    vscode.languages.registerDocumentSymbolProvider(
+      { language: 'novel' },
+      symbolProvider
+    )
   );
 
   const codeLensProviderDisposable = vscode.languages.registerCodeLensProvider(

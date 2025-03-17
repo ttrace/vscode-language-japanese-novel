@@ -435,6 +435,7 @@ async function getPrintContent(): Promise<string> {
 
       body{
         writing-mode: ${previewSettings.writingDirection};
+        color: black;
       }
 
       * {
