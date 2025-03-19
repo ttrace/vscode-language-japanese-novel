@@ -128,6 +128,11 @@ h1 + h2 {
   margin-block-start: 16pt;
 }
 
+
+p.ruby-offset {
+  margin-right: -0.15em;
+ }
+
 body.vertical-rl ruby > rt {
   font-size: 0.5em;
   width: 0.75em;

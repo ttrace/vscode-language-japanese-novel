@@ -56,7 +56,7 @@ export function editorText(originEditor: OriginEditor): string {
     // 最初の部分の長さがlineLength以内かを確認
     console.log(paragraph, parts.length);
     if (parts.length > 1 && parts[0].length <= lineLength) {
-      additionalClass = " ruby-offset";
+      additionalClass = " class=\"ruby-offset\"";
     }
 
     if (paragraph.match(/^\s*$/)) {
@@ -67,7 +67,7 @@ export function editorText(originEditor: OriginEditor): string {
     ) {
       myHTML += `<p id="l-${lineNumber}" class="blank">_</p><span id="cursor">`;
     } else {
-      myHTML += `<p id="l-${lineNumber}" class="${additionalClass}">${paragraph}</p>`;
+      myHTML += `<p id="l-${lineNumber}"${additionalClass}>${paragraph}</p>`;
     }
     lineNumber++;
   });

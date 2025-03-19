@@ -571,6 +571,10 @@ async function getPrintContent(): Promise<string> {
         margin-block-start: calc(${fontSizeWithUnit} * 1.75);
       }
       
+      p.ruby-offset {
+       margin-right: -0.15em;
+      }
+
       body.vertical-rl ruby > rt {
         font-size: 0.5em;
         width: 0.75em;
