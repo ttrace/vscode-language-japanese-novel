@@ -164,7 +164,7 @@ function inline_tagggedHTML(paragraph: string) {
 
   // 自動縦中横
   lineText = lineText.replace(
-    /(?<![0-9\sa-zA-Z"'():])([0-9][0-9])(?![0-9\sa-zA-Z"'():])/g,
+    /(?<![0-9\u0020a-zA-Z"'():])([0-9][0-9])(?![0-9\sa-zA-Z"'():])/g,
     '<span class="tcy">$1</span>',
   );
   // 青空縦中横
