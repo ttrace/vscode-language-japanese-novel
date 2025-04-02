@@ -119,6 +119,7 @@ export const App: React.FC = () => {
               <TreeView
                 key={index}
                 node={node}
+                // treeData={treeData}
                 onToggleClose={onToggleClose}
                 highlightedNode={highlightedNode}
                 onHighlight={setHighlightedNode}
@@ -152,6 +153,7 @@ interface TreeViewProps {
   isInserting: boolean;
   draftFileType: ".txt" | ".md";
   onToggleClose: (id: string, isClosed: boolean) => void; // New prop
+  // treeData: TreeFileNode[]; // Added treeData property
 }
 
 // MARK: TreeView
@@ -168,6 +170,7 @@ const TreeView: React.FC<TreeViewProps> = ({
   setIsInserting,
   isInserting,
   draftFileType,
+  // treeData, // Add treeData to the destructured props
 }) => {
   // ツリービューの制御
   const treeNodeRef = useRef(null);
@@ -394,30 +397,22 @@ const TreeView: React.FC<TreeViewProps> = ({
         }
       }
     } else if (event.key === "ArrowUp" && event.altKey) {
-      const item = { id: node.id, name: node.name, dir: node.dir, node: node };
+      if (!highlightedNode) return;
       const fileData = {
-        movingFileId: item.id,
-        movingFileDir: item.dir,
-        insertPoint: 'before',
-        destinationId: item.id,
-        destinationPath: item.dir,
+        destinationPath: highlightedNode,
       };
       vscode.postMessage({
         command: "moveFileUp",
-        fileData: fileData
+        fileData: fileData,
       });
     } else if (event.key === "ArrowDown" && event.altKey) {
-      const item = { id: node.id, name: node.name, dir: node.dir, node: node };
+      if (!highlightedNode) return;
       const fileData = {
-        movingFileId: item.id,
-        movingFileDir: item.dir,
-        insertPoint: 'before',
-        destinationId: item.id,
-        destinationPath: item.dir,
+        destinationPath: highlightedNode,
       };
       vscode.postMessage({
         command: "moveFileDown",
-        fileData: fileData
+        fileData: fileData,
       });
     }
   };
@@ -584,6 +579,7 @@ const TreeView: React.FC<TreeViewProps> = ({
             {node.children.map((child, index) => (
               <TreeView
                 key={child.name}
+                // treeData={treeData} // Pass treeData to child TreeView components
                 node={child}
                 onToggleClose={onToggleClose}
                 highlightedNode={highlightedNode}
@@ -598,6 +594,7 @@ const TreeView: React.FC<TreeViewProps> = ({
                 draftFileType={draftFileType}
               />
             ))}
+
             <div
               ref={dropInside as any}
               className={`insert-bar inside

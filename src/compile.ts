@@ -248,6 +248,24 @@ export function draftsObject(
   return results;
 }
 
+export function writeFolderStates(
+  context: vscode.ExtensionContext,
+  folders: FileNode[]
+) {
+  const folderStates: CachedFolderState = context.workspaceState.get(
+    "folderStates",
+    {}
+  );
+
+  folders.forEach((folder) => {
+    folderStates[folder.id] = folder.isClosed ?? false;
+    if (folder.children) {
+      writeFolderStates(context, folder.children);  // 再帰的に子フォルダーも処理
+    }
+  });
+
+  context.workspaceState.update("folderStates", folderStates);
+}
 export function totalLength(dirPath: string): {
   lengthInNumber: number;
   lengthInSheet: number;
@@ -332,11 +350,7 @@ export function updateFolderCache(
     nodeId,
     context,
   );
-  console.log(
-    "updateFolderCache",
-    folderStates,
-    nodeId,
-    isClosed)
+  console.log("folderStates", folderStates);
 }
 
 export function getCachedFolderStates(
