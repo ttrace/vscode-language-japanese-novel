@@ -22,7 +22,7 @@ h1 {
 }
 
 .tree-node {
-  height: 1em;
+  height: 1.2em;
   overflow-y: hidden;
   transition: all 0.1s linear;
   line-height: 1;
@@ -39,6 +39,10 @@ h1 {
 .tree-node.expanded {
   height: auto;
   transition: all 0.1s linear;
+}
+
+.tree-node:not(.expanded) > .tree-node-children{
+  visibility: hidden;
 }
 
 .tree-node.dragged {

@@ -168,20 +168,23 @@ type FileNode = {
   isClosed?: boolean;
 };
 
-
 let globalCounter = 0;
 
 export function resetCounter() {
   globalCounter = 0;
 }
 
-resetCounter();
 //フォルダーの開閉情報など、キャッシュを扱う必要があるときはcontextを渡す
 export function draftsObject(
   dirPath: string,
   context: vscode.ExtensionContext | null = null,
+  isRootCall: boolean = true // トップレベルかどうかのフラグ
 ): FileNode[] {
   const results: FileNode[] = [];
+  // トップレベルの呼び出し時のみカウンターをリセット
+  if (isRootCall) {
+    resetCounter();
+  }
 
   const folderStates = context
     ? context.workspaceState.get<{ [key: string]: boolean }>("folderStates", {})
@@ -198,7 +201,7 @@ export function draftsObject(
       // console.log("dictionary folder");
     } else if (dirent.isDirectory()) {
       const directoryPath = path.join(dirPath, dirent.name);
-      const containerFiles = draftsObject(directoryPath, context);
+      const containerFiles = draftsObject(directoryPath, context, false);
 
       let containerLength = 0;
       let containerLengthInSheet = 0;
@@ -314,7 +317,6 @@ export function getLength(textDocument: string): {
 
 type CachedFolderState = { [key: string]: boolean };
 
-
 export function updateFolderCache(
   context: vscode.ExtensionContext,
   nodeId: string,
@@ -326,6 +328,15 @@ export function updateFolderCache(
   );
   folderStates[nodeId] = isClosed;
   context.workspaceState.update("folderStates", folderStates);
+  cleanUpFolderStates(
+    nodeId,
+    context,
+  );
+  console.log(
+    "updateFolderCache",
+    folderStates,
+    nodeId,
+    isClosed)
 }
 
 export function getCachedFolderStates(
@@ -334,8 +345,14 @@ export function getCachedFolderStates(
   return context.workspaceState.get("folderStates", {});
 }
 
-function cleanUpFolderStates(currentFolderIds: string, context: vscode.ExtensionContext) {
-  const folderStates: CachedFolderState = context.workspaceState.get('folderStates', {});
+export function cleanUpFolderStates(
+  currentFolderIds: string,
+  context: vscode.ExtensionContext,
+) {
+  const folderStates: CachedFolderState = context.workspaceState.get(
+    "folderStates",
+    {},
+  );
 
   // 現在のフォルダーIDに存在しないデータを削除
   for (const id in folderStates) {
@@ -345,5 +362,5 @@ function cleanUpFolderStates(currentFolderIds: string, context: vscode.Extension
   }
 
   // 更新された状態を再保存
-  context.workspaceState.update('folderStates', folderStates);
+  context.workspaceState.update("folderStates", folderStates);
 }

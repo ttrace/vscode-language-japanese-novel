@@ -4,8 +4,6 @@ import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { commands, FileType } from "vscode";
 
-//  import { TreeView } from "./treeComponent";
-
 // MARK:型定義
 type TreeFileNode = {
   id: string;
@@ -372,16 +370,12 @@ const TreeView: React.FC<TreeViewProps> = ({
   );
 
   // MARK: リネーム処理
-  const handleKeyDown = (event: {
-    stopPropagation: () => void;
-    key: string;
-  }) => {
+  const handleKeyDown = (event: React.KeyboardEvent) => {
     event.stopPropagation();
     if (event.key === "Enter") {
       // IMEがアクティブな場合、Enterキーの動作を無視する
       if (!isComposing) {
         if (!isEditing) {
-          // console.log("編集開始");
           setIsEditing(true);
         } else {
           const renamingTo = isOrdable
@@ -399,6 +393,32 @@ const TreeView: React.FC<TreeViewProps> = ({
           handleBlur();
         }
       }
+    } else if (event.key === "ArrowUp" && event.altKey) {
+      const item = { id: node.id, name: node.name, dir: node.dir, node: node };
+      const fileData = {
+        movingFileId: item.id,
+        movingFileDir: item.dir,
+        insertPoint: 'before',
+        destinationId: item.id,
+        destinationPath: item.dir,
+      };
+      vscode.postMessage({
+        command: "moveFileUp",
+        fileData: fileData
+      });
+    } else if (event.key === "ArrowDown" && event.altKey) {
+      const item = { id: node.id, name: node.name, dir: node.dir, node: node };
+      const fileData = {
+        movingFileId: item.id,
+        movingFileDir: item.dir,
+        insertPoint: 'before',
+        destinationId: item.id,
+        destinationPath: item.dir,
+      };
+      vscode.postMessage({
+        command: "moveFileDown",
+        fileData: fileData
+      });
     }
   };
 
