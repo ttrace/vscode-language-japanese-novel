@@ -5,7 +5,7 @@ import {
   draftsObject,
   resetCounter,
   updateFolderCache,
-  writeFolderStates
+  writeFolderStates,
 } from "./compile";
 import {
   getDraftWebViewProviderInstance,
@@ -123,79 +123,120 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
 
     const folderStates: Record<string, boolean> =
       this._context.workspaceState.get("folderStates", {});
-    console.log("フォルダー開閉状態", folderStates);
+    // console.log("フォルダー開閉状態", folderStates);
 
     webviewView.webview.onDidReceiveMessage(async (message) => {
+      console.log("TreeViewメッセージ受信", message);
       // MARK: ツリーからのコマンド
-      // ツリーデータの要求
-      if (message.command === "loadTreeData") {
-        // console.log(`${debugIncrement} loadTreeDataの要求`);
-        this.loadTreeData(webviewView.webview);
-        this.sendIsOrdable(webviewView.webview);
+      switch (message.command) {
+        // ツリーデータの要求
+        case "loadTreeData":
+          // console.log(`${debugIncrement} loadTreeDataの要求`);
+          // MARK: loadTreeDataの要求
+          // console.time("loadTreeDataTime");
+          this.loadTreeData(webviewView.webview);
+          // console.timeEnd("loadTreeDataTime");
+          this.sendIsOrdable(webviewView.webview);
+          break;
 
         // ファイルを開く
-      } else if (message.command === "openFile") {
-        const uri = vscode.Uri.file(message.filePath);
-        const stat = await vscode.workspace.fs.stat(uri);
-        if (stat.type !== vscode.FileType.Directory) {
-          await vscode.commands.executeCommand("vscode.open", uri);
-        }
-      } else if (message.command === "sendFolderState") {
-        // console.log("sendFolderState", message);
-        if (message.command === "sendFolderState") {
-          const { nodeId, isClosed } = message;
+        case "openFile":
+          {
+            const uri = vscode.Uri.file(message.filePath);
+            const stat = await vscode.workspace.fs.stat(uri);
+            if (stat.type !== vscode.FileType.Directory) {
+              await vscode.commands.executeCommand("vscode.open", uri);
+            }
+          }
+          break;
 
-          // キャッシュされている状態を更新
-          folderStates[nodeId] = isClosed;
-          this._context.workspaceState.update("folderStates", folderStates);
-          // console.log(
-          //   `フォルダー状態が更新されました: ノード ${nodeId} は現在 ${isClosed ? "閉じ" : "開き"}です`,
-          // );
-        }
-      } else if (message.command === "log") {
-      } else if (message.command === "alert") {
-        vscode.window.showErrorMessage(
-          `Novelーwriter原稿ツリー：${message.alertMessage}`,
-        );
+        case "sendFolderState":
+          {
+            // console.log("sendFolderState", message);
+            const { nodeId, isClosed } = message;
+            // キャッシュされている状態を更新
+            folderStates[nodeId] = isClosed;
+            this._context.workspaceState.update("folderStates", folderStates);
+            // console.log(
+            //   `フォルダー状態が更新されました: ノード ${nodeId} は現在 ${isClosed ? "閉じ" : "開き"}です`,
+            // );
+          }
+          break;
+
+        case "log":
+          // 対応する処理なし
+          break;
+
+        case "alert":
+          vscode.window.showErrorMessage(
+            `Novelーwriter原稿ツリー：${message.alertMessage}`,
+          );
+          break;
 
         // 順番管理の読み込み
-      } else if (message.command === "loadIsOrdable") {
-        this.sendIsOrdable(webviewView.webview);
-      } else if (message.command === "moveCommmand") {
-        // console.log(message.fileTransferData);
-        moveAndReorderFiles(
-          message.fileTransferData.destinationPath,
-          message.fileTransferData.insertPoint,
-          message.fileTransferData.movingFileDir,
-        );
-      } else if (message.command === "moveFileUp") {
-        console.log("moveFileUp", message.fileData);
-        console.log(draftsObject(draftRoot(), this._context));
-        this.swapFileUpDown(message.fileData.destinationPath, "up", this._context);
-      } else if (message.command === "moveFileDown") {
-        console.log("moveFileDown", message.fileData);
-        this.swapFileUpDown(message.fileData.destinationPath, "down", this._context);
-      } else if (message.command === "rename") {
-        renameFile(message.renameFile.targetPath, message.renameFile.newName);
-      } else if (message.command === "insert") {
-        // console.log(
-        //   `ファイル挿入 ${message.renameFile.targetPath}の後ろに${message.renameFile.insertingNode}の${message.renameFile.newName}を挿入`
-        // );
-        insertFile(
-          message.renameFile.targetPath,
-          message.renameFile.insertingNode,
-          message.renameFile.newName,
-        );
-        // renameFile(message.renameFile.targetPath, message.renameFile.newName);
-      } else if (message.command === "fileSelection") {
-        const isFileSelected = message.node != null ? true : false;
-        // console.log(`${message.node}が選択されました`);
+        case "loadIsOrdable":
+          this.sendIsOrdable(webviewView.webview);
+          break;
 
-        vscode.commands.executeCommand(
-          "setContext",
-          "isFileSelectedOnTree",
-          isFileSelected,
-        );
+        case "moveCommmand":
+          // console.log(message.fileTransferData);
+          moveAndReorderFiles(
+            message.fileTransferData.destinationPath,
+            message.fileTransferData.insertPoint,
+            message.fileTransferData.movingFileDir,
+          );
+          break;
+
+        case "moveFileUp":
+          console.log("moveFileUp", message.fileData);
+          console.log(draftsObject(draftRoot(), this._context));
+          this.swapFileUpDown(
+            message.fileData.destinationPath,
+            "up",
+            this._context,
+          );
+          break;
+
+        case "moveFileDown":
+          console.log("moveFileDown", message.fileData);
+          this.swapFileUpDown(
+            message.fileData.destinationPath,
+            "down",
+            this._context,
+          );
+          break;
+
+        case "rename":
+          renameFile(message.renameFile.targetPath, message.renameFile.newName);
+          break;
+
+        case "insert":
+          // console.log(
+          //   `ファイル挿入 ${message.renameFile.targetPath}の後ろに${message.renameFile.insertingNode}の${message.renameFile.newName}を挿入`
+          // );
+          insertFile(
+            message.renameFile.targetPath,
+            message.renameFile.insertingNode,
+            message.renameFile.newName,
+          );
+          // renameFile(message.renameFile.targetPath, message.renameFile.newName);
+          break;
+
+        case "fileSelection":
+          {
+            const isFileSelected = message.node != null ? true : false;
+            // console.log(`${message.node}が選択されました`);
+            vscode.commands.executeCommand(
+              "setContext",
+              "isFileSelectedOnTree",
+              isFileSelected,
+            );
+          }
+          break;
+
+        default:
+          // 対応するコマンドがありません
+          break;
       }
     });
   }
@@ -231,14 +272,19 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
 
   public loadTreeData(webview: vscode.Webview) {
     resetCounter();
-    const draftFileType = configuration.get("Novel.general.filetype");
+    // console.time("loadTreeDataTime");
+    const configuration = getConfig();
+    const draftFileType = configuration.draftFileType;
+    const countOfNumber = configuration.displayCountOfNumber;
+    const countOfSheet = configuration.displayCountOfSheet;
     webview.postMessage({
       command: "treeData",
       data: draftsObject(draftRoot(), this._context),
-      displayNumber: getConfig().displayCountOfNumber,
-      displaySheet: getConfig().displayCountOfSheet,
+      displayNumber: countOfNumber,
+      displaySheet: countOfSheet,
       draftFileType: draftFileType,
     });
+    // console.timeEnd("loadTreeDataTime");
   }
 
   private async sendIsOrdable(webview: vscode.Webview) {
@@ -365,7 +411,6 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
             currentFileOldNode.id,
             swapFileOldNode.isClosed,
           );
-          
         }
       }
 
@@ -416,7 +461,10 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
       );
 
       vscode.window.showInformationMessage(`ファイルの並び替えが完了しました`);
-      this.highlightFile(this._webviewView!.webview, vscode.Uri.joinPath(parentUri, newCurrentFileName).fsPath);
+      this.highlightFile(
+        this._webviewView!.webview,
+        vscode.Uri.joinPath(parentUri, newCurrentFileName).fsPath,
+      );
       setTimeout(() => {
         ignorEditorChanges = false;
       }, 300);
