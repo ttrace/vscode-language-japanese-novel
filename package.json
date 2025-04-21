@@ -56,6 +56,10 @@
         "title": "原稿ツリー表示"
       },
       {
+        "command": "Novel.resetWorkspace",
+        "title": "novel-writer情報リセット"
+      },
+      {
         "command": "Novel.vertical-preview",
         "title": "Novel:原稿用紙プレビュー",
         "icon": {

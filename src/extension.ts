@@ -311,6 +311,12 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand("Novel.resetWorkspace", async () => {
+      clearWorkspaceStateCommand(context);
+    }),
+  );
+
   documentRoot = vscode.Uri.joinPath(context.extensionUri, "htdocs");
 
   context.subscriptions.push(
@@ -674,6 +680,12 @@ function launchHeadlessServer(context: vscode.ExtensionContext) {
   if (typeof originEditor != "undefined") {
     launchserver(context, originEditor);
   }
+}
+
+export function clearWorkspaceStateCommand(context: vscode.ExtensionContext) {
+  // workspaceState の全キーをクリア
+  context.workspaceState.update("folderStates", {});
+  vscode.window.showInformationMessage('フォルダーの開閉状態 がクリアされました');
 }
 
 function deactivate() {

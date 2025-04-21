@@ -220,7 +220,7 @@ export function draftsObject(
           lengthInSheet: containerLengthInSheet,
         },
         children: containerFiles,
-        isClosed: folderStates[nodeId] ?? false, // キャッシュされた状態を使用
+        isClosed: folderStates[nodeId] ?? true, // キャッシュされた状態を使用
       };
 
       results.push(directory);
