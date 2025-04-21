@@ -94,18 +94,17 @@ export const App: React.FC = () => {
     id: string,
     isClosed: boolean,
   ): TreeFileNode => {
+    // 子要素がなければファイルノードとみなして処理を行わない
+    if (!node.children) return node;
     if (node.id === id) {
       return { ...node, isClosed };
     }
-    if (node.children) {
-      return {
-        ...node,
-        children: node.children.map((child) =>
-          toggleNodeClose(child, id, isClosed),
-        ),
-      };
-    }
-    return node;
+    return {
+      ...node,
+      children: node.children.map((child) =>
+        toggleNodeClose(child, id, isClosed),
+      ),
+    };
   };
 
   return (
