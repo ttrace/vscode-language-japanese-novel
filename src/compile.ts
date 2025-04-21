@@ -123,7 +123,7 @@ export function fileList(dirPath: string): FileList {
       //文字数カウントテスト
       let readingFile = fs.readFileSync(
         path.join(dirPath, dirent.name),
-        "utf-8"
+        "utf-8",
       );
       //カウントしない文字を除外 from https://github.com/8amjp/vsce-charactercount by MIT license
       readingFile = readingFile
@@ -132,7 +132,7 @@ export function fileList(dirPath: string): FileList {
         .replace(/[|｜]/g, "") // ルビ開始記号
         .replace(/<!--(.+?)-->/, ""); // コメントアウト
       files.push({
-        dir: path.join(dirPath, dirent.name).normalize('NFC'),
+        dir: path.join(dirPath, dirent.name).normalize("NFC"),
         name: dirent.name,
         length: readingFile.length,
       });
@@ -165,6 +165,7 @@ type FileNode = {
     lengthInSheet: number;
   };
   children?: FileNode[];
+  isClosed?: boolean;
 };
 
 let globalCounter = 0;
@@ -173,22 +174,34 @@ export function resetCounter() {
   globalCounter = 0;
 }
 
-resetCounter();
-export function draftsObject(dirPath: string): FileNode[] {
+//フォルダーの開閉情報など、キャッシュを扱う必要があるときはcontextを渡す
+export function draftsObject(
+  dirPath: string,
+  context: vscode.ExtensionContext | null = null,
+  isRootCall: boolean = true // トップレベルかどうかのフラグ
+): FileNode[] {
   const results: FileNode[] = [];
+  // トップレベルの呼び出し時のみカウンターをリセット
+  if (isRootCall) {
+    resetCounter();
+  }
+
+  const folderStates = context
+    ? context.workspaceState.get<{ [key: string]: boolean }>("folderStates", {})
+    : {};
 
   const filesInFolder = getFiles(dirPath);
 
   for (const dirent of filesInFolder) {
-    if (dirent.isDirectory() && dirent.name == "publish") {
+    if (dirent.isDirectory() && dirent.name === "publish") {
       // console.log("publish folder");
     } else if (dirent.name.match(/^\..*/)) {
-      //console.log('invisible docs');
-    } else if (dirent.isDirectory() && dirent.name == "dict") {
+      // console.log('invisible docs');
+    } else if (dirent.isDirectory() && dirent.name === "dict") {
       // console.log("dictionary folder");
     } else if (dirent.isDirectory()) {
       const directoryPath = path.join(dirPath, dirent.name);
-      const containerFiles = draftsObject(directoryPath);
+      const containerFiles = draftsObject(directoryPath, context, false);
 
       let containerLength = 0;
       let containerLengthInSheet = 0;
@@ -197,15 +210,17 @@ export function draftsObject(dirPath: string): FileNode[] {
         containerLengthInSheet += element.length.lengthInSheet;
       });
 
+      const nodeId = `node_${globalCounter++}`;
       const directory: FileNode = {
-        id: `node_${globalCounter++}`,
-        dir: path.join(dirPath, dirent.name),
+        id: nodeId,
+        dir: directoryPath,
         name: dirent.name,
         length: {
           lengthInNumber: containerLength,
           lengthInSheet: containerLengthInSheet,
         },
         children: containerFiles,
+        isClosed: folderStates[nodeId] ?? true, // キャッシュされた状態を使用
       };
 
       results.push(directory);
@@ -213,19 +228,19 @@ export function draftsObject(dirPath: string): FileNode[] {
       dirent.isFile() &&
       [getConfig().draftFileType].includes(path.extname(dirent.name))
     ) {
-      //文字数カウントテスト
+      // 文字数カウントテスト
       let readingFile = fs.readFileSync(
         path.join(dirPath, dirent.name),
-        "utf-8"
+        "utf-8",
       );
 
-        const fileNode: FileNode = {
-          id: `node_${globalCounter++}`,
-          dir: path.join(dirPath, dirent.name),
-          name: dirent.name,
-          length: getLength(readingFile)
-        };
-      
+      const fileNode: FileNode = {
+        id: `node_${globalCounter++}`,
+        dir: path.join(dirPath, dirent.name),
+        name: dirent.name,
+        length: getLength(readingFile),
+      };
+
       results.push(fileNode);
     }
   }
@@ -233,6 +248,24 @@ export function draftsObject(dirPath: string): FileNode[] {
   return results;
 }
 
+export function writeFolderStates(
+  context: vscode.ExtensionContext,
+  folders: FileNode[]
+) {
+  const folderStates: CachedFolderState = context.workspaceState.get(
+    "folderStates",
+    {}
+  );
+
+  folders.forEach((folder) => {
+    folderStates[folder.id] = folder.isClosed ?? false;
+    if (folder.children) {
+      writeFolderStates(context, folder.children);  // 再帰的に子フォルダーも処理
+    }
+  });
+
+  context.workspaceState.update("folderStates", folderStates);
+}
 export function totalLength(dirPath: string): {
   lengthInNumber: number;
   lengthInSheet: number;
@@ -264,40 +297,84 @@ export function ifFileInDraft(DocumentPath: string | undefined): boolean {
   return activeDocumentObject ? true : false;
 }
 
-
 // MARK: 長さの計算
 export function getLength(textDocument: string): {
-    lengthInNumber: number;
-    lengthInSheet: number;
-  } {
-    let docContent = textDocument;
-    // カウントに含めない文字を削除する
-    docContent = docContent
-      .replace(/[ \t\r\f\v]/g, "") // 改行以外の空白文字
-      .replace(/《(.+?)》/g, "") // ルビ範囲指定記号とその中の文字
-      .replace(/[|｜]/g, "") // ルビ開始記号
-      .replace(/<!--(.+?)-->/, ""); // コメントアウト
-    let characterCount = 0;
-    let sheetCount = 0;
-    if (docContent !== "") {
-      characterCount = docContent.replace(/\s/g, "").length;
-      const paragraphs = docContent.split(/\r\n|\r|\n/);
+  lengthInNumber: number;
+  lengthInSheet: number;
+} {
+  let docContent = textDocument;
+  // カウントに含めない文字を削除する
+  docContent = docContent
+    .replace(/[ \t\r\f\v]/g, "") // 改行以外の空白文字
+    .replace(/《(.+?)》/g, "") // ルビ範囲指定記号とその中の文字
+    .replace(/[|｜]/g, "") // ルビ開始記号
+    .replace(/<!--(.+?)-->/, ""); // コメントアウト
+  let characterCount = 0;
+  let sheetCount = 0;
+  if (docContent !== "") {
+    characterCount = docContent.replace(/\s/g, "").length;
+    const paragraphs = docContent.split(/\r\n|\r|\n/);
 
-      // 各段落の行数を計算して合算
-      let lineCount = 0;
-      const lineLength = 20;
-      for (const [index, paragraph] of paragraphs.entries()) {
-        const paragraphLength = paragraph.length;
-        if (paragraphLength === 0 && index < paragraphs.length - 1) {
-          lineCount += 1;
-        } else {
-          lineCount += Math.ceil(paragraphLength / lineLength);
-        }
+    // 各段落の行数を計算して合算
+    let lineCount = 0;
+    const lineLength = 20;
+    for (const [index, paragraph] of paragraphs.entries()) {
+      const paragraphLength = paragraph.length;
+      if (paragraphLength === 0 && index < paragraphs.length - 1) {
+        lineCount += 1;
+      } else {
+        lineCount += Math.ceil(paragraphLength / lineLength);
       }
-      // 行数から原稿用紙の枚数を計算 (1枚あたり20行)
-      sheetCount = lineCount / 20;
-      // console.log("段落数", paragraphs.length, sheetCount);
     }
-    return { lengthInNumber: characterCount, lengthInSheet: sheetCount };
-  
+    // 行数から原稿用紙の枚数を計算 (1枚あたり20行)
+    sheetCount = lineCount / 20;
+    // console.log("段落数", paragraphs.length, sheetCount);
+  }
+  return { lengthInNumber: characterCount, lengthInSheet: sheetCount };
+}
+
+type CachedFolderState = { [key: string]: boolean };
+
+export function updateFolderCache(
+  context: vscode.ExtensionContext,
+  nodeId: string,
+  isClosed: boolean,
+) {
+  const folderStates: CachedFolderState = context.workspaceState.get(
+    "folderStates",
+    {},
+  );
+  folderStates[nodeId] = isClosed;
+  context.workspaceState.update("folderStates", folderStates);
+  cleanUpFolderStates(
+    nodeId,
+    context,
+  );
+  console.log("folderStates", folderStates);
+}
+
+export function getCachedFolderStates(
+  context: vscode.ExtensionContext,
+): CachedFolderState {
+  return context.workspaceState.get("folderStates", {});
+}
+
+export function cleanUpFolderStates(
+  currentFolderIds: string,
+  context: vscode.ExtensionContext,
+) {
+  const folderStates: CachedFolderState = context.workspaceState.get(
+    "folderStates",
+    {},
+  );
+
+  // 現在のフォルダーIDに存在しないデータを削除
+  for (const id in folderStates) {
+    if (!currentFolderIds.includes(id)) {
+      delete folderStates[id];
+    }
+  }
+
+  // 更新された状態を再保存
+  context.workspaceState.update("folderStates", folderStates);
 }

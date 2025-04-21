@@ -6,6 +6,7 @@ type TreeFileNode = {
   name: string;
   length: number;
   children?: TreeFileNode[];
+  isClosed?: boolean;
 };
 
 interface TreeViewProps {

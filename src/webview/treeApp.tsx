@@ -1,10 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import ReactDOM from "react-dom/client";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { commands, FileType } from "vscode";
-
-//  import { TreeView } from "./treeComponent";
 
 // MARK:型定義
 type TreeFileNode = {
@@ -16,6 +14,7 @@ type TreeFileNode = {
     lengthInSheet: number;
   };
   children?: TreeFileNode[];
+  isClosed?: boolean;
 };
 
 interface DropResult {
@@ -82,6 +81,32 @@ export const App: React.FC = () => {
     };
   }, []);
 
+  // Declare the onToggleClose function
+  const onToggleClose = (id: string, isClosed: boolean) => {
+    setTreeData((prevTreeData) =>
+      prevTreeData.map((node) => toggleNodeClose(node, id, isClosed)),
+    );
+  };
+
+  // Helper function to toggle isClosed property
+  const toggleNodeClose = (
+    node: TreeFileNode,
+    id: string,
+    isClosed: boolean,
+  ): TreeFileNode => {
+    // 子要素がなければファイルノードとみなして処理を行わない
+    if (!node.children) return node;
+    if (node.id === id) {
+      return { ...node, isClosed };
+    }
+    return {
+      ...node,
+      children: node.children.map((child) =>
+        toggleNodeClose(child, id, isClosed),
+      ),
+    };
+  };
+
   return (
     <div>
       <div className="tree-wrapper">
@@ -93,6 +118,8 @@ export const App: React.FC = () => {
               <TreeView
                 key={index}
                 node={node}
+                // treeData={treeData}
+                onToggleClose={onToggleClose}
                 highlightedNode={highlightedNode}
                 onHighlight={setHighlightedNode}
                 isFirstSibling={index === 0}
@@ -124,11 +151,14 @@ interface TreeViewProps {
   setIsInserting: any;
   isInserting: boolean;
   draftFileType: ".txt" | ".md";
+  onToggleClose: (id: string, isClosed: boolean) => void; // New prop
+  // treeData: TreeFileNode[]; // Added treeData property
 }
 
 // MARK: TreeView
-const TreeView: React.FC<TreeViewProps> = ({
+const TreeView: React.FC<TreeViewProps> = React.memo(({
   node,
+  onToggleClose,
   highlightedNode,
   onHighlight,
   isFirstSibling,
@@ -139,11 +169,13 @@ const TreeView: React.FC<TreeViewProps> = ({
   setIsInserting,
   isInserting,
   draftFileType,
+  // treeData, // Add treeData to the destructured props
 }) => {
   // ツリービューの制御
   const treeNodeRef = useRef(null);
   // フォルダーが開いているかどうかを知るステータス（初期状態は開）
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(!node.isClosed); // Initial state based on isClosed
+  // const [expanded, setExpanded] = useState(true);
   // ドラッグ中かどうかを知るステータス（初期状態はfalse）
   const [isDragging, setIsDragging] = useState(false);
   // ドロップ対象かどうかを知るステータス（初期状態はfalce）
@@ -203,10 +235,18 @@ const TreeView: React.FC<TreeViewProps> = ({
   };
 
   //フォルダーの開け閉め
-  const toggleExpand = (event: React.MouseEvent<HTMLSpanElement>) => {
+  const toggleExpand = useCallback((event: React.MouseEvent<HTMLSpanElement>) => {
     event.stopPropagation();
-    setExpanded(!expanded);
-  };
+    const newExpandedState = !expanded;
+    setExpanded(newExpandedState);
+    onToggleClose(node.id, !newExpandedState); // Notify parent about the change
+    // Send a message to the VS Code extension with the new state
+    vscode.postMessage({
+      command: "sendFolderState",
+      nodeId: node.id,
+      isClosed: !newExpandedState,
+    });
+  },  [expanded, node.id, onToggleClose]);
 
   // ノードのクリック ハイライトとVS Codeに送信する部分も含む
   const handleNodeClick = (event: React.MouseEvent<HTMLSpanElement>) => {
@@ -332,16 +372,12 @@ const TreeView: React.FC<TreeViewProps> = ({
   );
 
   // MARK: リネーム処理
-  const handleKeyDown = (event: {
-    stopPropagation: () => void;
-    key: string;
-  }) => {
+  const handleKeyDown = (event: React.KeyboardEvent) => {
     event.stopPropagation();
     if (event.key === "Enter") {
       // IMEがアクティブな場合、Enterキーの動作を無視する
       if (!isComposing) {
         if (!isEditing) {
-          // console.log("編集開始");
           setIsEditing(true);
         } else {
           const renamingTo = isOrdable
@@ -359,6 +395,24 @@ const TreeView: React.FC<TreeViewProps> = ({
           handleBlur();
         }
       }
+    } else if (event.key === "ArrowUp" && event.altKey) {
+      if (!highlightedNode) return;
+      const fileData = {
+        destinationPath: highlightedNode,
+      };
+      vscode.postMessage({
+        command: "moveFileUp",
+        fileData: fileData,
+      });
+    } else if (event.key === "ArrowDown" && event.altKey) {
+      if (!highlightedNode) return;
+      const fileData = {
+        destinationPath: highlightedNode,
+      };
+      vscode.postMessage({
+        command: "moveFileDown",
+        fileData: fileData,
+      });
     }
   };
 
@@ -510,19 +564,23 @@ const TreeView: React.FC<TreeViewProps> = ({
           )}
           <span className="chars">
             {displaySheet
-              ? formatSheetsAndLines(node.length.lengthInSheet) + (
-                displayNumber ?
-                "(" + node.length.lengthInNumber.toLocaleString() +
-                "文字)" : "")
-              : displayNumber ? node.length.lengthInNumber.toLocaleString() + "文字" : ""}
+              ? formatSheetsAndLines(node.length.lengthInSheet) +
+                (displayNumber
+                  ? "(" + node.length.lengthInNumber.toLocaleString() + "文字)"
+                  : "")
+              : displayNumber
+                ? node.length.lengthInNumber.toLocaleString() + "文字"
+                : ""}
           </span>
         </div>
-        {node.children && (
+        {node.children && expanded && (
           <div className="tree-node-children">
             {node.children.map((child, index) => (
               <TreeView
                 key={child.name}
+                // treeData={treeData} // Pass treeData to child TreeView components
                 node={child}
+                onToggleClose={onToggleClose}
                 highlightedNode={highlightedNode}
                 onHighlight={onHighlight}
                 isFirstSibling={index === 0}
@@ -535,6 +593,7 @@ const TreeView: React.FC<TreeViewProps> = ({
                 draftFileType={draftFileType}
               />
             ))}
+
             <div
               ref={dropInside as any}
               className={`insert-bar inside
@@ -583,7 +642,7 @@ const TreeView: React.FC<TreeViewProps> = ({
       )}
     </div>
   );
-};
+});
 
 // MARK: ユーティリティ関数
 // charactorcount.ts からコピー

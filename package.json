@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "3.4.7",
+  "version": "3.4.8",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -54,6 +54,10 @@
       {
         "command": "Novel.showTreeView",
         "title": "原稿ツリー表示"
+      },
+      {
+        "command": "Novel.resetWorkspace",
+        "title": "novel-writer情報リセット"
       },
       {
         "command": "Novel.vertical-preview",

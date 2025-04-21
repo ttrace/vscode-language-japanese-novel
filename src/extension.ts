@@ -311,6 +311,12 @@ export function activate(context: vscode.ExtensionContext): void {
     }),
   );
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand("Novel.resetWorkspace", async () => {
+      clearWorkspaceStateCommand(context);
+    }),
+  );
+
   documentRoot = vscode.Uri.joinPath(context.extensionUri, "htdocs");
 
   context.subscriptions.push(
@@ -674,6 +680,19 @@ function launchHeadlessServer(context: vscode.ExtensionContext) {
   if (typeof originEditor != "undefined") {
     launchserver(context, originEditor);
   }
+}
+
+// MARK: リセット
+export function clearWorkspaceStateCommand(context: vscode.ExtensionContext) {
+  // workspaceState の全キーをクリア
+  context.workspaceState.update("folderStates", undefined);
+  context.workspaceState.update("totacCountDeadline", undefined);
+  context.workspaceState.update("totalCountDeadlineDate", undefined);
+  context.workspaceState.update("deadlineFolderPath", undefined);
+  context.workspaceState.update("deadlineTextCount", undefined);
+  context.workspaceState.update("totalCountPrevious", undefined);
+  context.workspaceState.update("totalCountPreviousDate", undefined);
+  vscode.window.showInformationMessage('novel-wrietrがワークスペースに保存する現行フォルダー開閉情報、各種の進捗、締切フォルダーをクリアしました');
 }
 
 function deactivate() {
