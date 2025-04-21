@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import ReactDOM from "react-dom/client";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -156,7 +156,7 @@ interface TreeViewProps {
 }
 
 // MARK: TreeView
-const TreeView: React.FC<TreeViewProps> = ({
+const TreeView: React.FC<TreeViewProps> = React.memo(({
   node,
   onToggleClose,
   highlightedNode,
@@ -235,7 +235,7 @@ const TreeView: React.FC<TreeViewProps> = ({
   };
 
   //フォルダーの開け閉め
-  const toggleExpand = (event: React.MouseEvent<HTMLSpanElement>) => {
+  const toggleExpand = useCallback((event: React.MouseEvent<HTMLSpanElement>) => {
     event.stopPropagation();
     const newExpandedState = !expanded;
     setExpanded(newExpandedState);
@@ -246,7 +246,7 @@ const TreeView: React.FC<TreeViewProps> = ({
       nodeId: node.id,
       isClosed: !newExpandedState,
     });
-  };
+  },  [expanded, node.id, onToggleClose]);
 
   // ノードのクリック ハイライトとVS Codeに送信する部分も含む
   const handleNodeClick = (event: React.MouseEvent<HTMLSpanElement>) => {
@@ -573,7 +573,7 @@ const TreeView: React.FC<TreeViewProps> = ({
                 : ""}
           </span>
         </div>
-        {node.children && (
+        {node.children && expanded && (
           <div className="tree-node-children">
             {node.children.map((child, index) => (
               <TreeView
@@ -642,7 +642,7 @@ const TreeView: React.FC<TreeViewProps> = ({
       )}
     </div>
   );
-};
+});
 
 // MARK: ユーティリティ関数
 // charactorcount.ts からコピー

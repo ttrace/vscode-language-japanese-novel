@@ -682,10 +682,17 @@ function launchHeadlessServer(context: vscode.ExtensionContext) {
   }
 }
 
+// MARK: リセット
 export function clearWorkspaceStateCommand(context: vscode.ExtensionContext) {
   // workspaceState の全キーをクリア
-  context.workspaceState.update("folderStates", {});
-  vscode.window.showInformationMessage('フォルダーの開閉状態 がクリアされました');
+  context.workspaceState.update("folderStates", undefined);
+  context.workspaceState.update("totacCountDeadline", undefined);
+  context.workspaceState.update("totalCountDeadlineDate", undefined);
+  context.workspaceState.update("deadlineFolderPath", undefined);
+  context.workspaceState.update("deadlineTextCount", undefined);
+  context.workspaceState.update("totalCountPrevious", undefined);
+  context.workspaceState.update("totalCountPreviousDate", undefined);
+  vscode.window.showInformationMessage('novel-wrietrがワークスペースに保存する現行フォルダー開閉情報、各種の進捗、締切フォルダーをクリアしました');
 }
 
 function deactivate() {
