@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
-import * as os from "os";
 import { editorText } from "./editor";
 import { getConfig, NovelSettings } from "./config";
 import * as cp from "child_process";
@@ -32,9 +31,7 @@ export async function exportpdf(
     const myWorkingDirectory = folderUri;
     const vivlioCommand = "npx @vivliostyle/cli";
     const vivlioSubCommand = preview ? "preview" : "build";
-    const execPath = draftRoot().match(/^[a-z]:\\/)
-      ? myPath.path.replace(/^\//, "")
-      : myPath;
+    const execPath = myPath.fsPath;
     const vivlioExportOption = !preview ? "-f pdf -o" : "";
 
     // PDF保存するためのファイルパス作成
@@ -52,18 +49,8 @@ export async function exportpdf(
       });
     }
     const vivlioExportPath = !preview
-      ? path.normalize(
-          vscode.Uri.joinPath(myWorkingDirectory, `${fileName}.pdf`).fsPath,
-        )
+      ? vscode.Uri.joinPath(myWorkingDirectory, `${fileName}.pdf`).fsPath
       : "";
-
-    const isWSL = os.release().toLowerCase().includes("microsoft");
-    let inputPath = myPath.fsPath;
-    let outputPath = vivlioExportPath;
-    if (isWSL) {
-      inputPath = await toWSLPath(inputPath);
-      outputPath = await toWSLPath(outputPath);
-    }
 
     output.appendLine(`PDF処理を実行します: ${myPath}`);
 
@@ -85,7 +72,7 @@ export async function exportpdf(
         `Vivliostyle起動中……\n初回起動には少々時間がかかります`,
       );
       cp.exec(
-    `${vivlioCommand} ${vivlioSubCommand} "${inputPath}" ${vivlioExportOption} "${outputPath}"`,
+        `${vivlioCommand} ${vivlioSubCommand} ${execPath} ${vivlioExportOption} "${vivlioExportPath}"`,
         (err, stdout, stderr) => {
           if (err) {
             output.appendLine(
@@ -110,15 +97,6 @@ export async function exportpdf(
       launchVivlioStylePreviewOnPanel(context);
     }
   }
-}
-
-async function toWSLPath(winPath: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    cp.exec(`wsl wslpath "${winPath}"`, (err, stdout, stderr) => {
-      if (err) reject(err);
-      else resolve(stdout.trim());
-    });
-  });
 }
 
 let currentPanel: vscode.WebviewPanel | undefined = undefined; // 既存のWebViewを追跡
