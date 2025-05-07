@@ -4,6 +4,7 @@ import * as path from "path";
 import { getConfig } from "./config";
 import { deadLineFolderPath } from "./extension";
 import TreeModel from "tree-model";
+import neutralCompare from "natural-compare-lite";
 
 //fsモジュールの使い方 https://qiita.com/oblivion/items/2725a4b3ca3a99f8d1a3
 export default function compileDocs(): void {
@@ -97,7 +98,9 @@ type FileList = {
 //fileList()は、ファイルパスと（再帰処理用の）ディレクトリ深度を受け取って、ファイルリストの配列と総文字数を返す。
 export function fileList(dirPath: string): FileList {
   let characterCount = 0;
-  const filesInFolder = getFiles(dirPath);
+  const filesInFolder = getFiles(dirPath).sort((a, b) =>
+    neutralCompare(a.name, b.name),
+  );
 
   const labelOfList = path.basename(dirPath);
   const files: File[] = [];
@@ -178,7 +181,7 @@ export function resetCounter() {
 export function draftsObject(
   dirPath: string,
   context: vscode.ExtensionContext | null = null,
-  isRootCall: boolean = true // トップレベルかどうかのフラグ
+  isRootCall: boolean = true, // トップレベルかどうかのフラグ
 ): FileNode[] {
   const results: FileNode[] = [];
   // トップレベルの呼び出し時のみカウンターをリセット
@@ -190,7 +193,9 @@ export function draftsObject(
     ? context.workspaceState.get<{ [key: string]: boolean }>("folderStates", {})
     : {};
 
-  const filesInFolder = getFiles(dirPath);
+  const filesInFolder = getFiles(dirPath).sort((a, b) =>
+    neutralCompare(a.name, b.name),
+  );
 
   for (const dirent of filesInFolder) {
     if (dirent.isDirectory() && dirent.name === "publish") {
@@ -250,17 +255,17 @@ export function draftsObject(
 
 export function writeFolderStates(
   context: vscode.ExtensionContext,
-  folders: FileNode[]
+  folders: FileNode[],
 ) {
   const folderStates: CachedFolderState = context.workspaceState.get(
     "folderStates",
-    {}
+    {},
   );
 
   folders.forEach((folder) => {
     folderStates[folder.id] = folder.isClosed ?? false;
     if (folder.children) {
-      writeFolderStates(context, folder.children);  // 再帰的に子フォルダーも処理
+      writeFolderStates(context, folder.children); // 再帰的に子フォルダーも処理
     }
   });
 
@@ -346,10 +351,7 @@ export function updateFolderCache(
   );
   folderStates[nodeId] = isClosed;
   context.workspaceState.update("folderStates", folderStates);
-  cleanUpFolderStates(
-    nodeId,
-    context,
-  );
+  cleanUpFolderStates(nodeId, context);
   console.log("folderStates", folderStates);
 }
 

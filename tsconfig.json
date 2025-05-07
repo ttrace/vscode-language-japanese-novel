@@ -16,5 +16,6 @@
     "types": ["node", "ws", "mocha"],
     "jsx": "react"
   },
+  "include": ["src/**/*"],
   "exclude": ["node_modules", ".vscode-test"]
 }

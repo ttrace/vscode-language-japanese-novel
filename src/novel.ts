@@ -800,7 +800,7 @@ async function renameFile(targetPath: string, newName: string) {
   const ifRenumber = (await waitForConfiguration()).get("renumber");
   if (ifRenumber) {
     newFileName = oldFileName.replace(
-      /^(\d+[-_\s]*)*(.+?)(\.(txt|md))?$/,
+      /^(\d+[-_\s]*)*(.*?)(\.(txt|md))?$/,
       `$1${newName}$3`,
     );
   }

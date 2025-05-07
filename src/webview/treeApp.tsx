@@ -383,7 +383,7 @@ const TreeView: React.FC<TreeViewProps> = React.memo(({
           const renamingTo = isOrdable
             ? editValue.replace(/^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/, "$1")
             : editValue;
-          console.log("編集名称", editValue);
+          // console.log("編集名称", editValue);
           const renameFile = {
             targetPath: node.dir,
             newName: renamingTo,
@@ -535,10 +535,7 @@ const TreeView: React.FC<TreeViewProps> = React.memo(({
                   type="text"
                   value={
                     isOrdable
-                      ? editValue.replace(
-                          /^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/,
-                          "$1",
-                        )
+                      ? getSceneName(editValue, draftFileType)
                       : editValue
                   }
                   onChange={handleChange}
@@ -554,12 +551,7 @@ const TreeView: React.FC<TreeViewProps> = React.memo(({
             </span>
           ) : (
             <span className="item-name">
-              {isOrdable
-                ? node.name.replace(
-                    /^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/,
-                    "$1",
-                  )
-                : node.name}
+              {isOrdable ? getSceneName(node.name, draftFileType) : node.name}
             </span>
           )}
           <span className="chars">
@@ -663,6 +655,24 @@ function formatSheetsAndLines(sheetFloat: number): string {
   return `${sheetsStr}${linesStr ? `${linesStr}` : ""}`;
 }
 
+function getSceneName(fileName: string, draftFileType: string): string {
+  // draftFileType で拡張子を除去（例: ".txt"）
+  const extPattern = new RegExp(`${draftFileType.replace(".", "\\.")}$`);
+  const nameWithoutExt = fileName.replace(extPattern, "");
+
+  // 先頭の数字＋区切り文字を除去
+  const regex = /^(\d+[-_\s]+)(.*)$/;
+  const match = nameWithoutExt.match(regex);
+
+  if (match) {
+    if (match[2].trim() === "") {
+      return nameWithoutExt;
+    }
+    return match[2];
+  }
+
+  return nameWithoutExt;
+}
 // root.render を呼び出す
 const root = ReactDOM.createRoot(document.getElementById("root")!);
 root.render(<App />);
