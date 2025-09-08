@@ -305,6 +305,7 @@ MIT
 ## Sponsors
 [GitHub Sponsors](https://github.com/sponsors/ttrace)でご支援いただいている方々です
 
+[![indutny](https://github.com/indutny.png?size=24)](https://github.com/indutny)
 [![hase8388](https://github.com/hase8388.png?size=24)](https://github.com/hase8388)
 [![saka-orca](https://github.com/saka-orca.png?size=24)](https://github.com/saka-orca)
 [K3xeFrpJ](https://github.com/K3xeFrpJ)
