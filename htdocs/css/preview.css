@@ -25,6 +25,7 @@ body.ltr{
 #draft {
   inline-size: calc(100vh - 3rem);
   margin-inline-start: 1em;
+  position: absolute;
 }
 
 .ltr #draft {
@@ -421,6 +422,7 @@ div.comment {
   border-radius: 1em;
   border: 1pt solid rgb(241, 189, 0);
   position: absolute;
+  top: calc(100vh - 3em);
   margin-inline-start: -2em;
   background-color: rgb(255, 123, 0);
   writing-mode: lr-tb;
@@ -428,7 +430,7 @@ div.comment {
   font-size: 0.5em;
   line-height: 1;
   margin-top: -1em;
-  padding: 2px;
+  padding: 2pt;
 }
 
 div.comment::before {
@@ -448,6 +450,7 @@ div.comment::before {
 .line-numbers {
   display: block;
   position: absolute;
+  margin-top:-1em;
   inset-inline-start: 0px;
 }
 

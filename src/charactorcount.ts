@@ -23,7 +23,7 @@ import {
 } from "vscode";
 import * as vscode from "vscode";
 
-import simpleGit, { SimpleGit } from "simple-git";
+import { SimpleGit, simpleGit, SimpleGitOptions } from "simple-git";
 import { distance } from "fastest-levenshtein";
 import { getConfig } from "./config";
 import { get } from "http";
@@ -264,8 +264,8 @@ export class CharacterCounter {
         : this._folderCount.amountLength.lengthInSheet;
 
       targetNumberStr = isDeadLineInNumber
-      ? Intl.NumberFormat().format(parseInt(countingTarget)) + "文字" + "中"
-      : formatSheetsAndLines(parseFloat(countingTarget)) + "中";
+        ? Intl.NumberFormat().format(parseInt(countingTarget)) + "文字" + "中"
+        : formatSheetsAndLines(parseFloat(countingTarget)) + "中";
 
       if (this._isEditorChildOfTargetFolder) {
         targetNumber = targetNumber - savedCount + activeCount;
@@ -273,7 +273,7 @@ export class CharacterCounter {
       targetNumberStr += isDeadLineInNumber
         ? Intl.NumberFormat().format(targetNumber) + "文字"
         : formatSheetsAndLines(targetNumber);
-      
+
       targetNumberStr = ` $(folder-opened)${this._folderCount.label} ${targetNumberStr}`;
     }
 
@@ -475,7 +475,13 @@ export class CharacterCounter {
     const relatevePath = path
       .relative(this.projectPath, activeDocumentPath)
       .replace(new RegExp("\\" + path.sep, "g"), "/");
-    const git: SimpleGit = simpleGit(this.projectPath);
+    const options: Partial<SimpleGitOptions> = {
+      baseDir: this.projectPath,
+      binary: "git",
+      maxConcurrentProcesses: 6,
+      trimmed: false,
+    };
+    const git = simpleGit(options);
 
     const isRepo = await git.checkIsRepo();
     if (isRepo) {

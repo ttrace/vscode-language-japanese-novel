@@ -212,14 +212,14 @@ const TreeView: React.FC<TreeViewProps> = React.memo(({
     }
   }, [isInserting]);
 
-  useEffect(() => {
-    if (node.dir === highlightedNode && treeNodeRef.current) {
-      setTimeout(() => {
-        // console.log("フォーカス獲得", node.dir);
-        (treeNodeRef.current as unknown as HTMLDivElement).focus();
-      }, 100);
-    }
-  }, [highlightedNode]);
+  // useEffect(() => {
+  //   if (node.dir === highlightedNode && treeNodeRef.current) {
+  //     setTimeout(() => {
+  //       // console.log("フォーカス獲得", node.dir);
+  //       (treeNodeRef.current as unknown as HTMLDivElement).focus();
+  //     }, 100);
+  //   }
+  // }, [highlightedNode]);
 
   // ドラッグ制御
   const handleDragStart = () => {
