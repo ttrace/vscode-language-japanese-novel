@@ -313,7 +313,8 @@ export function getLength(textDocument: string): {
     .replace(/[ \t\r\f\v]/g, "") // 改行以外の空白文字
     .replace(/《(.+?)》/g, "") // ルビ範囲指定記号とその中の文字
     .replace(/[|｜]/g, "") // ルビ開始記号
-    .replace(/<!--(.+?)-->/, ""); // コメントアウト
+    // .replace(/<!--(.+?)-->/, ""); 
+    .replace(/<!--[\s\S]*?-->/g, ''); // コメントアウト
   let characterCount = 0;
   let sheetCount = 0;
   if (docContent !== "") {
