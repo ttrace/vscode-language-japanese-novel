@@ -20,8 +20,8 @@ let isFileOperating = false;
 let ignorEditorChanges = false;
 const debugWebView = false;
 const configuration = vscode.workspace.getConfiguration();
-const draftFileType =
-  configuration.get("Novel.general.filetype") == ".txt" ? ".txt" : ".md";
+const draftFileType = getConfig().draftFileType;
+  // configuration.get("Novel.general.filetype") == ".txt" ? ".txt" : ".md";
 
 const output = vscode.window.createOutputChannel("Novel");
 
@@ -273,8 +273,9 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
   public loadTreeData(webview: vscode.Webview) {
     resetCounter();
     // console.time("loadTreeDataTime");
-    const configuration = getConfig();
-    const draftFileType = configuration.draftFileType;
+    // const configuration = getConfig();
+    // const draftFileType = configuration.draftFileType;
+    const draftFileType = getConfig().draftFileType;
     const countOfNumber = configuration.displayCountOfNumber;
     const countOfSheet = configuration.displayCountOfSheet;
     webview.postMessage({
@@ -324,6 +325,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
   ) {
     const fileTree = draftsObject(draftRoot(), context);
     writeFolderStates(context, fileTree);
+    const draftFileType = getConfig().draftFileType;
 
     // ワークスペースが開いているかチェック
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
@@ -497,6 +499,7 @@ async function moveAndReorderFiles(
   }
 
   isFileOperating = true;
+  const draftFileType = getConfig().draftFileType;
 
   // パスをURIに変換
   const destinationUri = vscode.Uri.file(destinationPath);
@@ -791,6 +794,7 @@ async function waitForConfiguration(): Promise<vscode.WorkspaceConfiguration> {
 
 // MARK: ファイルのリネーム
 async function renameFile(targetPath: string, newName: string) {
+  const draftFileType = getConfig().draftFileType;
   // console.log(`ファイル名変更： ${targetPath} を ${newName} に変更`);
   const targetFileUri = vscode.Uri.file(targetPath);
   // const newFileName = newName;
@@ -824,6 +828,7 @@ async function insertFile(
   insertingNodeType: "file" | "folder",
   insertingNodeName: string,
 ) {
+  const draftFileType = getConfig().draftFileType;
   const targetFileUri = vscode.Uri.file(targetPath);
   const documentFileType = configuration.get("Novel.general.filetype");
   // 並び替えなし
