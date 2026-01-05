@@ -273,9 +273,8 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
   public loadTreeData(webview: vscode.Webview) {
     resetCounter();
     // console.time("loadTreeDataTime");
-    // const configuration = getConfig();
-    // const draftFileType = configuration.draftFileType;
-    const draftFileType = getConfig().draftFileType;
+    const configuration = getConfig();
+    const draftFileType = configuration.draftFileType;
     const countOfNumber = configuration.displayCountOfNumber;
     const countOfSheet = configuration.displayCountOfSheet;
     webview.postMessage({
