@@ -53,31 +53,44 @@ export default function compileDocs(): void {
   //console.log(fileList(draftRootPath, 0).files);
 }
 
-export function draftRoot(): string {
-  if (
-    vscode.workspace.name == undefined ||
-    vscode.workspace.workspaceFolders == undefined
-  ) {
+function workspaceRoot(documentPath?: string): string {
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (!workspaceFolders?.length) {
     return "";
-  } else {
-    const projectPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-    let draftRootPath = projectPath;
-    const projectFiles = fs.readdirSync(projectPath);
-    //「原稿」あるいは「Draft」フォルダーを原稿フォルダのルートにする。
-    if (
-      projectFiles.includes("Draft") &&
-      fs.statSync(projectPath + "/Draft").isDirectory()
-    ) {
-      draftRootPath = draftRootPath + "/Draft";
-    } else if (
-      projectFiles.includes("原稿") &&
-      fs.statSync(projectPath + "/原稿").isDirectory()
-    ) {
-      draftRootPath = draftRootPath + "/原稿";
-    }
-
-    return draftRootPath;
   }
+
+  if (documentPath) {
+    const workspaceFolder = vscode.workspace.getWorkspaceFolder(
+      vscode.Uri.file(documentPath),
+    );
+    return workspaceFolder?.uri.fsPath ?? "";
+  }
+
+  return workspaceFolders[0].uri.fsPath;
+}
+
+export function draftRoot(documentPath?: string): string {
+  const projectPath = workspaceRoot(documentPath);
+  if (projectPath === "") {
+    return "";
+  }
+
+  let draftRootPath = projectPath;
+  const projectFiles = fs.readdirSync(projectPath);
+  const draftFolderPath = path.join(projectPath, "Draft");
+  const manuscriptFolderPath = path.join(projectPath, "原稿");
+
+  //「原稿」あるいは「Draft」フォルダーを原稿フォルダのルートにする。
+  if (projectFiles.includes("Draft") && fs.statSync(draftFolderPath).isDirectory()) {
+    draftRootPath = draftFolderPath;
+  } else if (
+    projectFiles.includes("原稿") &&
+    fs.statSync(manuscriptFolderPath).isDirectory()
+  ) {
+    draftRootPath = manuscriptFolderPath;
+  }
+
+  return draftRootPath;
 }
 
 type File = {
@@ -285,19 +298,27 @@ export function totalLength(dirPath: string): {
 }
 
 export function ifFileInDraft(DocumentPath: string | undefined): boolean {
-  if (draftRoot() == "") {
+  if (!DocumentPath) {
+    return false;
+  }
+
+  const draftRootPath = draftRoot(DocumentPath);
+  if (draftRootPath == "") {
     return false;
   }
   //Treeモデル構築
   const tree = new TreeModel();
-  const draftTree = tree.parse({ dir: draftRoot(), name: "root", length: 0 });
+  const draftTree = tree.parse({ dir: draftRootPath, name: "root", length: 0 });
   //const activeDocumentPath = window.activeTextEditor?.document.uri.fsPath;
-  draftsObject(draftRoot()).forEach((element) => {
+  draftsObject(draftRootPath).forEach((element) => {
     const draftNode = tree.parse(element);
     draftTree.addChild(draftNode);
   });
+  const normalizedDocumentPath = path.normalize(DocumentPath).normalize("NFC");
   const activeDocumentObject = draftTree.first(
-    (node) => node.model.dir === DocumentPath,
+    (node) =>
+      typeof node.model.dir === "string" &&
+      path.normalize(node.model.dir).normalize("NFC") === normalizedDocumentPath,
   );
   return activeDocumentObject ? true : false;
 }
