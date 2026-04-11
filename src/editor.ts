@@ -365,13 +365,35 @@ async function getBesideText(document: vscode.TextDocument): Promise<{
       nextText: "",
     };
   }
-  const myFileList = fileList(draftRoot());
+  const currentDraftRoot = draftRoot(document.fileName);
+  if (currentDraftRoot == "") {
+    return {
+      prevUrl: null,
+      prevTitle: "",
+      prevText: "",
+      nextUrl: null,
+      nextTitle: "",
+      nextText: "",
+    };
+  }
+
+  const myFileList = fileList(currentDraftRoot);
   // console.log("fileList",myFileList);
   // console.log("draftsObject",draftsObject(draftRoot()));
   const docIndex = myFileList.files.findIndex(
     // (e) => e.dir == document.fileName
     (e) => e.dir?.normalize("NFC") == document.fileName.normalize("NFC"),
   );
+  if (docIndex === -1) {
+    return {
+      prevUrl: null,
+      prevTitle: "",
+      prevText: "",
+      nextUrl: null,
+      nextTitle: "",
+      nextText: "",
+    };
+  }
   let prevDocIndex = null;
   let nextDocIndex = null;
   let prevDocUrl = null;
