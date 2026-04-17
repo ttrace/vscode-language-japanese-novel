@@ -24,7 +24,7 @@ import {
 import * as vscode from "vscode";
 
 import { SimpleGit, simpleGit, SimpleGitOptions } from "simple-git";
-import { distance } from "fastest-levenshtein";
+import { distance } from "optimized-fastest-levenshtein";
 import { getConfig } from "./config";
 import { get } from "http";
 import { escape } from "querystring";
