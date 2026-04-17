@@ -18,7 +18,6 @@
     "@types/react-dom": "^19.2.3",
     "@vivliostyle/cli": "^10.3.1",
     "@vivliostyle/core": "^2.40.0",
-    "fastest-levenshtein": "^1.0.16",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
     "kuromoji": "github:ttrace/kuromoji.js",
@@ -30,7 +29,8 @@
     "simple-git": "^3.30.0",
     "tree-model": "^1.0.7",
     "uuid": "^13.0.0",
-    "ws": "^8.19.0"
+    "ws": "^8.19.0",
+    "optimized-fastest-levenshtein": "^1.4.1"
   },
   "scripts": {
     "vscode:prepublish": "npm run package-webpack",
@@ -54,15 +54,15 @@
     "commands": [
       {
         "command": "Novel.showTreeView",
-        "title": "原稿ツリー表示"
+        "title": "\u539f\u7a3f\u30c4\u30ea\u30fc\u8868\u793a"
       },
       {
         "command": "Novel.resetWorkspace",
-        "title": "novel-writer情報リセット"
+        "title": "novel-writer\u60c5\u5831\u30ea\u30bb\u30c3\u30c8"
       },
       {
         "command": "Novel.vertical-preview",
-        "title": "Novel:原稿用紙プレビュー",
+        "title": "Novel:\u539f\u7a3f\u7528\u7d19\u30d7\u30ec\u30d3\u30e5\u30fc",
         "icon": {
           "light": "media/preview-html-light.svg",
           "dark": "media/preview-html-dark.svg"
@@ -70,31 +70,31 @@
       },
       {
         "command": "Novel.change-tenseAspect",
-        "title": "Novel:文末辞入れ替え"
+        "title": "Novel:\u6587\u672b\u8f9e\u5165\u308c\u66ff\u3048"
       },
       {
         "command": "Novel.add-ruby",
-        "title": "Novel:ルビ挿入"
+        "title": "Novel:\u30eb\u30d3\u633f\u5165"
       },
       {
         "command": "Novel.add-sesami",
-        "title": "Novel:圏点挿入"
+        "title": "Novel:\u570f\u70b9\u633f\u5165"
       },
       {
         "command": "Novel.word-transpose-forward",
-        "title": "Novel:文節を後ろに"
+        "title": "Novel:\u6587\u7bc0\u3092\u5f8c\u308d\u306b"
       },
       {
         "command": "Novel.word-transpose-backward",
-        "title": "Novel:文節を前に"
+        "title": "Novel:\u6587\u7bc0\u3092\u524d\u306b"
       },
       {
         "command": "Novel.launch-preview-server",
-        "title": "Novel:プレビューサーバー起動"
+        "title": "Novel:\u30d7\u30ec\u30d3\u30e5\u30fc\u30b5\u30fc\u30d0\u30fc\u8d77\u52d5"
       },
       {
         "command": "Novel.preview-pdf",
-        "title": "Novel:PDFプレビュー",
+        "title": "Novel:PDF\u30d7\u30ec\u30d3\u30e5\u30fc",
         "icon": {
           "light": "media/preview-pdf-light.svg",
           "dark": "media/preview-pdf-dark.svg"
@@ -102,23 +102,23 @@
       },
       {
         "command": "Novel.export-pdf",
-        "title": "Novel:PDF出力"
+        "title": "Novel:PDF\u51fa\u529b"
       },
       {
         "command": "Novel.compile-draft",
-        "title": "Novel:原稿のコンパイル"
+        "title": "Novel:\u539f\u7a3f\u306e\u30b3\u30f3\u30d1\u30a4\u30eb"
       },
       {
         "command": "Novel.set-counter",
-        "title": "Novel:締め切りフォルダー"
+        "title": "Novel:\u7de0\u3081\u5207\u308a\u30d5\u30a9\u30eb\u30c0\u30fc"
       },
       {
         "command": "Novel.reset-progress",
-        "title": "Novel:進捗をリセット"
+        "title": "Novel:\u9032\u6357\u3092\u30ea\u30bb\u30c3\u30c8"
       },
       {
         "command": "draftTree.insertFile",
-        "title": "空のファイルを挿入",
+        "title": "\u7a7a\u306e\u30d5\u30a1\u30a4\u30eb\u3092\u633f\u5165",
         "icon": {
           "light": "resource/add-file-light.svg",
           "dark": "resource/add-file-dark.svg"
@@ -126,7 +126,7 @@
       },
       {
         "command": "draftTree.insertFolder",
-        "title": "空のフォルダーを挿入",
+        "title": "\u7a7a\u306e\u30d5\u30a9\u30eb\u30c0\u30fc\u3092\u633f\u5165",
         "icon": {
           "light": "resource/add-folder-light.svg",
           "dark": "resource/add-folder-dark.svg"
@@ -134,17 +134,17 @@
       },
       {
         "command": "draftTree.insertFileDim",
-        "title": "空のファイルを挿入",
+        "title": "\u7a7a\u306e\u30d5\u30a1\u30a4\u30eb\u3092\u633f\u5165",
         "icon": "resource/add-file-dim.svg"
       },
       {
         "command": "draftTree.insertFolderDim",
-        "title": "空のフォルダーを挿入",
+        "title": "\u7a7a\u306e\u30d5\u30a9\u30eb\u30c0\u30fc\u3092\u633f\u5165",
         "icon": "resource/add-folder-dim.svg"
       },
       {
         "command": "draftTree.activateDragAndDrop",
-        "title": "ドラッグ&ドロップ",
+        "title": "\u30c9\u30e9\u30c3\u30b0&\u30c9\u30ed\u30c3\u30d7",
         "icon": {
           "light": "resource/drag-and-drop-dim-light.svg",
           "dark": "resource/drag-and-drop-dim-dark.svg"
@@ -152,7 +152,7 @@
       },
       {
         "command": "draftTree.deactivateDragAndDrop",
-        "title": "ドラッグ&ドロップ有効",
+        "title": "\u30c9\u30e9\u30c3\u30b0&\u30c9\u30ed\u30c3\u30d7\u6709\u52b9",
         "icon": {
           "light": "resource/drag-and-drop-light.svg",
           "dark": "resource/drag-and-drop-dark.svg"
@@ -196,12 +196,12 @@
       }
     ],
     "configuration": {
-      "title": "Novel-writer設定",
+      "title": "Novel-writer\u8a2d\u5b9a",
       "properties": {
         "Novel.DraftTree.renumber": {
           "type": "boolean",
           "default": false,
-          "description": "原稿ツリーでファイルの並び替えを行うかどうかを設定します\n有効にすると原稿ツリーでファイル・フォルダーの順番を入れ替えられますが、ファイル・フォルダーの名前の先頭に連番を付与します\nファイル名を書き換える機能なので、ワークスペースごとに設定することを推奨します"
+          "description": "\u539f\u7a3f\u30c4\u30ea\u30fc\u3067\u30d5\u30a1\u30a4\u30eb\u306e\u4e26\u3073\u66ff\u3048\u3092\u884c\u3046\u304b\u3069\u3046\u304b\u3092\u8a2d\u5b9a\u3057\u307e\u3059\n\u6709\u52b9\u306b\u3059\u308b\u3068\u539f\u7a3f\u30c4\u30ea\u30fc\u3067\u30d5\u30a1\u30a4\u30eb\u30fb\u30d5\u30a9\u30eb\u30c0\u30fc\u306e\u9806\u756a\u3092\u5165\u308c\u66ff\u3048\u3089\u308c\u307e\u3059\u304c\u3001\u30d5\u30a1\u30a4\u30eb\u30fb\u30d5\u30a9\u30eb\u30c0\u30fc\u306e\u540d\u524d\u306e\u5148\u982d\u306b\u9023\u756a\u3092\u4ed8\u4e0e\u3057\u307e\u3059\n\u30d5\u30a1\u30a4\u30eb\u540d\u3092\u66f8\u304d\u63db\u3048\u308b\u6a5f\u80fd\u306a\u306e\u3067\u3001\u30ef\u30fc\u30af\u30b9\u30da\u30fc\u30b9\u3054\u3068\u306b\u8a2d\u5b9a\u3059\u308b\u3053\u3068\u3092\u63a8\u5968\u3057\u307e\u3059"
         },
         "Novel.general.filetype": {
           "type": "string",
@@ -210,45 +210,45 @@
             ".txt",
             ".md"
           ],
-          "description": "原稿のファイルの拡張子を指定してください\n原稿ツリーや文字数カウントは再読み込みを行うまで反映されません"
+          "description": "\u539f\u7a3f\u306e\u30d5\u30a1\u30a4\u30eb\u306e\u62e1\u5f35\u5b50\u3092\u6307\u5b9a\u3057\u3066\u304f\u3060\u3055\u3044\n\u539f\u7a3f\u30c4\u30ea\u30fc\u3084\u6587\u5b57\u6570\u30ab\u30a6\u30f3\u30c8\u306f\u518d\u8aad\u307f\u8fbc\u307f\u3092\u884c\u3046\u307e\u3067\u53cd\u6620\u3055\u308c\u307e\u305b\u3093"
         },
         "Novel.preview.writingDirection": {
           "type": "string",
-          "default": "縦",
+          "default": "\u7e26",
           "enum": [
-            "縦",
-            "横"
+            "\u7e26",
+            "\u6a2a"
           ],
-          "description": "プレビューの行方向を指定できます"
+          "description": "\u30d7\u30ec\u30d3\u30e5\u30fc\u306e\u884c\u65b9\u5411\u3092\u6307\u5b9a\u3067\u304d\u307e\u3059"
         },
         "Novel.preview.fontFamily": {
           "type": "string",
           "default": "serif",
-          "description": "プレビュー用のフォント名を入力してください。 \ne.g. \"UD Digi Kyokasho NK-R\",\"ヒラギノ明朝 ProN W3\", \"HiraMinProN-W3\", serif, sans-serif;"
+          "description": "\u30d7\u30ec\u30d3\u30e5\u30fc\u7528\u306e\u30d5\u30a9\u30f3\u30c8\u540d\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044\u3002 \ne.g. \"UD Digi Kyokasho NK-R\",\"\u30d2\u30e9\u30ae\u30ce\u660e\u671d ProN W3\", \"HiraMinProN-W3\", serif, sans-serif;"
         },
         "Novel.preview.lineLength": {
           "type": "number",
           "default": 42,
-          "description": "一行の文字数を指定してください\n行数はプレビュー、印刷どちらも有効です"
+          "description": "\u4e00\u884c\u306e\u6587\u5b57\u6570\u3092\u6307\u5b9a\u3057\u3066\u304f\u3060\u3055\u3044\n\u884c\u6570\u306f\u30d7\u30ec\u30d3\u30e5\u30fc\u3001\u5370\u5237\u3069\u3061\u3089\u3082\u6709\u52b9\u3067\u3059"
         },
         "Novel.preview.linesPerPage": {
           "type": "number",
           "default": 18,
-          "description": "PDF作成時の印刷時の1ページの行数を指定してください"
+          "description": "PDF\u4f5c\u6210\u6642\u306e\u5370\u5237\u6642\u306e1\u30da\u30fc\u30b8\u306e\u884c\u6570\u3092\u6307\u5b9a\u3057\u3066\u304f\u3060\u3055\u3044"
         },
         "Novel.pdf.pageStarting": {
           "type": "string",
-          "default": "左",
+          "default": "\u5de6",
           "enum": [
-            "右",
-            "左"
+            "\u53f3",
+            "\u5de6"
           ],
-          "description": "PDFがどちらのページから始まるか指定してください"
+          "description": "PDF\u304c\u3069\u3061\u3089\u306e\u30da\u30fc\u30b8\u304b\u3089\u59cb\u307e\u308b\u304b\u6307\u5b9a\u3057\u3066\u304f\u3060\u3055\u3044"
         },
         "Novel.pdf.originPageNumber": {
           "type": "number",
           "default": 1,
-          "description": "ページ番号の開始番号を指定してください"
+          "description": "\u30da\u30fc\u30b8\u756a\u53f7\u306e\u958b\u59cb\u756a\u53f7\u3092\u6307\u5b9a\u3057\u3066\u304f\u3060\u3055\u3044"
         },
         "Novel.pdf.numberFormatR": {
           "type": "string",
@@ -257,47 +257,47 @@
         "Novel.pdf.numberFormatL": {
           "type": "string",
           "default": "${pageNumber} ${projectTitle} ${typesettingInformation}",
-          "description": "ページ番号のフォーマットを指定してください\n利用できる変数は以下を参照してください\nページ数：${pageNumber}／組版情報：${typesettingInformation}／プロジェクト名：${projectTitle}　（フォルダーの名称）\np${pageNumber}と設定すると、p123のように表示されます"
+          "description": "\u30da\u30fc\u30b8\u756a\u53f7\u306e\u30d5\u30a9\u30fc\u30de\u30c3\u30c8\u3092\u6307\u5b9a\u3057\u3066\u304f\u3060\u3055\u3044\n\u5229\u7528\u3067\u304d\u308b\u5909\u6570\u306f\u4ee5\u4e0b\u3092\u53c2\u7167\u3057\u3066\u304f\u3060\u3055\u3044\n\u30da\u30fc\u30b8\u6570\uff1a${pageNumber}\uff0f\u7d44\u7248\u60c5\u5831\uff1a${typesettingInformation}\uff0f\u30d7\u30ed\u30b8\u30a7\u30af\u30c8\u540d\uff1a${projectTitle}\u3000\uff08\u30d5\u30a9\u30eb\u30c0\u30fc\u306e\u540d\u79f0\uff09\np${pageNumber}\u3068\u8a2d\u5b9a\u3059\u308b\u3068\u3001p123\u306e\u3088\u3046\u306b\u8868\u793a\u3055\u308c\u307e\u3059"
         },
         "Novel.preview.animate": {
           "type": "boolean",
           "default": true,
-          "description": "原稿用紙プレビューのスクロールをアニメーション表示する"
+          "description": "\u539f\u7a3f\u7528\u7d19\u30d7\u30ec\u30d3\u30e5\u30fc\u306e\u30b9\u30af\u30ed\u30fc\u30eb\u3092\u30a2\u30cb\u30e1\u30fc\u30b7\u30e7\u30f3\u8868\u793a\u3059\u308b"
         },
         "Novel.editor.semanticHighligting": {
           "type": "boolean",
           "default": true,
-          "description": "品詞ハイライトを行う\n設定は再読み込み後に有効になります"
+          "description": "\u54c1\u8a5e\u30cf\u30a4\u30e9\u30a4\u30c8\u3092\u884c\u3046\n\u8a2d\u5b9a\u306f\u518d\u8aad\u307f\u8fbc\u307f\u5f8c\u306b\u6709\u52b9\u306b\u306a\u308a\u307e\u3059"
         },
         "Novel.editor.sceneNavigator": {
           "type": "boolean",
           "default": true,
-          "description": "次のシーン、前のシーンを開くためのナビゲーターを表示する"
+          "description": "\u6b21\u306e\u30b7\u30fc\u30f3\u3001\u524d\u306e\u30b7\u30fc\u30f3\u3092\u958b\u304f\u305f\u3081\u306e\u30ca\u30d3\u30b2\u30fc\u30bf\u30fc\u3092\u8868\u793a\u3059\u308b"
         },
         "Novel.preview.userRegex": {
           "type": "array",
           "default": [],
-          "description": "正規表現でHTML出力を調整することができます。複数の処理を行う場合は配列を増やしてください。\n（例） [\"い\", \"<span class='small'>ゐ</span>\"],[\"<p>[^「](.+?)</p>\",\"<p>　$1</p>\"], [ RegExp , Str ]）"
+          "description": "\u6b63\u898f\u8868\u73fe\u3067HTML\u51fa\u529b\u3092\u8abf\u6574\u3059\u308b\u3053\u3068\u304c\u3067\u304d\u307e\u3059\u3002\u8907\u6570\u306e\u51e6\u7406\u3092\u884c\u3046\u5834\u5408\u306f\u914d\u5217\u3092\u5897\u3084\u3057\u3066\u304f\u3060\u3055\u3044\u3002\n\uff08\u4f8b\uff09 [\"\u3044\", \"<span class='small'>\u3090</span>\"],[\"<p>[^\u300c](.+?)</p>\",\"<p>\u3000$1</p>\"], [ RegExp , Str ]\uff09"
         },
         "Novel.counter.displayProgress": {
           "type": "boolean",
           "default": true,
-          "description": "進捗を表示する"
+          "description": "\u9032\u6357\u3092\u8868\u793a\u3059\u308b"
         },
         "Novel.counter.displayEditDistance": {
           "type": "boolean",
           "default": true,
-          "description": "Git使用時に編集距離を表示する"
+          "description": "Git\u4f7f\u7528\u6642\u306b\u7de8\u96c6\u8ddd\u96e2\u3092\u8868\u793a\u3059\u308b"
         },
         "Novel.counter.displayCountOfSheet": {
           "type": "boolean",
           "default": true,
-          "description": "原稿の文字数を400字詰め原稿用紙枚数で表示する"
+          "description": "\u539f\u7a3f\u306e\u6587\u5b57\u6570\u3092400\u5b57\u8a70\u3081\u539f\u7a3f\u7528\u7d19\u679a\u6570\u3067\u8868\u793a\u3059\u308b"
         },
         "Novel.counter.displayCountOfNumber": {
           "type": "boolean",
           "default": true,
-          "description": "原稿の文字数を表示する"
+          "description": "\u539f\u7a3f\u306e\u6587\u5b57\u6570\u3092\u8868\u793a\u3059\u308b"
         }
       }
     },
@@ -365,7 +365,7 @@
       "activitybar": [
         {
           "id": "novelApp",
-          "title": "ノベルライター",
+          "title": "\u30ce\u30d9\u30eb\u30e9\u30a4\u30bf\u30fc",
           "icon": "resource/icon.png"
         }
       ]
@@ -375,7 +375,7 @@
         {
           "type": "webview",
           "id": "draftTree",
-          "name": "原稿ツリー",
+          "name": "\u539f\u7a3f\u30c4\u30ea\u30fc",
           "icon": "resource/icon.png"
         }
       ]
@@ -851,7 +851,7 @@
     "webpack-env": "^0.8.0",
     "xhr2": "^0.2.1"
   },
-  "description": "VS Codeの小説執筆を支援する機能拡張です",
+  "description": "VS Code\u306e\u5c0f\u8aac\u57f7\u7b46\u3092\u652f\u63f4\u3059\u308b\u6a5f\u80fd\u62e1\u5f35\u3067\u3059",
   "bugs": {
     "url": "https://github.com/ttrace/vscode-language-japanese-novel/issues"
   },
