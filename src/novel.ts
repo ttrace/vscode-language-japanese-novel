@@ -13,6 +13,7 @@ import {
 } from "./extension";
 import { v4 as uuidv4 } from "uuid";
 import { getConfig } from "./config";
+import { createSequentialRenamePlan } from "./renumber";
 
 let debugIncrement = 0;
 
@@ -687,47 +688,17 @@ async function addSequentialNumberToFiles(
   movingFileUpperUri: vscode.Uri,
   uniqueId?: string,
 ) {
-  // console.log("sort!");
-
   let renamedMovingFileUpperUrl = movingFileUpperUri;
-  let fileIndex = 1;
-  // ディレクトリ内のファイルとフォルダの名前を変更
-  //スキップするindex beforeなら0、afterならdestinationIndexの一つ後ろ
-  const skipIndex = insertPoint === "before" ? 0 : destinationIndex + 1;
+  const plan = createSequentialRenamePlan(
+    destinationFiles.map(([fileName]) => fileName),
+    destinationIndex,
+    insertPoint,
+  );
 
-  // ドラッグ元が削除されたフォルダーの連番やり直し
-  const postNumbering = destinationIndex == -1 ? true : false;
-  let movigFileName = "";
-
-  for (let i = 0; i < destinationFiles.length; i++) {
-    let fileName = destinationFiles[i][0];
-
-    if (fileName.startsWith("moving-")) {
-      // console.log("移動中ファイル発見？", fileName, uniqueId);
-      movigFileName = fileName;
-      continue;
-    }
-
-    // 挿入ポイント
-    if (i == skipIndex && !postNumbering) {
-      fileIndex++;
-    }
-
-    const oldUri = vscode.Uri.joinPath(targetUri, fileName);
-
-    // 先頭に /(^\d+[-_])/ の形式がある場合、それを削除します
-    fileName = fileName.replace(/^\d+[-_\s]*/, "");
-
-    const digits = destinationFiles.length.toString().length;
-    const newFileName = `${String(fileIndex).padStart(
-      digits,
-      "0",
-    )}-${fileName}`;
-    fileIndex++;
-
-    const newUri = vscode.Uri.joinPath(targetUri, newFileName);
-
-    if (oldUri.path == movingFileUpperUri.path) {
+  for (const rename of plan.renames) {
+    const oldUri = vscode.Uri.joinPath(targetUri, rename.oldName);
+    const newUri = vscode.Uri.joinPath(targetUri, rename.newName);
+    if (oldUri.path === movingFileUpperUri.path) {
       // 上位ディレクトリから
       renamedMovingFileUpperUrl = newUri;
     } else if (movingFileUpperUri.path.startsWith(oldUri.path)) {
@@ -736,29 +707,80 @@ async function addSequentialNumberToFiles(
       renamedMovingFileUpperUrl = vscode.Uri.joinPath(newUri, subDir);
     }
 
-    try {
-      // まずエディターでファイルを閉じます
-      await closeFileInEditor(oldUri);
-      await vscode.workspace.fs.rename(oldUri, newUri, { overwrite: true });
-    } catch (error) {
-      console.error(
-        `ファイル名の修正に失敗しました rename ${oldUri} to ${newUri}: ${error}`,
+  }
+
+  // 変更対象だけを一時名へ退避してから最終名へ変える。
+  // 1-A.txt -> 2-A.txt のような変更で、未処理の同名ファイルを上書きしない。
+  const stagedRenames: Array<{
+    oldUri: vscode.Uri;
+    temporaryUri: vscode.Uri;
+    newUri: vscode.Uri;
+  }> = [];
+  const finalizedRenames: typeof stagedRenames = [];
+
+  try {
+    for (const rename of plan.renames) {
+      const oldUri = vscode.Uri.joinPath(targetUri, rename.oldName);
+      const temporaryUri = vscode.Uri.joinPath(
+        targetUri,
+        `.novel-writer-renumber-${uuidv4()}`,
       );
+      await closeFileInEditor(oldUri);
+      await vscode.workspace.fs.rename(oldUri, temporaryUri, {
+        overwrite: false,
+      });
+      stagedRenames.push({
+        oldUri,
+        temporaryUri,
+        newUri: vscode.Uri.joinPath(targetUri, rename.newName),
+      });
     }
+
+    for (const staged of stagedRenames) {
+      await vscode.workspace.fs.rename(staged.temporaryUri, staged.newUri, {
+        overwrite: false,
+      });
+      finalizedRenames.push(staged);
+    }
+  } catch (error) {
+    // 最終名への変更途中なら、完了分も一度それぞれの一時名へ戻す。
+    // 入れ替え関係にある名前を直接元へ戻すと、復旧中にも衝突するため。
+    for (const staged of [...finalizedRenames].reverse()) {
+      try {
+        await vscode.workspace.fs.rename(staged.newUri, staged.temporaryUri, {
+          overwrite: false,
+        });
+      } catch {
+        // 続く復旧を試し、元のエラーを優先して呼び出し元へ通知する。
+      }
+    }
+    for (const staged of [...stagedRenames].reverse()) {
+      try {
+        await vscode.workspace.fs.rename(staged.temporaryUri, staged.oldUri, {
+          overwrite: false,
+        });
+      } catch {
+        // 元のエラーを優先して呼び出し元へ通知する。
+      }
+    }
+    throw error;
   }
 
   if (uniqueId) {
     // console.log("UUIDの削除");
     try {
       const uidHandlerRegex = new RegExp(`^moving-${uniqueId}-(.+)`);
-      const movingFilesUri = vscode.Uri.joinPath(targetUri, movigFileName);
+      const movingFilesUri = vscode.Uri.joinPath(
+        targetUri,
+        plan.movingFileName,
+      );
       const movingFilesNewUri = vscode.Uri.joinPath(
         targetUri,
-        movigFileName.replace(uidHandlerRegex, "$1"),
+        plan.movingFileName.replace(uidHandlerRegex, "$1"),
       );
       // console.log("移動中ファイルのUIDつきファイル名", movigFileName);
       await vscode.workspace.fs.rename(movingFilesUri, movingFilesNewUri, {
-        overwrite: true,
+        overwrite: false,
       });
     } catch (error) {
       console.error(`移動中のファイルのUUID削除に失敗しました`);
