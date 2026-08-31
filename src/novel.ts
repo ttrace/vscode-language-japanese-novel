@@ -389,7 +389,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
       // 対象ファイルのインデックスを調べる
       const currentIndex = files.findIndex(
         (item) =>
-          vscode.Uri.joinPath(parentUri, item[0]).fsPath === fileUri.fsPath,
+          vscode.Uri.joinPath(parentUri, item[0]).fsPath.normalize("NFC") === fileUri.fsPath.normalize("NFC"),
       );
       if (currentIndex === -1) {
         return vscode.window.showErrorMessage(
@@ -586,14 +586,14 @@ async function moveAndReorderFiles(
     // destinationPathがdestinationFilesの何番目にあるかを見つけます
     let destinationIndex = destinationFiles.findIndex(
       (file) =>
-        vscode.Uri.joinPath(destinationUpperUri, file[0]).fsPath ===
-        destinationUri.fsPath,
+        vscode.Uri.joinPath(destinationUpperUri, file[0]).fsPath.normalize("NFC") ===
+        destinationUri.fsPath.normalize("NFC"),
     );
     if (isOnlySort) {
       const movingFileIndex = destinationFiles.findIndex(
         (file) =>
-          vscode.Uri.joinPath(destinationUpperUri, file[0]).fsPath ===
-          movingFileUri.fsPath,
+          vscode.Uri.joinPath(destinationUpperUri, file[0]).fsPath.normalize("NFC") ===
+          movingFileUri.fsPath.normalize("NFC"),
       );
       destinationIndex =
         destinationIndex > movingFileIndex
@@ -714,7 +714,7 @@ function getFileNodeByPath(
   // 配列内の各ノードをチェック
   console.log("ノード", nodes, dirPath);
   for (const node of nodes) {
-    if (node.dir === dirPath) {
+    if (node.dir.normalize("NFC") === dirPath.normalize("NFC")) {
       return node; // 一致する場合、id を返す
     }
     if (node.children) {
@@ -981,7 +981,7 @@ async function insertFile(
     // destinationPathがdestinationFilesの何番目にあるかを見つけます
     let destinationIndex = destinationFiles.findIndex(
       (file) =>
-        vscode.Uri.joinPath(destinationUpperUri, file[0]).fsPath === targetPath,
+        vscode.Uri.joinPath(destinationUpperUri, file[0]).fsPath.normalize("NFC") === targetPath.normalize("NFC"),
     );
     // 移動用のUUIDを作成
     const uniqueId = uuidv4();
