@@ -1,6 +1,6 @@
 {
   "name": "novel-writer",
-  "version": "3.4.19",
+  "version": "3.5.1",
   "publisher": "TaiyoFujii",
   "repository": {
     "type": "git",
@@ -8,29 +8,29 @@
   },
   "icon": "resource/icon.png",
   "engines": {
-    "vscode": "^1.108.0"
+    "vscode": "^1.134.0"
   },
   "main": "dist/extension.js",
   "dependencies": {
     "@types/kuromoji": "^0.1.3",
-    "@types/react": "^19.2.10",
+    "@types/react": "^19.2.18",
     "@types/react-dnd": "^3.0.2",
-    "@types/react-dom": "^19.2.3",
-    "@vivliostyle/cli": "^10.3.1",
-    "@vivliostyle/core": "^2.40.0",
+    "@types/react-dom": "^19.2.5",
+    "@vivliostyle/cli": "^11.2.0",
+    "@vivliostyle/core": "^2.45.0",
     "fastest-levenshtein": "^1.0.16",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
     "kuromoji": "github:ttrace/kuromoji.js",
     "natural-compare-lite": "^1.4.0",
-    "react": "^19.2.4",
+    "react": "^19.2.8",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
-    "react-dom": "^19.2.4",
-    "simple-git": "^3.30.0",
+    "react-dom": "^19.2.8",
+    "simple-git": "^3.36.0",
     "tree-model": "^1.0.7",
-    "uuid": "^13.0.0",
-    "ws": "^8.19.0"
+    "uuid": "^14.0.2",
+    "ws": "^8.21.3"
   },
   "scripts": {
     "vscode:prepublish": "npm run package-webpack",
@@ -156,6 +156,15 @@
         "icon": {
           "light": "resource/drag-and-drop-light.svg",
           "dark": "resource/drag-and-drop-dark.svg"
+        }
+      },
+      {
+        "command": "draftTree.dragAndDropDim",
+        "title": "ドラッグ&ドロップ（withプロジェクトでは常に有効）",
+        "enablement": "false",
+        "icon": {
+          "light": "resource/drag-and-drop-dim-light.svg",
+          "dark": "resource/drag-and-drop-dim-dark.svg"
         }
       }
     ],
@@ -345,12 +354,17 @@
         },
         {
           "command": "draftTree.deactivateDragAndDrop",
-          "when": "view == draftTree && isDndActive == true",
+          "when": "view == draftTree && isDndActive == true && novelWriter.isWithProject != true",
           "group": "navigation"
         },
         {
           "command": "draftTree.activateDragAndDrop",
-          "when": "view == draftTree && isDndActive == false",
+          "when": "view == draftTree && isDndActive == false && novelWriter.isWithProject != true",
+          "group": "navigation"
+        },
+        {
+          "command": "draftTree.dragAndDropDim",
+          "when": "view == draftTree && novelWriter.isWithProject == true",
           "group": "navigation"
         }
       ],
@@ -809,45 +823,46 @@
     }
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.10",
     "@types/natural-compare-lite": "^1.4.2",
-    "@types/node": "^25.2.0",
+    "@types/node": "^26.4.0",
     "@types/ps-tree": "^1.1.6",
-    "@types/sinon": "^21.0.0",
+    "@types/sinon": "^22.0.0",
     "@types/text-encoding": "^0.0.40",
     "@types/uuid": "^10.0.0",
-    "@types/vscode": "^1.108.1",
+    "@types/vscode": "^1.134.0",
     "@types/webpack-env": "^1.18.8",
     "@types/ws": "^8.18.1",
-    "@typescript-eslint/eslint-plugin": "^8.54.0",
-    "@typescript-eslint/parser": "^8.54.0",
-    "@vscode/test-web": "^0.0.79",
+    "@typescript-eslint/eslint-plugin": "^8.68.0",
+    "@typescript-eslint/parser": "^8.68.0",
+    "@vscode/test-web": "^0.0.81",
     "bufferutil": "^4.1.0",
     "child_process": "^1.0.2",
-    "css-loader": "^7.1.3",
-    "eslint": "^9.39.2",
+    "css-loader": "^7.1.5",
+    "eslint": "^10.9.1",
     "fs": "^0.0.1-security",
-    "glob": "^13.0.0",
-    "html-webpack-plugin": "^5.6.6",
+    "glob": "^13.0.6",
+    "html-webpack-plugin": "^5.6.8",
     "http": "^0.0.1-security",
     "http-server": "^14.1.1",
-    "mocha": "^11.7.5",
+    "mocha": "^11.8.0",
     "net": "^1.0.2",
     "node-levenshtein": "^3.0.7",
     "path": "^0.12.7",
     "ps-tree": "^1.2.0",
-    "sass": "^1.97.3",
-    "sass-loader": "^16.0.6",
-    "sinon": "^21.0.1",
+    "sass": "^1.103.1",
+    "sass-loader": "^17.0.1",
+    "sinon": "^22.1.0",
     "style-loader": "^4.0.0",
-    "ts-loader": "^9.5.4",
+    "ts-loader": "^9.6.2",
     "typescript": "^5.9.3",
     "utf-8-validate": "^6.0.6",
     "util": "^0.12.5",
     "vscode-test": "^1.5.2",
-    "webpack": "^5.104.1",
-    "webpack-cli": "^6.0.1",
+    "webpack": "^5.110.2",
+    "webpack-cli": "^7.2.3",
     "webpack-env": "^0.8.0",
     "xhr2": "^0.2.1"
   },

@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
+import * as fs from "fs";
 import {
   draftRoot,
   draftsObject,
@@ -15,8 +16,9 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { getConfig } from "./config";
 import { createSequentialRenamePlan } from "./renumber";
-import { loadWithProjectStructure } from "./withProject";
+import { isWithProject as hasWithProjectConfig } from "./withProject";
 import { moveAndReorderWithProject } from "./withProjectDragAndDrop";
+import { renameWithProjectItem } from "./withProjectRename";
 
 let debugIncrement = 0;
 
@@ -31,6 +33,8 @@ const output = vscode.window.createOutputChannel("Novel");
 
 type FileNode = {
   id: string;
+  sortKey?: number;
+  isWithProject?: boolean;
   dir: string;
   name: string;
   length: {
@@ -73,7 +77,11 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
       } else if (e.affectsConfiguration("Novel.DraftTree.renumber")) {
         // ドラッグ&ドロップの設定が変更された場合の処理
         const configuration = vscode.workspace.getConfiguration();
-        const isDndActivate = configuration.get("Novel.DraftTree.renumber");
+        const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+        const isDndActivate = Boolean(
+          (workspaceRoot && hasWithProjectConfig(workspaceRoot)) ||
+            configuration.get("Novel.DraftTree.renumber"),
+        );
         // console.log(isDndActivate);
         if (this._webviewView) {
           this._webviewView.webview.postMessage({
@@ -211,7 +219,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
           break;
 
         case "rename":
-          renameFile(message.renameFile.targetPath, message.renameFile.newName);
+          await renameFile(message.renameFile.targetPath, message.renameFile.newName);
           break;
 
         case "insert":
@@ -246,14 +254,20 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
   }
 
   private getHtmlForWebview(webview: vscode.Webview): string {
-    const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(
-        this._context.extensionUri,
-        "dist",
-        "webview",
-        "bundle.js",
-      ),
+    const scriptFileUri = vscode.Uri.joinPath(
+      this._context.extensionUri,
+      "dist",
+      "webview",
+      "bundle.js",
     );
+    // Webviewは同じresource URLをキャッシュするため、bundle更新後も旧UIが
+    // 残ることがある。更新時刻をqueryへ付けて確実に再取得させる。
+    const scriptVersion = fs.existsSync(scriptFileUri.fsPath)
+      ? fs.statSync(scriptFileUri.fsPath).mtimeMs.toString()
+      : this._context.extension.packageJSON.version;
+    const scriptUri = webview
+      .asWebviewUri(scriptFileUri)
+      .with({ query: `v=${encodeURIComponent(scriptVersion)}` });
     const styleUri = webview.asWebviewUri(
       vscode.Uri.joinPath(this._context.extensionUri, "media", "style.css"),
     );
@@ -279,6 +293,12 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
     // console.time("loadTreeDataTime");
     const configuration = getConfig();
     const draftFileType = manuscriptFileType();
+    const isWithProject = Boolean(
+      vscode.workspace.workspaceFolders?.[0] &&
+        hasWithProjectConfig(
+          vscode.workspace.workspaceFolders[0].uri.fsPath,
+        ),
+    );
     const countOfNumber = configuration.displayCountOfNumber;
     const countOfSheet = configuration.displayCountOfSheet;
     webview.postMessage({
@@ -287,6 +307,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
       displayNumber: countOfNumber,
       displaySheet: countOfSheet,
       draftFileType: draftFileType,
+      isWithProject,
     });
     // console.timeEnd("loadTreeDataTime");
   }
@@ -294,9 +315,13 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
   private async sendIsOrdable(webview: vscode.Webview) {
     // const configuration = vscode.workspace.getConfiguration();
     const renumberSetting = (await waitForConfiguration()).get("renumber");
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    const isOrdable = Boolean(
+      (workspaceRoot && hasWithProjectConfig(workspaceRoot)) || renumberSetting,
+    );
     webview.postMessage({
       command: "configIsOrdable",
-      data: renumberSetting,
+      data: isOrdable,
     });
   }
 
@@ -501,7 +526,7 @@ async function moveAndReorderFiles(
     );
   }
 
-  if (loadWithProjectStructure(workspaceFolder.uri.fsPath)) {
+  if (hasWithProjectConfig(workspaceFolder.uri.fsPath)) {
     isFileOperating = true;
     try {
       const movedPath = await moveAndReorderWithProject(
@@ -843,10 +868,23 @@ async function renameFile(targetPath: string, newName: string) {
   const draftFileType = getConfig().draftFileType;
   // console.log(`ファイル名変更： ${targetPath} を ${newName} に変更`);
   const targetFileUri = vscode.Uri.file(targetPath);
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(targetFileUri);
   // const newFileName = newName;
   const oldFileName = path.basename(targetPath);
   const targetFileDir = vscode.Uri.file(path.dirname(targetPath));
   let newFileName = newName;
+  if (workspaceFolder && hasWithProjectConfig(workspaceFolder.uri.fsPath)) {
+    try {
+      await renameWithProjectItem(workspaceFolder.uri, targetPath, newName);
+    } catch (error) {
+      vscode.window.showErrorMessage(
+        `${oldFileName}を改名できませんでした: ${String(error)}`,
+      );
+    }
+    const draftWebViewProvider = getDraftWebViewProviderInstance();
+    draftWebViewProvider.loadTreeData(draftWebViewProvider._webviewView!.webview);
+    return;
+  }
   const ifRenumber = (await waitForConfiguration()).get("renumber");
   if (ifRenumber) {
     newFileName = oldFileName.replace(

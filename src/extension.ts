@@ -27,6 +27,7 @@ import {
 import { exportpdf, previewpdf } from "./pdf";
 import { MarkdownFoldingProvider, MarkdownSymbolProvider } from "./markdown";
 import { updateWithProjectIndexForSavedDocument } from "./withProjectIndex";
+import { isWithProject } from "./withProject";
 
 //リソースとなるhtmlファイル
 //let html: Buffer;
@@ -159,7 +160,14 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   isDndActive = configuration.get("Novel.DraftTree.renumber") ?? false;
+  const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  const withProjectActive = Boolean(workspaceRoot && isWithProject(workspaceRoot));
   vscode.commands.executeCommand("setContext", "isDndActive", isDndActive);
+  vscode.commands.executeCommand(
+    "setContext",
+    "novelWriter.isWithProject",
+    withProjectActive,
+  );
 
   console.log(configuration.get("Novel.DraftTree.renumber"), isDndActive);
   const toggleDragAndDrop = () => {
@@ -175,6 +183,10 @@ export function activate(context: vscode.ExtensionContext): void {
       "draftTree.activateDragAndDrop",
       toggleDragAndDrop,
     ),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand("draftTree.dragAndDropDim", () => undefined),
   );
 
   context.subscriptions.push(

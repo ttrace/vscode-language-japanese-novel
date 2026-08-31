@@ -3,10 +3,13 @@ import ReactDOM from "react-dom/client";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { commands, FileType } from "vscode";
+import { renameValueForHost } from "../renameDisplayName";
 
 // MARK:型定義
 type TreeFileNode = {
   id: string;
+  sortKey?: number;
+  isWithProject?: boolean;
   dir: string;
   name: string;
   length: {
@@ -41,6 +44,7 @@ export const App: React.FC = () => {
   );
   const [isInserting, setIsInserting] = useState(false);
   const [draftFileType, setDraftFileType] = useState<".txt" | ".md">(".txt");
+  const [isWithProject, setIsWithProject] = useState(false);
 
   useEffect(() => {
     vscode.postMessage({ command: "loadTreeData" });
@@ -56,6 +60,7 @@ export const App: React.FC = () => {
           setDisplayNumber(message.displayNumber);
           setDisplaySheet(message.displaySheet);
           setDraftFileType(message.draftFileType);
+          setIsWithProject(message.isWithProject === true);
           // vscode.postMessage({ command: "loadIsOrdable" });
           break;
         case "setHighlight":
@@ -114,7 +119,7 @@ export const App: React.FC = () => {
           {treeData.length === 0 ? (
             <p>Loading...</p>
           ) : (
-            treeData.map((node, index) => (
+            sortTreeNodes(treeData).map((node, index) => (
               <TreeView
                 key={index}
                 node={node}
@@ -130,6 +135,7 @@ export const App: React.FC = () => {
                 setIsInserting={setIsInserting}
                 insertingNode={insertingNode}
                 draftFileType={draftFileType}
+                isWithProject={isWithProject}
               />
             ))
           )}
@@ -151,6 +157,7 @@ interface TreeViewProps {
   setIsInserting: any;
   isInserting: boolean;
   draftFileType: ".txt" | ".md";
+  isWithProject: boolean;
   onToggleClose: (id: string, isClosed: boolean) => void; // New prop
   // treeData: TreeFileNode[]; // Added treeData property
 }
@@ -169,8 +176,10 @@ const TreeView: React.FC<TreeViewProps> = React.memo(({
   setIsInserting,
   isInserting,
   draftFileType,
+  isWithProject,
   // treeData, // Add treeData to the destructured props
 }) => {
+  const nodeIsWithProject = isWithProject || node.isWithProject === true;
   // ツリービューの制御
   const treeNodeRef = useRef(null);
   // フォルダーが開いているかどうかを知るステータス（初期状態は開）
@@ -380,9 +389,11 @@ const TreeView: React.FC<TreeViewProps> = React.memo(({
         if (!isEditing) {
           setIsEditing(true);
         } else {
-          const renamingTo = isOrdable
-            ? editValue.replace(/^(?:\d+[-_\s]*)*(.+?)(?:\.(txt|md))?$/, "$1")
-            : editValue;
+          const renamingTo = renameValueForHost(
+            editValue,
+            isOrdable,
+            nodeIsWithProject,
+          );
           // console.log("編集名称", editValue);
           const renameFile = {
             targetPath: node.dir,
@@ -534,9 +545,13 @@ const TreeView: React.FC<TreeViewProps> = React.memo(({
                 <input
                   type="text"
                   value={
-                    isOrdable
+                    isOrdable && !nodeIsWithProject
                       ? getSceneName(editValue, draftFileType)
-                      : editValue
+                      : getDisplayName(
+                          editValue,
+                          draftFileType,
+                          nodeIsWithProject,
+                        )
                   }
                   onChange={handleChange}
                   onKeyDown={handleKeyDown}
@@ -551,7 +566,13 @@ const TreeView: React.FC<TreeViewProps> = React.memo(({
             </span>
           ) : (
             <span className="item-name">
-              {isOrdable ? getSceneName(node.name, draftFileType) : node.name}
+              {isOrdable && !nodeIsWithProject
+                ? getSceneName(node.name, draftFileType)
+                : getDisplayName(
+                    node.name,
+                    draftFileType,
+                    nodeIsWithProject,
+                  )}
             </span>
           )}
           <span className="chars">
@@ -567,7 +588,7 @@ const TreeView: React.FC<TreeViewProps> = React.memo(({
         </div>
         {node.children && (
           <div className="tree-node-children">
-            {expanded ? node.children.map((child, index) => (
+            {expanded ? sortTreeNodes(node.children).map((child, index) => (
               <TreeView
                 key={child.name}
                 // treeData={treeData} // Pass treeData to child TreeView components
@@ -583,6 +604,7 @@ const TreeView: React.FC<TreeViewProps> = React.memo(({
                 setIsInserting={setIsInserting}
                 insertingNode={insertingNode}
                 draftFileType={draftFileType}
+                isWithProject={nodeIsWithProject}
               />
             )) : null}
 
@@ -672,6 +694,29 @@ function getSceneName(fileName: string, draftFileType: string): string {
   }
 
   return nameWithoutExt;
+}
+
+function getDisplayName(
+  fileName: string,
+  draftFileType: string,
+  isWithProject: boolean,
+): string {
+  if (!isWithProject) return fileName;
+  const extPattern = new RegExp(`${draftFileType.replace(".", "\\.")}$`);
+  return fileName.replace(extPattern, "");
+}
+
+function sortTreeNodes(nodes: TreeFileNode[]): TreeFileNode[] {
+  return [...nodes].sort((left, right) => {
+    if (
+      typeof left.sortKey === "number" &&
+      typeof right.sortKey === "number" &&
+      left.sortKey !== right.sortKey
+    ) {
+      return left.sortKey - right.sortKey;
+    }
+    return 0;
+  });
 }
 // root.render を呼び出す
 const root = ReactDOM.createRoot(document.getElementById("root")!);

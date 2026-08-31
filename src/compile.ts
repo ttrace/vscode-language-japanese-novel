@@ -6,6 +6,8 @@ import { deadLineFolderPath } from "./extension";
 import TreeModel from "tree-model";
 import neutralCompare from "natural-compare-lite";
 import {
+  isWithProject,
+  loadWithProjectConfig,
   loadWithProjectStructure,
   WithProjectNode,
   withNodesForDirectory,
@@ -66,7 +68,7 @@ export function draftRoot(): string {
     return "";
   } else {
     const projectPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-    if (loadWithProjectStructure(projectPath)) {
+    if (isWithProject(projectPath)) {
       return projectPath;
     }
     let draftRootPath = projectPath;
@@ -91,8 +93,8 @@ export function draftRoot(): string {
 export function manuscriptFileType(): string {
   const projectPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
   if (projectPath) {
-    const withProject = loadWithProjectStructure(projectPath);
-    if (withProject) return withProject.manuscriptFileType;
+    const withConfig = loadWithProjectConfig(projectPath);
+    if (withConfig) return `.${withConfig.manuscriptFormat}`;
   }
   return getConfig().draftFileType;
 }
@@ -121,6 +123,9 @@ export function fileList(dirPath: string, useWithIndex: boolean = true): FileLis
       if (withProject) {
         const nodes = withNodesForDirectory(withProject, projectPath, dirPath);
         if (nodes) return fileListFromWithNodes(nodes, dirPath);
+      }
+      if (isWithProject(projectPath)) {
+        return { label: path.basename(dirPath), files: [], length: 0 };
       }
     }
   }
@@ -220,6 +225,8 @@ function getFiles(dirPath: string) {
 
 type FileNode = {
   id: string;
+  sortKey?: number;
+  isWithProject?: boolean;
   dir: string;
   name: string;
   length: {
@@ -247,6 +254,7 @@ export function draftsObject(
     if (projectPath && path.resolve(dirPath) === path.resolve(projectPath)) {
       const withProject = loadWithProjectStructure(projectPath);
       if (withProject) return draftsObjectFromWithNodes(withProject.nodes, context);
+      if (isWithProject(projectPath)) return [];
     }
   }
   const results: FileNode[] = [];
@@ -331,6 +339,8 @@ function draftsObjectFromWithNodes(
     if (!node.isDirectory) {
       return {
         id: node.id,
+        sortKey: node.sortKey,
+        isWithProject: true,
         dir: node.absolutePath,
         name: node.name,
         length: getLength(fs.readFileSync(node.absolutePath, "utf8")),
@@ -347,12 +357,23 @@ function draftsObjectFromWithNodes(
     );
     return {
       id: node.id,
+      sortKey: node.sortKey,
+      isWithProject: true,
       dir: node.absolutePath,
       name: node.name,
       length,
       children,
       isClosed: folderStates[node.id] ?? true,
     };
+  }).sort((left, right) => {
+    if (
+      typeof left.sortKey === "number" &&
+      typeof right.sortKey === "number" &&
+      left.sortKey !== right.sortKey
+    ) {
+      return left.sortKey - right.sortKey;
+    }
+    return 0;
   });
 }
 

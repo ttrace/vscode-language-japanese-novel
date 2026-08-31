@@ -5,7 +5,7 @@ const WITH_CONFIG_SCHEMA_VERSION = 4;
 const WITH_INDEX_SCHEMA_VERSION = 1;
 const RESERVED_REFERENCE_FOLDERS = new Set(["資料", "関連", "Context"]);
 
-type WithConfig = {
+export type WithProjectConfig = {
   schemaVersion: number;
   projectId?: string;
   manuscriptFormat: "txt" | "md";
@@ -31,6 +31,7 @@ type WithIndex = {
 
 export type WithProjectNode = {
   id: string;
+  sortKey?: number;
   relativePath: string;
   absolutePath: string;
   name: string;
@@ -76,6 +77,37 @@ export function withNodesForDirectory(
 
 function readJson<T>(filePath: string): T {
   return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
+}
+
+export function loadWithProjectConfig(
+  projectRoot: string,
+): WithProjectConfig | null {
+  const configPath = path.join(projectRoot, "with.json");
+  if (!fs.existsSync(configPath)) return null;
+
+  try {
+    const config = readJson<WithProjectConfig>(configPath);
+    if (
+      !Number.isInteger(config.schemaVersion) ||
+      config.schemaVersion < 1 ||
+      config.schemaVersion > WITH_CONFIG_SCHEMA_VERSION ||
+      (config.manuscriptFormat !== "txt" && config.manuscriptFormat !== "md") ||
+      !Array.isArray(config.draftFolders) ||
+      !config.draftFolders.every((folder) => typeof folder === "string") ||
+      !Array.isArray(config.imageFolders) ||
+      !config.imageFolders.every((folder) => typeof folder === "string") ||
+      (config.projectId !== undefined && typeof config.projectId !== "string")
+    ) {
+      return null;
+    }
+    return config;
+  } catch {
+    return null;
+  }
+}
+
+export function isWithProject(projectRoot: string): boolean {
+  return loadWithProjectConfig(projectRoot) !== null;
 }
 
 function idValue(id: string | { rawValue: string } | undefined): string | null {
@@ -127,22 +159,10 @@ function isManuscriptPath(
 export function loadWithProjectStructure(
   projectRoot: string,
 ): WithProjectStructure | null {
-  const configPath = path.join(projectRoot, "with.json");
-  if (!fs.existsSync(configPath)) return null;
+  const config = loadWithProjectConfig(projectRoot);
+  if (!config) return null;
 
   try {
-    const config = readJson<WithConfig>(configPath);
-    if (
-      !Number.isInteger(config.schemaVersion) ||
-      config.schemaVersion < 1 ||
-      config.schemaVersion > WITH_CONFIG_SCHEMA_VERSION ||
-      (config.manuscriptFormat !== "txt" && config.manuscriptFormat !== "md") ||
-      !Array.isArray(config.draftFolders) ||
-      !Array.isArray(config.imageFolders)
-    ) {
-      throw new Error("with.json の形式または schemaVersion が未対応です");
-    }
-
     const index = readJson<WithIndex>(
       path.join(projectRoot, ".with", "project-index.json"),
     );
@@ -206,6 +226,7 @@ export function loadWithProjectStructure(
       const absolutePath = path.resolve(projectRoot, entry.relativePath);
       return {
         id,
+        sortKey: entry.sortKey,
         relativePath: entry.relativePath,
         absolutePath,
         name: path.basename(entry.relativePath),

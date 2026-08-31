@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import {
+  isWithProject,
   loadWithProjectStructure,
   withNodesForDirectory,
 } from "../../withProject";
@@ -17,6 +18,36 @@ suite("with project structure", () => {
 
   teardown(() => {
     fs.rmSync(projectRoot, { recursive: true, force: true });
+  });
+
+  test("有効な with.json だけで with プロジェクトと判定する", () => {
+    fs.writeFileSync(
+      path.join(projectRoot, "with.json"),
+      JSON.stringify({
+        schemaVersion: 4,
+        projectId: "project-1",
+        manuscriptFormat: "txt",
+        draftFolders: ["原稿"],
+        imageFolders: ["画像"],
+      }),
+    );
+
+    assert.strictEqual(isWithProject(projectRoot), true);
+    assert.strictEqual(loadWithProjectStructure(projectRoot), null);
+  });
+
+  test("未対応または不正な with.json は with プロジェクトと判定しない", () => {
+    fs.writeFileSync(
+      path.join(projectRoot, "with.json"),
+      JSON.stringify({
+        schemaVersion: 999,
+        manuscriptFormat: "txt",
+        draftFolders: ["原稿"],
+        imageFolders: ["画像"],
+      }),
+    );
+
+    assert.strictEqual(isWithProject(projectRoot), false);
   });
 
   test("prefix ではなく sortKey と parentId で原稿を並べる", () => {
