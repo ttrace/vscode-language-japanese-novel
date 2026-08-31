@@ -26,6 +26,7 @@ import {
 } from "./tokenize";
 import { exportpdf, previewpdf } from "./pdf";
 import { MarkdownFoldingProvider, MarkdownSymbolProvider } from "./markdown";
+import { updateWithProjectIndexForSavedDocument } from "./withProjectIndex";
 
 //リソースとなるhtmlファイル
 //let html: Buffer;
@@ -88,6 +89,11 @@ function emptyPort(callback: any) {
 
 // MARK: NWアクティベーション
 export function activate(context: vscode.ExtensionContext): void {
+  context.subscriptions.push(
+    vscode.workspace.onDidSaveTextDocument((document) => {
+      void updateWithProjectIndexForSavedDocument(document);
+    }),
+  );
   context.subscriptions.push(
     vscode.commands.registerCommand("Novel.compile-draft", compileDocs),
   );

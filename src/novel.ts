@@ -15,6 +15,8 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { getConfig } from "./config";
 import { createSequentialRenamePlan } from "./renumber";
+import { loadWithProjectStructure } from "./withProject";
+import { moveAndReorderWithProject } from "./withProjectDragAndDrop";
 
 let debugIncrement = 0;
 
@@ -497,6 +499,28 @@ async function moveAndReorderFiles(
     return vscode.window.showErrorMessage(
       "ワークスペースを開いていない時は、ファイルの並び替えは行いません",
     );
+  }
+
+  if (loadWithProjectStructure(workspaceFolder.uri.fsPath)) {
+    isFileOperating = true;
+    try {
+      const movedPath = await moveAndReorderWithProject(
+        workspaceFolder.uri,
+        destinationPath,
+        insertPoint,
+        movingFileDir,
+      );
+      const provider = getDraftWebViewProviderInstance();
+      provider.loadTreeData(provider._webviewView!.webview);
+      provider.highlightFile(provider._webviewView!.webview, movedPath);
+    } catch (error) {
+      vscode.window.showErrorMessage(
+        `withプロジェクトの並べ替えに失敗しました: ${String(error)}`,
+      );
+    } finally {
+      isFileOperating = false;
+    }
+    return;
   }
 
   isFileOperating = true;
