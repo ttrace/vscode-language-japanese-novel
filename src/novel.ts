@@ -6,6 +6,7 @@ import {
   resetCounter,
   updateFolderCache,
   writeFolderStates,
+  manuscriptFileType,
 } from "./compile";
 import {
   getDraftWebViewProviderInstance,
@@ -275,7 +276,7 @@ export class DraftWebViewProvider implements vscode.WebviewViewProvider {
     resetCounter();
     // console.time("loadTreeDataTime");
     const configuration = getConfig();
-    const draftFileType = configuration.draftFileType;
+    const draftFileType = manuscriptFileType();
     const countOfNumber = configuration.displayCountOfNumber;
     const countOfSheet = configuration.displayCountOfSheet;
     webview.postMessage({

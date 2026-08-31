@@ -5,6 +5,11 @@ import { getConfig } from "./config";
 import { deadLineFolderPath } from "./extension";
 import TreeModel from "tree-model";
 import neutralCompare from "natural-compare-lite";
+import {
+  loadWithProjectStructure,
+  WithProjectNode,
+  withNodesForDirectory,
+} from "./withProject";
 
 //fsモジュールの使い方 https://qiita.com/oblivion/items/2725a4b3ca3a99f8d1a3
 export default function compileDocs(): void {
@@ -30,7 +35,7 @@ export default function compileDocs(): void {
 
   //#region BLANK
   //  空のファイルをつくる
-  const fileExtension = config.draftFileType;
+  const fileExtension = manuscriptFileType();
   const compiledTextFilePath =
     projectPath + "/publish/" + projectName + fileExtension;
   try {
@@ -61,6 +66,9 @@ export function draftRoot(): string {
     return "";
   } else {
     const projectPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+    if (loadWithProjectStructure(projectPath)) {
+      return projectPath;
+    }
     let draftRootPath = projectPath;
     const projectFiles = fs.readdirSync(projectPath);
     //「原稿」あるいは「Draft」フォルダーを原稿フォルダのルートにする。
@@ -80,6 +88,15 @@ export function draftRoot(): string {
   }
 }
 
+export function manuscriptFileType(): string {
+  const projectPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  if (projectPath) {
+    const withProject = loadWithProjectStructure(projectPath);
+    if (withProject) return withProject.manuscriptFileType;
+  }
+  return getConfig().draftFileType;
+}
+
 type File = {
   dir?: string;
   name?: string;
@@ -96,7 +113,17 @@ type FileList = {
 };
 
 //fileList()は、ファイルパスと（再帰処理用の）ディレクトリ深度を受け取って、ファイルリストの配列と総文字数を返す。
-export function fileList(dirPath: string): FileList {
+export function fileList(dirPath: string, useWithIndex: boolean = true): FileList {
+  if (useWithIndex) {
+    const projectPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (projectPath) {
+      const withProject = loadWithProjectStructure(projectPath);
+      if (withProject) {
+        const nodes = withNodesForDirectory(withProject, projectPath, dirPath);
+        if (nodes) return fileListFromWithNodes(nodes, dirPath);
+      }
+    }
+  }
   let characterCount = 0;
   const filesInFolder = getFiles(dirPath).sort((a, b) =>
     neutralCompare(a.name, b.name),
@@ -110,7 +137,7 @@ export function fileList(dirPath: string): FileList {
     } else if (dirent.name.match(/^\..*/)) {
     } else if (dirent.isDirectory()) {
       const fp = path.join(dirPath, dirent.name);
-      const containerFiles = fileList(fp);
+      const containerFiles = fileList(fp, false);
 
       files.push({
         directoryName: dirent.name,
@@ -150,6 +177,38 @@ export function fileList(dirPath: string): FileList {
   };
 }
 
+function fileListFromWithNodes(nodes: WithProjectNode[], labelPath: string): FileList {
+  const files: File[] = [];
+  let length = 0;
+
+  for (const node of nodes) {
+    if (node.isDirectory) {
+      const children = fileListFromWithNodes(node.children, node.absolutePath);
+      files.push({
+        directoryName: node.name,
+        directoryLength: children.length,
+      });
+      files.push(children.files);
+      length += children.length;
+    } else {
+      let readingFile = fs.readFileSync(node.absolutePath, "utf8");
+      readingFile = readingFile
+        .replace(/\s/g, "")
+        .replace(/《(.+?)》/g, "")
+        .replace(/[|｜]/g, "")
+        .replace(/<!--(.+?)-->\n*/, "");
+      files.push({
+        dir: node.absolutePath.normalize("NFC"),
+        name: node.name,
+        length: readingFile.length,
+      });
+      length += readingFile.length;
+    }
+  }
+
+  return { label: path.basename(labelPath), files: files.flat(), length };
+}
+
 function getFiles(dirPath: string) {
   //console.log("getFiles",dirPath);
   const filesInFolder = fs.existsSync(dirPath)
@@ -183,6 +242,13 @@ export function draftsObject(
   context: vscode.ExtensionContext | null = null,
   isRootCall: boolean = true, // トップレベルかどうかのフラグ
 ): FileNode[] {
+  if (isRootCall) {
+    const projectPath = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (projectPath && path.resolve(dirPath) === path.resolve(projectPath)) {
+      const withProject = loadWithProjectStructure(projectPath);
+      if (withProject) return draftsObjectFromWithNodes(withProject.nodes, context);
+    }
+  }
   const results: FileNode[] = [];
   // トップレベルの呼び出し時のみカウンターをリセット
   if (isRootCall) {
@@ -251,6 +317,43 @@ export function draftsObject(
   }
 
   return results;
+}
+
+function draftsObjectFromWithNodes(
+  nodes: WithProjectNode[],
+  context: vscode.ExtensionContext | null,
+): FileNode[] {
+  const folderStates = context
+    ? context.workspaceState.get<{ [key: string]: boolean }>("folderStates", {})
+    : {};
+
+  return nodes.map((node) => {
+    if (!node.isDirectory) {
+      return {
+        id: node.id,
+        dir: node.absolutePath,
+        name: node.name,
+        length: getLength(fs.readFileSync(node.absolutePath, "utf8")),
+      };
+    }
+
+    const children = draftsObjectFromWithNodes(node.children, context);
+    const length = children.reduce(
+      (total, child) => ({
+        lengthInNumber: total.lengthInNumber + child.length.lengthInNumber,
+        lengthInSheet: total.lengthInSheet + child.length.lengthInSheet,
+      }),
+      { lengthInNumber: 0, lengthInSheet: 0 },
+    );
+    return {
+      id: node.id,
+      dir: node.absolutePath,
+      name: node.name,
+      length,
+      children,
+      isClosed: folderStates[node.id] ?? true,
+    };
+  });
 }
 
 export function writeFolderStates(
