@@ -14,6 +14,7 @@ export type NovelSettings = {
   numberFormatR: string;
   numberFormatL: string;
   userRegex: Array<[string, string]>;
+  enableSeparator: boolean;
   separator: string;
   vscodeTheme: vscode.ColorTheme;
   sceneNav: boolean;
@@ -53,6 +54,7 @@ export function getConfig(): NovelSettings {
     "preview.userRegex",
     []
   );
+  const enableSeparator = config.get<boolean>("compile.enableSeparator", false);
   const separator = config.get<string>("compile.separator", "＊");
   const vscodeTheme = vscode.window.activeColorTheme;
   const sceneNav = config.get<boolean>("editor.sceneNavigator", true);
@@ -89,6 +91,7 @@ export function getConfig(): NovelSettings {
     numberFormatR,
     numberFormatL,
     userRegex,
+    enableSeparator,
     separator,
     vscodeTheme,
     sceneNav,

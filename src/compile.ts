@@ -23,7 +23,7 @@ export default function compileDocs(): void {
         path.basename(deadLineFolderPath());
   const projectPath = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
   const config = getConfig();
-  const separatorString = "\n\n　　　" + config.separator + "\n\n";
+  const separatorString = config.enableSeparator ? "\n　　　" + config.separator + "\n\n" : "";
   const draftRootPath =
     deadLineFolderPath() == "" ? draftRoot() : deadLineFolderPath();
 
@@ -48,13 +48,22 @@ export default function compileDocs(): void {
 
   //  テキストを書き込む
   const filelist = fileList(draftRootPath).files;
-  filelist.forEach((listItem: { dir?: string; depthIndicator?: number }) => {
-    let appendingContext = "";
+  let separatorStart: string | null = null;
+  filelist.forEach((listItem: { dir?: string }) => {
+    let appendingContext = typeof separatorStart === "string" ? separatorStart + separatorString : "";
+
     if (listItem.dir) {
-      appendingContext = fs.readFileSync(listItem.dir, "utf8");
-    } else if (listItem.depthIndicator) {
-      appendingContext = separatorString;
+      appendingContext += fs.readFileSync(listItem.dir, "utf8");
+
+      if (appendingContext.endsWith("\n")) {
+        separatorStart = "";
+      } else {
+        // 改行で終わっていない場合は、次のテキストとの間に改行を入れる
+        // すなわち`\n\n separator\n\n`の形にする
+        separatorStart = "\n";
+      }
     }
+    
     fs.appendFileSync(compiledTextFilePath, appendingContext);
   });
   //console.log(fileList(draftRootPath, 0).files);
@@ -105,6 +114,7 @@ type File = {
   length?: number;
   directoryName?: string;
   directoryLength?: number;
+  // FIXME: 一度も使われていないプロパティです。必要なければ削除してください。
   depthIndicator?: number;
 };
 

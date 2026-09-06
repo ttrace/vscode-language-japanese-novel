@@ -212,6 +212,16 @@
           "default": false,
           "description": "原稿ツリーでファイルの並び替えを行うかどうかを設定します\n有効にすると原稿ツリーでファイル・フォルダーの順番を入れ替えられますが、ファイル・フォルダーの名前の先頭に連番を付与します\nファイル名を書き換える機能なので、ワークスペースごとに設定することを推奨します"
         },
+        "Novel.compile.enableSeparator": {
+          "type": "boolean",
+          "default": false,
+          "description": "原稿を結合する際に区切り文字列を挿入するかどうかを指定してください"
+        },
+        "Novel.compile.separator": {
+          "type": "string",
+          "default": "＊",
+          "description": "原稿を結合する際の区切り文字を指定してください\nこのオプションを有効にするには、区切り文字列を挿入することを有効にしてください"
+        },
         "Novel.general.filetype": {
           "type": "string",
           "default": ".txt",
