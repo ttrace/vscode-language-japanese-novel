@@ -128,7 +128,7 @@
       "endCaptures": {
         "0": { "name": "string.quoted" }
       },
-      "name": "comment.block ",
+      "name": "string.quoted",
       "patterns": [
         { "include": "#parenthesis-expression"},
         { "include": "#cornerfilledparenthesis-expression"},
@@ -146,15 +146,15 @@
       ]
     },
     "comment-out":{
-      "begin": "<!--  ",
-      "end": "  -->",
+      "begin": "<!--\\s*",
+      "end": "\\s*-->",
       "beginCaptures": {
-        "0": { "name": "string.quoted" }
+        "0": { "name": "comment.block" }
       },
       "endCaptures": {
-        "0": { "name": "string.quoted" }
+        "0": { "name": "comment.block" }
       },
-      "name": "entity"
+      "name": "comment.block"
     }
   }
 }
